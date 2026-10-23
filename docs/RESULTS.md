@@ -192,7 +192,7 @@ make dashboard
   decisions.
 - `replay` reconstructs accounting and verifies hashes.
 - Docker Compose runs PostgreSQL + trader + dashboard (+ optional Caddy).
-- Unit tests: 49 passed, 1 live test skipped by default.
+- Unit tests: 59 passed, 1 live test skipped by default.
 
 ## 8. What these results do and do not prove
 

@@ -87,7 +87,9 @@ The kill switch activates on any of:
 - WebSocket down ≥ 30s;
 - API error rate > 10% after at least 50 calls;
 - clock skew > 5s (HTTP Date headers have 1 s granularity);
-- live reconciliation mismatch (orders or balances);
+- live reconciliation mismatch (orders or balances). Known dust below the market step
+  or exchange minimum notional is subtracted; a remainder left by a partial exit is
+  recorded as dust and dropped instead of retried;
 - repeated agent failures / circuit breaker (agent HOLDs; the risk kernel may halt
   if the failure is systemic).
 

@@ -70,10 +70,14 @@ The dashboard is read-only except for the kill endpoint. It cannot place orders.
 2. `make preflight` passes in live mode.
 3. `MODE=live`, `LIVE_CONFIRM=I_UNDERSTAND_REAL_MONEY`.
 4. Run a canary with the live YAML caps (250k max order, 10% position, 0.5% risk).
-5. Watch reconciliation for 5 minutes; any mismatch kills the engine.
+5. Watch reconciliation for 5 minutes; any mismatch kills the engine. Known dust is
+   subtracted; a sub-step remainder is dropped as dust, not retried.
 6. Confirm fees and fills in the dashboard and compare to the exchange.
 7. Only then consider scaling caps (do not change hard limits in code without a
    new backtest).
+
+Only one live process may run. `data/runs/live.lock` refuses a second start while the
+recorded PID is alive; a stale lock is reclaimed.
 
 Live mode refuses to start if the balance is below the minimum, no key, no exact
 confirmation phrase, or `LIVE_ORDER_DRY_RUN` is set.

@@ -24,9 +24,9 @@ from wallex_trader.agent.schemas import AgentAction, AgentDecision
 from wallex_trader.config import Settings
 from wallex_trader.exchange.mcp import MCPError, WallexMCPClient
 from wallex_trader.exchange.rest import WallexAPIError, WallexRESTClient
+from wallex_trader.execution.dust import add_dust, base_asset, is_unsellable, set_dust
 from wallex_trader.execution.live_broker import LiveBroker
 from wallex_trader.execution.oms import OMS
-from wallex_trader.execution.precision import floor_quantity
 from wallex_trader.execution.reconciler import Reconciler
 from wallex_trader.execution.shadow_broker import ShadowBroker
 from wallex_trader.logging import attach_run_log, setup_logging
@@ -42,6 +42,7 @@ from wallex_trader.models import (
 )
 from wallex_trader.risk.kernel import RiskKernel
 from wallex_trader.risk.killswitch import KillSwitch
+from wallex_trader.runlock import acquire_live_lock, release_live_lock
 from wallex_trader.storage.db import create_database
 from wallex_trader.storage.repositories import Repository, json_safe
 from wallex_trader.strategy.exits import evaluate_signal_exit, update_trailing_stop
@@ -106,6 +107,8 @@ class TradingEngine:
         self.memory: AgentMemory | None = None
         self.reflection: ReflectionAgent | None = None
         self.reconciler: Reconciler | None = None
+        self.dust: dict[str, Decimal] = {}
+        self._live_lock_path: Path | None = None
         self.kill = KillSwitch(settings)
         self.feature_engine = FeatureEngine(settings)
         self.signal_engine = SignalEngine(settings)
@@ -158,9 +161,13 @@ class TradingEngine:
         if self.settings.is_live and self.settings.live_confirm != "I_UNDERSTAND_REAL_MONEY":
             raise RuntimeError("live mode requires LIVE_CONFIRM in .env")
         self.settings.ensure_dirs()
-        await self.db.init()
-        await self.repo.start_run(self.settings, self.run_id)
+        if self.settings.is_live:
+            self._live_lock_path = acquire_live_lock(
+                self.settings.run_state_dir / "live.lock", self.run_id
+            )
         try:
+            await self.db.init()
+            await self.repo.start_run(self.settings, self.run_id)
             await self.rest.connect()
             self.metadatas = await self.rest.market_metadata()
             pre_books: dict[str, OrderBook] = {}
@@ -202,7 +209,7 @@ class TradingEngine:
                 self.broker,
                 self.fee_rates,
             )
-            self.reconciler = Reconciler(self.broker, self.portfolio)
+            self.reconciler = Reconciler(self.broker, self.portfolio, dust=self.dust)
             self.memory = AgentMemory(self.settings, self.repo)
             await self._init_agents()
             if self.kill.file_requested():
@@ -249,10 +256,13 @@ class TradingEngine:
             )
             self._started = True
         except Exception as exc:
-            await self.repo.system_event(
-                "error", "engine", f"startup failed: {exc}", {"run_id": self.run_id}
-            )
-            await self.repo.finish_run("failed")
+            with contextlib.suppress(Exception):
+                await self.repo.system_event(
+                    "error", "engine", f"startup failed: {exc}", {"run_id": self.run_id}
+                )
+                await self.repo.finish_run("failed")
+            release_live_lock(self._live_lock_path)
+            self._live_lock_path = None
             raise
 
     async def _init_broker_and_portfolio(self) -> None:
@@ -285,14 +295,13 @@ class TradingEngine:
                 )
             restore = await self.repo.latest_positions_for_mode("live")
             self.portfolio.restore_positions(restore)
+            self.dust = {}
             # The exchange balance is the source of truth. A base-asset fee
             # reduces the credited quantity, so stored gross quantities must be
             # reconciled to the actual balance before any exit is attempted.
             for symbol, position in list(self.portfolio.positions.items()):
-                base_asset = symbol[:-3] if symbol.endswith("TMN") else symbol
-                actual = Decimal(
-                    str((balances.get(base_asset) or {}).get("value", 0) or 0)
-                )
+                asset = base_asset(symbol)
+                actual = Decimal(str((balances.get(asset) or {}).get("value", 0) or 0))
                 if actual <= 0:
                     self.portfolio.positions.pop(symbol, None)
                     await self.repo.system_event(
@@ -301,8 +310,16 @@ class TradingEngine:
                         f"removed stored position with zero exchange balance: {symbol}",
                     )
                     continue
-                if actual != position.quantity:
-                    if abs(actual - position.quantity) <= position.quantity * Decimal("0.02"):
+                meta = self.metadatas.get(symbol)
+                book = self.feed.books.get(symbol) if self.feed else None
+                mark = (
+                    book.best_bid
+                    if book is not None and book.best_bid is not None
+                    else Decimal(str(meta.price or 0)) if meta is not None else Decimal("0")
+                )
+                if actual < position.quantity:
+                    shortfall = position.quantity - actual
+                    if shortfall <= position.quantity * Decimal("0.02"):
                         await self.repo.system_event(
                             "warning",
                             "portfolio",
@@ -323,9 +340,38 @@ class TradingEngine:
                                 "exchange": str(actual),
                             },
                         )
+                elif actual > position.quantity:
+                    excess = actual - position.quantity
+                    if meta is not None and is_unsellable(
+                        excess,
+                        meta.step,
+                        mark,
+                        Decimal(str(meta.min_notional)),
+                    ):
+                        set_dust(self.dust, asset, excess)
+                        await self.repo.system_event(
+                            "warning",
+                            "portfolio",
+                            f"tracked exchange dust above stored position: {symbol}",
+                            {
+                                "excess": str(excess),
+                                "exchange": str(actual),
+                                "stored": str(position.quantity),
+                            },
+                        )
+                    else:
+                        await self.repo.risk_event(
+                            "startup_position_mismatch",
+                            f"stored position for {symbol} differs from exchange balance",
+                            severity="critical",
+                            evidence={
+                                "stored": str(position.quantity),
+                                "exchange": str(actual),
+                            },
+                        )
             # Ignore exchange dust that cannot satisfy the market step/min
             # notional. It is not tradable and would otherwise cause exit
-            # rejection every loop.
+            # rejection every loop. Track it so reconciliation can subtract it.
             for symbol, position in list(self.portfolio.positions.items()):
                 meta = self.metadatas.get(symbol)
                 if meta is None:
@@ -336,10 +382,12 @@ class TradingEngine:
                     if book is not None and book.best_bid is not None
                     else Decimal(str(meta.price or 0))
                 )
-                sellable = floor_quantity(position.quantity, meta.step)
-                if sellable <= 0 or (
-                    mark > 0 and sellable * mark < Decimal(str(meta.min_notional))
+                if is_unsellable(
+                    position.quantity, meta.step, mark, Decimal(str(meta.min_notional))
                 ):
+                    asset = base_asset(symbol)
+                    actual = Decimal(str((balances.get(asset) or {}).get("value", 0) or 0))
+                    set_dust(self.dust, asset, max(position.quantity, actual))
                     self.portfolio.positions.pop(symbol, None)
                     await self.repo.system_event(
                         "warning",
@@ -351,6 +399,35 @@ class TradingEngine:
                             "mark": str(mark),
                         },
                     )
+            # Pre-existing dust can sit in a symbol with no local position; if a
+            # new position opens there later, reconciliation must know about it.
+            held_assets = {base_asset(symbol) for symbol in self.portfolio.positions}
+            for asset, item in balances.items():
+                if asset == "TMN" or asset in held_assets:
+                    continue
+                meta = self.metadatas.get(f"{asset}TMN")
+                if meta is None:
+                    continue
+                quantity = Decimal(str((item or {}).get("value", 0) or 0))
+                if quantity <= 0:
+                    continue
+                book = self.feed.books.get(f"{asset}TMN") if self.feed else None
+                mark = (
+                    book.best_bid
+                    if book is not None and book.best_bid is not None
+                    else Decimal(str(meta.price or 0))
+                )
+                if is_unsellable(
+                    quantity, meta.step, mark, Decimal(str(meta.min_notional))
+                ):
+                    set_dust(self.dust, asset, quantity)
+            if self.dust:
+                await self.repo.system_event(
+                    "info",
+                    "portfolio",
+                    "tracked non-sellable dust",
+                    {asset: str(quantity) for asset, quantity in self.dust.items()},
+                )
             self.log.info(
                 "live portfolio restored",
                 extra={
@@ -504,8 +581,12 @@ class TradingEngine:
         if self.feed is not None:
             with contextlib.suppress(Exception):
                 await self.feed.stop()
-        await self.rest.close()
-        await self.db.close()
+        with contextlib.suppress(Exception):
+            await self.rest.close()
+        with contextlib.suppress(Exception):
+            await self.db.close()
+        release_live_lock(self._live_lock_path)
+        self._live_lock_path = None
         logger.info("engine stopped")
 
     def request_stop(self) -> None:
@@ -997,6 +1078,11 @@ class TradingEngine:
         meta = self.metadatas.get(position.symbol)
         if meta is None:
             return None
+        if is_unsellable(
+            position.quantity, meta.step, mark, Decimal(str(meta.min_notional))
+        ):
+            await self._drop_dust_remainder(position, meta, mark, reason)
+            return None
         if time.monotonic() < self._exit_cooldowns.get(position.symbol, 0.0):
             return None
         if any(
@@ -1042,6 +1128,11 @@ class TradingEngine:
             return None
         trades = execution.get("closed_trades", []) or []
         trade = trades[0] if trades else None
+        remaining = self.portfolio.positions.get(position.symbol)
+        if remaining is not None and is_unsellable(
+            remaining.quantity, meta.step, mark, Decimal(str(meta.min_notional))
+        ):
+            await self._drop_dust_remainder(remaining, meta, mark, reason)
         await self._record_decision(
             decision_id=did,
             ts=now,
@@ -1056,6 +1147,38 @@ class TradingEngine:
             rationale=f"forced exit: {reason}",
         )
         return trade
+
+    async def _drop_dust_remainder(
+        self,
+        position: Position,
+        meta: MarketMeta,
+        mark: Decimal,
+        reason: str,
+    ) -> None:
+        """Remove a remainder that the exchange cannot represent or sell.
+
+        Leaving it in the portfolio makes every flatten attempt round to zero and
+        makes reconciliation compare the exchange dust against a live position.
+        """
+        assert self.portfolio is not None
+        quantity = position.quantity
+        self.portfolio.positions.pop(position.symbol, None)
+        if quantity <= 0:
+            return
+        asset = base_asset(position.symbol)
+        total = add_dust(self.dust, asset, quantity)
+        await self.repo.system_event(
+            "warning",
+            "portfolio",
+            f"dropped non-sellable dust remainder: {position.symbol}",
+            {
+                "quantity": str(quantity),
+                "step": str(meta.step),
+                "mark": str(mark),
+                "reason": reason,
+                "dust_total": str(total),
+            },
+        )
 
     async def _flatten_all(self, reason: str) -> int:
         assert self.portfolio is not None and self.feed is not None

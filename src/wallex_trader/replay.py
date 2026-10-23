@@ -17,6 +17,60 @@ from wallex_trader.strategy.portfolio import Portfolio, PortfolioError
 logger = logging.getLogger("trader.replay")
 
 
+def _order_base_fees(
+    orders: list[dict[str, Any]],
+) -> dict[tuple[str, Decimal, Decimal], Decimal]:
+    """Map (order id, price, quantity) to a base-asset fee from the exchange payload.
+
+    Wallex charges some buy fees in the base asset; the fills table historically
+    stored only the TMN-equivalent fee, so replay must recover the base quantity
+    from the persisted order payload to rebuild the position correctly.
+    """
+    fees: dict[tuple[str, Decimal, Decimal], Decimal] = {}
+    for order in orders:
+        raw = order.get("raw")
+        if isinstance(raw, str):
+            try:
+                raw = json.loads(raw)
+            except ValueError:
+                continue
+        if not isinstance(raw, dict):
+            continue
+        client_id = str(order.get("client_order_id") or raw.get("clientOrderId") or "")
+        symbol = str(order.get("symbol") or "")
+        base = symbol[:-3] if symbol.endswith("TMN") else symbol
+        for exchange_fill in raw.get("fills") or []:
+            if not isinstance(exchange_fill, dict):
+                continue
+            if str(exchange_fill.get("feeAsset") or "").upper() != base.upper():
+                continue
+            try:
+                price = Decimal(str(exchange_fill.get("price")))
+                quantity = Decimal(str(exchange_fill.get("quantity")))
+                fee = Decimal(str(exchange_fill.get("fee") or 0))
+            except (TypeError, ValueError, ArithmeticError):
+                continue
+            if fee > 0:
+                fees[(client_id, price, quantity)] = fee
+    return fees
+
+
+def _fill_base_fee(
+    fill_row: dict[str, Any],
+    base_fees: dict[tuple[str, Decimal, Decimal], Decimal],
+) -> Decimal:
+    try:
+        key = (
+            str(fill_row.get("order_id") or ""),
+            Decimal(str(fill_row.get("price"))),
+            Decimal(str(fill_row.get("quantity"))),
+        )
+    except (TypeError, ValueError, ArithmeticError):
+        return Decimal("0")
+    return base_fees.get(key, Decimal("0"))
+
+
+
 async def replay_run(settings: Settings, run_id: str | None = None) -> dict[str, Any]:
     db = create_database(settings)
     await db.init()
@@ -30,6 +84,7 @@ async def replay_run(settings: Settings, run_id: str | None = None) -> dict[str,
         fills = await repo.list_fills(active, limit=100_000)
         equity = await repo.equity_series(active, limit=20_000)
         orders = await repo.list_orders(active, limit=20_000)
+        base_fees = _order_base_fees(orders)
         checks: list[dict[str, Any]] = []
 
         def add(name: str, ok: bool, detail: Any = None) -> None:
@@ -100,6 +155,7 @@ async def replay_run(settings: Settings, run_id: str | None = None) -> dict[str,
                     quantity=Decimal(str(fill_row["quantity"])),
                     fee=Decimal(str(fill_row["fee"])),
                     fee_asset=str(fill_row.get("fee_asset", "TMN")),
+                    base_fee_quantity=_fill_base_fee(fill_row, base_fees),
                     ts=datetime.fromisoformat(str(fill_row["ts"])),
                     liquidity=str(fill_row.get("liquidity", "taker")),
                     decision_id=fill_row.get("decision_id"),

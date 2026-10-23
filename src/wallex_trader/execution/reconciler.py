@@ -4,6 +4,7 @@ import logging
 from decimal import Decimal
 from typing import Any
 
+from wallex_trader.execution.dust import ZERO, base_asset
 from wallex_trader.execution.live_broker import LiveBroker
 from wallex_trader.execution.shadow_broker import ShadowBroker
 from wallex_trader.strategy.portfolio import Portfolio
@@ -17,11 +18,13 @@ class Reconciler:
         broker: ShadowBroker | LiveBroker,
         portfolio: Portfolio,
         *,
+        dust: dict[str, Decimal] | None = None,
         cash_tolerance_tmn: Decimal = Decimal("1"),
         quantity_tolerance: Decimal = Decimal("0.00000001"),
     ) -> None:
         self.broker = broker
         self.portfolio = portfolio
+        self.dust = dust if dust is not None else {}
         self.cash_tolerance_tmn = cash_tolerance_tmn
         self.quantity_tolerance = quantity_tolerance
 
@@ -49,14 +52,18 @@ class Reconciler:
             }
         )
         for symbol, position in self.portfolio.positions.items():
-            base_asset = symbol[:-3] if symbol.endswith("TMN") else symbol
-            actual = Decimal(str((balances.get(base_asset) or {}).get("value", 0) or 0))
-            diff = abs(actual - position.quantity)
+            asset = base_asset(symbol)
+            actual = Decimal(str((balances.get(asset) or {}).get("value", 0) or 0))
+            known_dust = self.dust.get(asset, ZERO)
+            adjusted = max(ZERO, actual - known_dust)
+            diff = abs(adjusted - position.quantity)
             checks.append(
                 {
                     "name": f"position_{symbol}",
                     "passed": diff <= max(self.quantity_tolerance, position.quantity * Decimal("0.001")),
                     "balance": str(actual),
+                    "dust": str(known_dust),
+                    "adjusted_balance": str(adjusted),
                     "expected": str(position.quantity),
                     "difference": str(diff),
                 }

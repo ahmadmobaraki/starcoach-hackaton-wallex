@@ -60,7 +60,7 @@ why the default is a multi-day trend strategy, not a scalper.
 make install                 # uv sync --frozen --extra dev
 make lint                    # ruff
 make typecheck               # mypy
-make test                    # pytest (49 passed, 1 live skipped)
+make test                    # pytest (59 passed, 1 live skipped)
 make test-live               # RUN_LIVE_TESTS=1, public Wallex API test
 
 # Validation without real orders
@@ -113,8 +113,14 @@ Valid commands: `run`, `shadow`, `live`, `preflight`, `download`, `backtest`,
   BNB 0.0003 (net fee-adjusted: 149,262.864 PEPE / 0.0002991 BNB). Base-asset fees and a
   live `entry_meta` overwrite caused a reconciliation kill and rejected exits. The
   positions were sold at 07:32 by a follow-up run; the 07:34 flatten command found only
-  unsellable dust and sent zero orders. Current cash **4,996,524 TMN**, dust ~3 TMN, no
-  open orders. Do not trade the dust.
+  unsellable dust and sent zero orders. Do not trade the dust.
+- **Live execution test:** `live_20261023_120849_ogmm` (12:08–12:50 UTC) bought BNBTMN
+  **186k TMN** at 12:09 (1h swing, 100k floor respected). Pre-existing BNB dust then
+  caused a false reconciliation mismatch, a kill, and a flatten that left a
+  sub-step remainder; the engine retried the unsellable remainder until stopped.
+  Round-trip loss ~4.4k TMN. Current cash **4,990,623 TMN**, BNB dust 0.00002346
+  (~4.8k TMN), no positions or open orders. Do not trade the dust. Fixed by the
+  dust-aware reconciler, sub-step remainder drop, and single-live-run lock (§18.16).
 - Earlier: first live attempt (`live_20261022_131200_0w87`) used the main-account key and
   was rejected; the second (`live_20261022_152628_52xl`) ran 24 minutes with **0 decisions**
   because no completed 4h bar produced a candidate.
@@ -127,7 +133,7 @@ Valid commands: `run`, `shadow`, `live`, `preflight`, `download`, `backtest`,
   symbol from `configs/blocked_markets.txt`.
 - Dashboard: LIVE badge has a blinking green dot while running; overview shows last
   scan, candidate count, regime and next signal-timeframe decision.
-- Tests: **49 passed, 1 skipped**; ruff clean; mypy clean (65 files); Docker build OK.
+- Tests: **59 passed, 1 skipped**; ruff clean; mypy clean (67 files); Docker build OK.
 - Results snapshot: `results/`; full artifacts: `artifacts/` (gitignored).
 - Canonical full report: `report.md`; detailed docs in `docs/`.
 
@@ -548,9 +554,17 @@ restart is deliberate. `FLATTEN_ON_STOP=true` flattens on a normal Ctrl-C stop.
 
 ### 9.4 Reconciliation
 
-Live compares open orders and balances/positions. It now requires **3 consecutive
-mismatches** before killing (transient one-check race after a rejected order caused a
-false kill in the first live attempt). Always include full details in the risk event.
+Live compares open orders and balances/positions. It requires **3 consecutive
+mismatches** before killing (a transient one-check race after a rejected order caused a
+false kill in the first live attempt). It tracks **known dust** per base asset — ignored
+at startup and created by sub-step exit remainders — and subtracts it before comparing
+the exchange balance to the local position. A remainder below the market step or the
+exchange minimum notional is removed from the portfolio and recorded as dust instead of
+being retried forever. Always include full details in the risk event.
+
+Only **one live process** may run at a time. `data/runs/live.lock` records the PID and
+run ID; a second live start refuses to run while that PID is alive, and stale locks are
+reclaimed. Never run two live processes against the same account.
 
 ---
 
@@ -771,7 +785,7 @@ make shadow -- --duration 120     # bounded
 docker build -t argus-local .
 ```
 
-- Current: 49 passed, 1 skipped (live integration).
+- Current: 59 passed, 1 skipped (live integration).
 - Add unit tests for any new behavior; keep tests fast and offline by default.
 - `RUN_LIVE_TESTS=1 pytest -m live` exercises public Wallex endpoints only.
 - `self-test` and `agent-test` must never send a network order.
@@ -833,6 +847,16 @@ docker build -t argus-local .
     all-in average entry, preserve `entry_meta` under `exchange_payload`, exit-rejection
     backoff, entries disabled on kill, startup position reconciliation. Run a shadow
     test after any fee/quantity change.
+16. **Dust reconciliation + sub-step remainder (2026-10-23 12:08)**: pre-existing BNB
+    dust (0.00001619) was ignored at startup, but the reconciler compared the full
+    exchange balance against the new BNBTMN position, killed after 3 checks, and the
+    flatten left 0.00000727 — below the 0.00001 step. Retries floored to zero and
+    spammed forever. Fixes: `Engine.dust` ledger, dust-aware `Reconciler.check`,
+    `_drop_dust_remainder` after exits/at flatten, and a `data/runs/live.lock`
+    single-live-run lock. Two live processes had also overlapped for ~1 minute; never
+    start a second live process before the first logs `engine stopped`. `replay` now
+    recovers base-asset fees from the persisted order payload, so the killed run
+    replays PASS. Keep the reconciler, replay and lock unit tests green.
 
 ---
 
