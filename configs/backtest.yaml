@@ -1,0 +1,10 @@
+mode: backtest
+agent_enabled: false
+agent_reflection_enabled: false
+backtest_agent_mode: deterministic
+# Backtests always include real TMN market fees. Slippage is charged on top.
+maker_fee: 0.0025
+taker_fee: 0.0030
+backtest_slippage_bps: 8
+backtest_maker_fee: 0.0025
+backtest_taker_fee: 0.0030

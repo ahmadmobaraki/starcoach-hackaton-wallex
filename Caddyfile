@@ -1,0 +1,14 @@
+# Optional reverse proxy profile. The dashboard already enforces basic auth;
+# Caddy is used for TLS and a stable public URL. Enable with `make proxy`.
+:80 {
+	encode zstd gzip
+	reverse_proxy dashboard:8080
+}
+
+# For HTTPS, replace the block above with your domain and Caddy will obtain a
+# certificate automatically:
+#
+# argus.example.com {
+#     encode zstd gzip
+#     reverse_proxy dashboard:8080
+# }

@@ -1,0 +1,153 @@
+{
+  "ts": "2026-10-22T16:03:02.931531+00:00",
+  "mode": "live",
+  "git_sha": "no-git",
+  "config_hash": "84307f8f0007d94e",
+  "checks": [
+    {
+      "name": "wallex_markets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "markets": 469
+      }
+    },
+    {
+      "name": "wallex_depth",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bid": "22216053901",
+        "ask": "22221260753",
+        "spread_bps": 2.34,
+        "top5_depth_tmn": 516393426.81
+      }
+    },
+    {
+      "name": "wallex_trades",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "recent_trades": 50
+      }
+    },
+    {
+      "name": "wallex_candles_1m",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "candles_1m": 1441
+      }
+    },
+    {
+      "name": "wallex_private_balances",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tmn_balance": "5000000",
+        "assets_with_balance": [
+          "TMN"
+        ]
+      }
+    },
+    {
+      "name": "live_balance_sufficient",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tmn_balance": "5000000",
+        "min_notional_tmn": 50000.0
+      }
+    },
+    {
+      "name": "api_key_matches_sub_account",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "main_account_tmn": "5000000",
+        "sub_account_tmn": "5000000",
+        "hint": "If these differ, the API key is the main-account key. Create an API key inside the prop sub-account, use it as WALLEX_API_KEY, and clear WALLEX_SUB_ACCOUNT_CLIENT_ID."
+      }
+    },
+    {
+      "name": "wallex_fees",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "BTCTMN": {
+          "maker": 0.0025,
+          "taker": 0.003
+        },
+        "configured_fallback": {
+          "maker": 0.0025,
+          "taker": 0.003
+        }
+      }
+    },
+    {
+      "name": "wallex_open_orders",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "clock_skew",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "skew_sec": -1.173396
+      }
+    },
+    {
+      "name": "wallex_websocket",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "connected": true,
+        "messages": 8,
+        "elapsed_ms": 4002.9,
+        "reconnects": 0,
+        "error": null
+      }
+    },
+    {
+      "name": "deepseek",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "model": "deepseek-flash",
+        "latency_ms": 1481.8,
+        "tokens_in": 71,
+        "tokens_out": 45,
+        "content": "{\"ok\":true,\"role\":\"argus-preflight\"}"
+      }
+    },
+    {
+      "name": "wallex_mcp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "server": {
+          "name": "api.wallex.ir",
+          "version": "1.0.0"
+        },
+        "tools": 52,
+        "agent_tools": [
+          "wallex_basic_candle_history",
+          "wallex_basic_get_account_balances",
+          "wallex_basic_get_latest_trades",
+          "wallex_basic_get_market_depth",
+          "wallex_spot_get_open_order",
+          "wallex_spot_get_orders",
+          "wallex_spot_get_orders_client"
+        ]
+      }
+    }
+  ],
+  "ok": true,
+  "artifact": "/var/www/projects/hackatons/wallex/artifacts/preflight/20261022_160314.json"
+}

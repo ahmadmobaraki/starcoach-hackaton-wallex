@@ -1,0 +1,9 @@
+mode: live
+agent_enabled: true
+agent_reflection_enabled: true
+# Live risk starts at the conservative canary size. Scale only after the canary
+# reconciles perfectly. Hard limits below are never changed by the AI agent.
+max_order_notional_tmn: 250000
+max_position_pct: 0.10
+risk_per_trade: 0.005
+initial_capital_tmn: 5000000

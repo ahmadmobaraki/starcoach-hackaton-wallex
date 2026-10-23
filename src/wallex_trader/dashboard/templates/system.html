@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}System{% endblock %}
+{% block content %}
+<h1>System and risk</h1>
+{% if run %}
+<div class="grid">
+  <div class="card"><div class="label">Run</div><div class="value small">{{ run.get('run_id') }}</div><div class="sub">{{ run.get('status') }}</div></div>
+  <div class="card"><div class="label">Mode</div><div class="value"><span class="badge {{ mode_color(run.get('mode')) }}">{{ run.get('mode')|upper }}</span></div></div>
+  <div class="card"><div class="label">Git SHA</div><div class="value small">{{ run.get('git_sha') }}</div></div>
+  <div class="card"><div class="label">Config hash</div><div class="value small">{{ run.get('config_hash') }}</div></div>
+  <div class="card"><div class="label">Heartbeat</div><div class="value">{{ (heartbeat.get('ts') if heartbeat else None)|age }}</div><div class="sub">{{ heartbeat.get('component') if heartbeat else 'none' }}</div></div>
+  <div class="card"><div class="label">Kill switch</div><div class="value"><span class="badge {{ 'bad' if settings.kill_file.exists() else 'ok' }}">{{ 'ACTIVE' if settings.kill_file.exists() else 'clear' }}</span></div><div class="sub">{{ settings.kill_file }}</div></div>
+</div>
+{% if heartbeat and heartbeat.get('details') %}
+<h2>Latest health snapshot</h2>
+<pre>{{ (heartbeat.get('details') or {})|json }}</pre>
+{% endif %}
+{% else %}<div class="notice">No run yet.</div>{% endif %}
+
+<h2>Holdings: monitor and cut exposure</h2>
+<div class="grid">
+  <div class="card"><div class="label">Per-trade risk</div><div class="value">{{ settings.risk_per_trade|pct }}</div></div>
+  <div class="card"><div class="label">Daily loss limit</div><div class="value">{{ settings.daily_loss_limit|pct }}</div></div>
+  <div class="card"><div class="label">Peak drawdown halt</div><div class="value">{{ settings.max_drawdown|pct }}</div></div>
+  <div class="card"><div class="label">Max gross exposure</div><div class="value">{{ settings.max_gross_exposure|pct }}</div></div>
+  <div class="card"><div class="label">Max position</div><div class="value">{{ settings.max_position_pct|pct }}</div></div>
+  <div class="card"><div class="label">Max portfolio heat</div><div class="value">{{ settings.max_portfolio_heat|pct }}</div></div>
+</div>
+
+<h2>Risk events</h2>
+{% if risk_events %}
+<table>
+  <thead><tr><th>Time</th><th>Severity</th><th>Code</th><th>Message</th><th></th></tr></thead>
+  <tbody>
+  {% for e in risk_events %}
+    <tr><td class="muted">{{ e.get('ts')|ts }}</td><td>{{ e.get('severity') }}</td><td>{{ e.get('code') }}</td><td>{{ e.get('message') }}</td>
+      <td><details><summary>evidence</summary><pre>{{ (e.get('evidence') or {})|json }}</pre></details></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No risk events.</div>{% endif %}
+
+<h2>System events</h2>
+<table>
+  <thead><tr><th>Time</th><th>Level</th><th>Component</th><th>Message</th><th></th></tr></thead>
+  <tbody>
+  {% for e in system_events %}
+    <tr><td class="muted">{{ e.get('ts')|ts }}</td><td>{{ e.get('level') }}</td><td>{{ e.get('component') }}</td><td>{{ e.get('message') }}</td>
+      <td><details><summary>context</summary><pre>{{ (e.get('context') or {})|json }}</pre></details></td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<h2>Redacted configuration</h2>
+<pre>{{ config|json }}</pre>
+{% endblock %}

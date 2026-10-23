@@ -1,0 +1,6 @@
+mode: shadow
+agent_enabled: true
+agent_reflection_enabled: true
+live_confirm: ""
+# Shadow uses a clean simulated portfolio; live account balances are read-only context.
+initial_capital_tmn: 5000000

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ARGUS{% endblock %} · Wallex</title>
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <div class="brand">ARGUS <span>auditable AI trading agent · Wallex</span></div>
+    <div class="muted small">
+      {% if run %}
+        run {{ run.get('run_id') }} · {{ run.get('status') }} · git {{ run.get('git_sha') }} · started {{ run.get('started_at')|ts }}
+      {% else %}
+        waiting for a trader run
+      {% endif %}
+    </div>
+  </div>
+  {% set live_running = run and run.get('mode') == 'live' and run.get('status') == 'running' and not run.get('ended_at') %}
+  <div>
+    <span id="modeBadge" class="badge {{ mode_color(run.get('mode') if run else settings.mode.value) }}">
+      {% if live_running %}<span class="live-dot" aria-label="running"></span>{% endif %}
+      <span id="modeText">{{ (run.get('mode') if run else settings.mode.value)|upper }}</span>
+    </span>
+    {% if (run.get('mode') if run else settings.mode.value) == 'shadow' %}
+      <span class="badge muted">SHADOW — NO REAL ORDERS</span>
+    {% endif %}
+  </div>
+</header>
+<nav>
+  <a href="/test-results" class="{{ 'active' if request.url.path == '/test-results' else '' }}">Overview</a>
+  <a href="/test-results/decisions" class="{{ 'active' if request.url.path == '/test-results/decisions' else '' }}">Decisions</a>
+  <a href="/test-results/positions" class="{{ 'active' if request.url.path == '/test-results/positions' else '' }}">Positions</a>
+  <a href="/test-results/memory" class="{{ 'active' if request.url.path == '/test-results/memory' else '' }}">Agent memory</a>
+  <a href="/test-results/backtests" class="{{ 'active' if request.url.path.startswith('/test-results/backtests') else '' }}">Backtests</a>
+  <a href="/test-results/shadow" class="{{ 'active' if request.url.path == '/test-results/shadow' else '' }}">Shadow</a>
+  <a href="/test-results/system" class="{{ 'active' if request.url.path == '/test-results/system' else '' }}">System</a>
+  <a href="/test-results/audit" class="{{ 'active' if request.url.path == '/test-results/audit' else '' }}">Audit</a>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+<script>
+(function () {
+  const badge = document.getElementById('modeBadge');
+  const text = document.getElementById('modeText');
+  if (!badge || !text) return;
+  async function refreshLiveBadge() {
+    try {
+      const response = await fetch('/api/overview', { cache: 'no-store' });
+      if (!response.ok) return;
+      const data = await response.json();
+      const run = data.run || {};
+      const liveNow = run.mode === 'live' && run.status === 'running';
+      let dot = badge.querySelector('.live-dot');
+      if (liveNow) {
+        if (!dot) {
+          dot = document.createElement('span');
+          dot.className = 'live-dot';
+          dot.setAttribute('aria-label', 'running');
+          badge.prepend(dot);
+        }
+        badge.classList.remove('shadow', 'backtest', 'muted');
+        badge.classList.add('live');
+        text.textContent = 'LIVE';
+      } else {
+        if (dot) dot.remove();
+        if (run.mode) text.textContent = String(run.mode).toUpperCase();
+      }
+    } catch (error) { /* dashboard stays usable offline */ }
+  }
+  setInterval(refreshLiveBadge, 8000);
+})();
+</script>
+{% block scripts %}{% endblock %}
+<div class="footer">
+  Read-only operational dashboard. The AI agent decides entries; the deterministic risk kernel can veto or force exits.
+  No manual order entry controls exist.
+</div>
+</body>
+</html>

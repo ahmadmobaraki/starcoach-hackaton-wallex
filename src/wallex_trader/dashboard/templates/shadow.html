@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Shadow{% endblock %}
+{% block content %}
+<h1>Shadow testing</h1>
+<div class="notice">Shadow mode uses live Wallex market data and the same AI, risk and OMS code path, but the ShadowBroker never sends an order. It pays pessimistic fees and slippage and fills passive orders only when the market trades through the limit.</div>
+{% if runs %}
+<table>
+  <thead><tr><th>Run</th><th>Created</th><th>Equity</th><th>Net return</th><th>Drawdown</th><th>Decisions</th><th>Notes</th><th>Artifacts</th></tr></thead>
+  <tbody>
+  {% for r in runs %}
+    {% set m = r.get('metrics') or {} %}
+    {% set s = m.get('snapshot') or {} %}
+    <tr>
+      <td>{{ r.get('run_id') }}</td>
+      <td class="muted">{{ r.get('ts')|ts }}</td>
+      <td>{{ s.get('equity_tmn')|tmn }}</td>
+      <td class="{{ 'pos' if (s.get('net_return_pct') or 0) >= 0 else 'neg' }}">{{ s.get('net_return_pct')|pct }}</td>
+      <td>{{ s.get('drawdown_pct')|pct }}</td>
+      <td>{{ m.get('decisions') }}</td>
+      <td>{{ (m.get('reflection') or {}).get('notes_written') }}</td>
+      <td class="small">{{ r.get('artifact_path') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No shadow runs yet.</div>{% endif %}
+{% endblock %}

@@ -1,0 +1,135 @@
+{
+  "ts": "2026-10-22T12:05:53.358390+00:00",
+  "mode": "shadow",
+  "git_sha": "no-git",
+  "config_hash": "527a3f63ad8abd93",
+  "checks": [
+    {
+      "name": "wallex_markets",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "markets": 469
+      }
+    },
+    {
+      "name": "wallex_depth",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "bid": "22087505069",
+        "ask": "22126695872",
+        "spread_bps": 17.73,
+        "top5_depth_tmn": 407663508.51
+      }
+    },
+    {
+      "name": "wallex_trades",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "recent_trades": 50
+      }
+    },
+    {
+      "name": "wallex_candles_1m",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "candles_1m": 1441
+      }
+    },
+    {
+      "name": "wallex_private_balances",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "tmn_balance": "0",
+        "assets_with_balance": [
+          "BTC",
+          "USDT"
+        ]
+      }
+    },
+    {
+      "name": "wallex_fees",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "BTCTMN": {
+          "maker": 0.0025,
+          "taker": 0.003
+        },
+        "configured_fallback": {
+          "maker": 0.0025,
+          "taker": 0.003
+        }
+      }
+    },
+    {
+      "name": "wallex_open_orders",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "count": 0
+      }
+    },
+    {
+      "name": "clock_skew",
+      "ok": true,
+      "required": false,
+      "detail": {
+        "skew_sec": -0.768211
+      }
+    },
+    {
+      "name": "wallex_websocket",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "connected": true,
+        "messages": 5,
+        "elapsed_ms": 1701.4,
+        "reconnects": 0,
+        "error": null
+      }
+    },
+    {
+      "name": "deepseek",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "ok": true,
+        "model": "deepseek-flash",
+        "latency_ms": 1443.8,
+        "tokens_in": 71,
+        "tokens_out": 22,
+        "content": "{\"ok\":true,\"role\":\"arg\n\"preflight\"}"
+      }
+    },
+    {
+      "name": "wallex_mcp",
+      "ok": true,
+      "required": true,
+      "detail": {
+        "server": {
+          "name": "api.wallex.ir",
+          "version": "1.0.0"
+        },
+        "tools": 52,
+        "agent_tools": [
+          "wallex_basic_candle_history",
+          "wallex_basic_get_account_balances",
+          "wallex_basic_get_latest_trades",
+          "wallex_basic_get_market_depth",
+          "wallex_spot_get_open_order",
+          "wallex_spot_get_orders",
+          "wallex_spot_get_orders_client"
+        ]
+      }
+    }
+  ],
+  "ok": true,
+  "artifact": "/var/www/projects/hackatons/wallex/artifacts/preflight/20261022_120600.json"
+}

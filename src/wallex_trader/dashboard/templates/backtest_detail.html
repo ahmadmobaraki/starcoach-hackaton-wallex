@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Backtest {{ backtest.get('run_id') }}{% endblock %}
+{% block content %}
+{% set m = backtest.get('metrics') or {} %}
+<h1>Backtest {{ backtest.get('run_id') }}</h1>
+<div class="muted small">{{ m.get('period') }} · git {{ backtest.get('git_sha') }} · artifact {{ backtest.get('artifact_path') }}</div>
+<div class="toolbar"><a class="badge muted" href="/api/backtests/{{ backtest.get('run_id') }}/report" target="_blank">Open full report</a></div>
+<div class="grid">
+  <div class="card"><div class="label">Net return</div><div class="value {{ 'pos' if (m.get('net_return_pct') or 0) >= 0 else 'neg' }}">{{ '%.2f'|format(m.get('net_return_pct') or 0) }}%</div></div>
+  <div class="card"><div class="label">Max drawdown</div><div class="value">{{ '%.2f'|format(m.get('max_drawdown_pct') or 0) }}%</div></div>
+  <div class="card"><div class="label">Realized PnL</div><div class="value">{{ (m.get('realized_pnl_tmn') or 0)|tmn }} TMN</div></div>
+  <div class="card"><div class="label">Fees</div><div class="value">{{ (m.get('fees_tmn') or 0)|tmn }} TMN</div></div>
+  <div class="card"><div class="label">Trades</div><div class="value">{{ m.get('trades') }}</div></div>
+  <div class="card"><div class="label">Win rate</div><div class="value">{{ '%.1f'|format((m.get('win_rate') or 0) * 100) }}%</div></div>
+  <div class="card"><div class="label">Profit factor</div><div class="value">{{ m.get('profit_factor') }}</div></div>
+  <div class="card"><div class="label">Sharpe / Sortino</div><div class="value">{{ m.get('sharpe') }} / {{ m.get('sortino') }}</div></div>
+  <div class="card"><div class="label">Turnover</div><div class="value">{{ m.get('turnover_x') }}x</div></div>
+  <div class="card"><div class="label">Avg holding</div><div class="value">{{ m.get('avg_holding_min') }}m</div></div>
+  <div class="card"><div class="label">PnL without best trade</div><div class="value {{ 'pos' if (m.get('pnl_without_best_trade_tmn') or 0) >= 0 else 'neg' }}">{{ (m.get('pnl_without_best_trade_tmn') or 0)|tmn }}</div></div>
+  <div class="card"><div class="label">Fill rate</div><div class="value">{{ '%.1f'|format((m.get('fill_rate') or 0) * 100) }}%</div></div>
+</div>
+<h2>Per symbol</h2>
+<table>
+  <thead><tr><th>Symbol</th><th>Trades</th><th>PnL TMN</th><th>Win rate</th></tr></thead>
+  <tbody>
+  {% for symbol, row in (m.get('per_symbol') or {}).items() %}
+    <tr><td>{{ symbol }}</td><td>{{ row.get('trades') }}</td><td class="{{ 'pos' if (row.get('pnl') or 0) >= 0 else 'neg' }}">{{ (row.get('pnl') or 0)|tmn }}</td><td>{{ '%.1f'|format((row.get('win_rate') or 0) * 100) }}%</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<h2>Artifacts</h2>
+<div class="kv">
+  <div>Report</div><div><a href="/api/backtests/{{ backtest.get('run_id') }}/report" target="_blank">{{ backtest.get('artifact_path') }}/report.html</a></div>
+  <div>Metrics</div><div>{{ backtest.get('artifact_path') }}/metrics.json</div>
+  <div>Equity</div><div>{{ backtest.get('artifact_path') }}/equity.csv</div>
+  <div>Trades</div><div>{{ backtest.get('artifact_path') }}/trades.csv</div>
+  <div>Decisions</div><div>{{ backtest.get('artifact_path') }}/decisions.jsonl</div>
+</div>
+<h2>Metrics JSON</h2>
+<pre>{{ m|json }}</pre>
+<h2>Data manifest</h2>
+<pre>{{ (backtest.get('data_manifest') or {})|json }}</pre>
+{% endblock %}

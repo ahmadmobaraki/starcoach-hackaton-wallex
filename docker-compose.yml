@@ -1,0 +1,135 @@
+name: argus
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-argus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-argus}
+      POSTGRES_DB: ${POSTGRES_DB:-argus}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-argus} -d ${POSTGRES_DB:-argus}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging: *default-logging
+
+  trader:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-argus}:${POSTGRES_PASSWORD:-argus}@db:5432/${POSTGRES_DB:-argus}
+    command: ["python", "-m", "wallex_trader", "run"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-m", "wallex_trader", "health", "--max-age", "120"]
+      interval: 30s
+      timeout: 15s
+      retries: 4
+      start_period: 90s
+    logging: *default-logging
+
+  dashboard:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-argus}:${POSTGRES_PASSWORD:-argus}@db:5432/${POSTGRES_DB:-argus}
+      DASHBOARD_HOST: 0.0.0.0
+    command: ["python", "-m", "wallex_trader", "dashboard", "--host", "0.0.0.0", "--port", "8080"]
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-8080}:8080"
+    volumes:
+      - ./artifacts:/app/artifacts:ro
+      - ./data:/app/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=5)",
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["proxy"]
+    restart: unless-stopped
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - dashboard
+    logging: *default-logging
+
+  backtest:
+    build: .
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DSN: postgresql+asyncpg://${POSTGRES_USER:-argus}:${POSTGRES_PASSWORD:-argus}@db:5432/${POSTGRES_DB:-argus}
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "wallex_trader", "backtest"]
+    logging: *default-logging
+
+  downloader:
+    build: .
+    profiles: ["tools"]
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    command:
+      [
+        "python",
+        "-m",
+        "wallex_trader",
+        "download",
+        "--start",
+        "2026-05-01",
+        "--end",
+        "2026-10-21",
+      ]
+    logging: *default-logging
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

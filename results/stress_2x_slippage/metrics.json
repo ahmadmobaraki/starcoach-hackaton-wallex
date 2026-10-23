@@ -1,0 +1,93 @@
+{
+  "initial_capital_tmn": 5000000.0,
+  "final_equity_tmn": 5761308.13,
+  "net_return_pct": 15.2262,
+  "realized_pnl_tmn": 761308.13,
+  "fees_tmn": 88204.47,
+  "max_drawdown_pct": 5.3353,
+  "sharpe": 3.534,
+  "sortino": 3.708,
+  "calmar": 2.854,
+  "trades": 37,
+  "wins": 23,
+  "losses": 14,
+  "win_rate": 0.6216,
+  "profit_factor": 3.152,
+  "expectancy_tmn": 20575.9,
+  "avg_win_tmn": 48483.18,
+  "avg_loss_tmn": -25271.79,
+  "best_trade_tmn": 104004.1,
+  "worst_trade_tmn": -47797.92,
+  "pnl_without_best_trade_tmn": 657304.03,
+  "turnover_x": 5.88,
+  "avg_holding_min": 17850.35,
+  "avg_exposure_pct": 29.9,
+  "decisions": 956,
+  "buy_decisions": 37,
+  "fills": 37,
+  "fill_rate": 1.0,
+  "per_symbol": {
+    "ETHTMN": {
+      "trades": 5,
+      "pnl": 382818.05,
+      "wins": 5,
+      "win_rate": 1.0
+    },
+    "SOLTMN": {
+      "trades": 5,
+      "pnl": 152697.06,
+      "wins": 3,
+      "win_rate": 0.6
+    },
+    "XRPTMN": {
+      "trades": 4,
+      "pnl": 54347.27,
+      "wins": 3,
+      "win_rate": 0.75
+    },
+    "USDTTMN": {
+      "trades": 4,
+      "pnl": 24937.89,
+      "wins": 2,
+      "win_rate": 0.5
+    },
+    "XAUTTMN": {
+      "trades": 4,
+      "pnl": 100005.46,
+      "wins": 3,
+      "win_rate": 0.75
+    },
+    "PEPETMN": {
+      "trades": 7,
+      "pnl": -86038.74,
+      "wins": 2,
+      "win_rate": 0.2857
+    },
+    "BTCTMN": {
+      "trades": 4,
+      "pnl": 72342.86,
+      "wins": 2,
+      "win_rate": 0.5
+    },
+    "DOGETMN": {
+      "trades": 4,
+      "pnl": 60198.28,
+      "wins": 3,
+      "win_rate": 0.75
+    }
+  },
+  "initial_capital_reference": 5000000.0,
+  "final_equity_reference": 5761308.1283379765,
+  "symbols": [
+    "BTCTMN",
+    "ETHTMN",
+    "SOLTMN",
+    "USDTTMN",
+    "XRPTMN",
+    "DOGETMN",
+    "PEPETMN",
+    "XAUTTMN"
+  ],
+  "period": "2026-07-01 \u2192 2026-10-21 (8 symbols, 1m)",
+  "agent_mode": "deterministic"
+}

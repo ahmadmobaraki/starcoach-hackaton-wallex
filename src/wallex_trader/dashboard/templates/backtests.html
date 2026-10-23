@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Backtests{% endblock %}
+{% block content %}
+<h1>Backtests</h1>
+<div class="muted small">Event-driven 1-minute simulation on Wallex UDF history, with measured maker/taker fees, slippage and next-bar execution. The HTML report is stored in the artifact directory.</div>
+{% if backtests %}
+<table>
+  <thead><tr><th>Run</th><th>Created</th><th>Period</th><th>Net return</th><th>Max DD</th><th>Sharpe</th><th>Trades</th><th>Win rate</th><th>PF</th><th>Git</th><th></th></tr></thead>
+  <tbody>
+  {% for b in backtests %}
+    {% set m = b.get('metrics') or {} %}
+    <tr>
+      <td><a href="/test-results/backtests/{{ b.get('run_id') }}">{{ b.get('run_id') }}</a></td>
+      <td class="muted">{{ b.get('ts')|ts }}</td>
+      <td class="small">{{ m.get('period') or '—' }}</td>
+      <td class="{{ 'pos' if (m.get('net_return_pct') or 0) >= 0 else 'neg' }}">{{ '%.2f'|format(m.get('net_return_pct') or 0) }}%</td>
+      <td>{{ '%.2f'|format(m.get('max_drawdown_pct') or 0) }}%</td>
+      <td>{{ m.get('sharpe') }}</td>
+      <td>{{ m.get('trades') }}</td>
+      <td>{{ '%.1f'|format((m.get('win_rate') or 0) * 100) }}%</td>
+      <td>{{ m.get('profit_factor') }}</td>
+      <td class="small">{{ b.get('git_sha') }}</td>
+      <td><a href="/api/backtests/{{ b.get('run_id') }}/report" target="_blank">report</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No backtests yet. Run <code>make backtest</code>.</div>{% endif %}
+{% endblock %}

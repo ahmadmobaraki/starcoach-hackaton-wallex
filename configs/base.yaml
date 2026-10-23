@@ -1,0 +1,133 @@
+# ARGUS base configuration. Environment variables override every value.
+# Money is in TMN. Bps values are basis points (1 bps = 0.01%).
+
+mode: shadow
+timezone: Asia/Tehran
+heartbeat_sec: 15
+
+# Universe
+universe_allowlist:
+  - BTCTMN
+  - ETHTMN
+  - SOLTMN
+  - XRPTMN
+  - DOGETMN
+  - PEPETMN
+  - USDTTMN
+  - XAUTTMN
+universe_max_symbols: 8
+universe_min_quote_volume_24h: 5000000000
+universe_min_listing_age_days: 14
+universe_refresh_sec: 3600
+max_spread_bps: 35
+max_spread_to_trade_bps: 50
+max_depth_age_ms: 5000
+max_tick_age_ms: 10000
+
+# Strategy
+strategy_mode: swing
+intraday_risk_multiplier: 0.25
+candidate_threshold: 0.65
+alpha_threshold_bps: 100
+z_entry: 2.2
+min_expected_move_bps: 80
+cost_buffer_bps: 12
+max_candidates_per_cycle: 3
+decision_interval_sec: 5
+position_interval_sec: 1
+regime_memo_interval_sec: 1800
+max_volatility_percentile: 99
+
+# Risk
+initial_capital_tmn: 5000000
+risk_per_trade: 0.0075
+risk_aversion: 0.25
+max_position_pct: 0.20
+max_gross_exposure: 0.60
+max_portfolio_heat: 0.03
+de_risk_drawdown_pct: 0.03
+hard_de_risk_drawdown_pct: 0.045
+max_open_positions: 4
+max_correlated_exposure: 0.35
+min_cash_buffer: 0.25
+daily_loss_limit: 0.025
+max_drawdown: 0.06
+max_consecutive_losses: 2
+losing_streak_cooldown_sec: 900
+stop_loss_bps: 100
+take_profit_bps: 180
+time_stop_sec: 1200
+trail_trigger_bps: 120
+trail_distance_bps: 70
+min_stop_bps: 40
+max_stop_bps: 1200
+min_take_profit_bps: 60
+max_take_profit_bps: 3000
+min_confidence: 0.55
+max_slippage_bps: 25
+max_depth_fraction: 0.10
+min_notional_tmn: 50000
+max_order_notional_tmn: 750000
+
+# Execution
+# Measured on the challenge account: 0.25% maker / 0.30% taker for TMN markets.
+maker_fee: 0.0025
+taker_fee: 0.0030
+order_rate_limit_per_10s: 15
+max_open_orders: 12
+order_timeout_sec: 20
+max_reprices: 3
+min_order_lifetime_sec: 2
+flatten_on_kill: true
+flatten_on_stop: false
+flatten_at_end: true
+ws_flatten_after_sec: 60
+ws_down_kill_sec: 30
+clock_skew_kill_sec: 5.0
+no_new_entries_before_end_sec: 7200
+flatten_before_end_sec: 1800
+
+# Agent
+agent_enabled: true
+agent_min_confidence: 0.55
+agent_min_size_fraction: 0.7
+agent_max_calls_per_day: 2000
+agent_timeout_sec: 20
+agent_temperature: 0
+agent_max_concurrent: 3
+agent_symbol_cooldown_sec: 30
+agent_max_tokens: 900
+allow_agent_fallback: false
+agent_escalation_enabled: true
+agent_reflection_enabled: true
+agent_reflection_min_interval_sec: 20
+agent_session_review_interval_sec: 7200
+agent_notes_in_prompt: 6
+agent_review_trend_positions: false
+
+# Backtest defaults (overridden by the backtest profile)
+backtest_start: "2026-07-01"
+backtest_end: "2026-10-21"
+backtest_resolution: "1"
+backtest_slippage_bps: 8
+backtest_latency_ms: 250
+backtest_initial_capital_tmn: 5000000
+backtest_maker_fee: 0.0025
+backtest_taker_fee: 0.0030
+backtest_agent_mode: deterministic
+backtest_decision_interval_sec: 300
+
+# Slow trend strategy (primary)
+swing_timeframe_hours: 4
+swing_fast_ema: 48
+swing_slow_ema: 240
+swing_momentum_bars: 6
+swing_stop_bps: 1000
+swing_take_profit_bps: 2500
+swing_horizon_sec: 1728000
+swing_trail_trigger_bps: 800
+swing_trail_distance_bps: 800
+swing_min_score: 0.60
+swing_prefer_marketable: true
+swing_btc_filter: false
+swing_history_days: 60

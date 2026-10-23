@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Positions{% endblock %}
+{% block content %}
+<h1>Positions and orders</h1>
+<h2>Open positions</h2>
+{% if positions %}
+<table>
+  <thead><tr><th>Symbol</th><th>Qty</th><th>Avg entry</th><th>Stop</th><th>Target</th><th>Unrealized</th><th>Opened</th><th>Signal</th><th>Confidence</th><th>Decision</th></tr></thead>
+  <tbody>
+  {% for p in positions %}
+    <tr>
+      <td>{{ p.get('symbol') }}</td><td>{{ p.get('quantity') }}</td><td>{{ p.get('avg_entry') }}</td>
+      <td>{{ p.get('stop_price') }}</td><td>{{ p.get('take_profit_price') }}</td>
+      <td class="{{ 'pos' if (p.get('unrealized_pnl_tmn')|float) >= 0 else 'neg' }}">{{ p.get('unrealized_pnl_tmn')|tmn }}</td>
+      <td class="muted">{{ p.get('opened_at')|ts }}</td><td>{{ p.get('signal') }}</td>
+      <td>{{ '%.2f'|format(p.get('confidence') or 0) }}</td>
+      <td class="small muted">{{ p.get('decision_id') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No open positions.</div>{% endif %}
+
+<h2>Orders</h2>
+{% if orders %}
+<table>
+  <thead><tr><th>Created</th><th>Client ID</th><th>Symbol</th><th>Side</th><th>Type</th><th>Price</th><th>Qty</th><th>Filled</th><th>Avg fill</th><th>Fee TMN</th><th>Status</th><th>Reason</th></tr></thead>
+  <tbody>
+  {% for o in orders %}
+    <tr>
+      <td class="muted">{{ o.get('ts')|ts }}</td><td class="small">{{ o.get('client_order_id') }}</td>
+      <td>{{ o.get('symbol') }}</td><td>{{ o.get('side') }}</td><td>{{ o.get('order_type') }}</td>
+      <td>{{ o.get('price') }}</td><td>{{ o.get('quantity') }}</td><td>{{ o.get('filled_quantity') }}</td>
+      <td>{{ o.get('avg_fill_price') }}</td><td>{{ o.get('fee_tmn') }}</td>
+      <td><span class="badge {{ 'ok' if o.get('status') == 'FILLED' else ('bad' if o.get('status') in ['REJECTED','CANCELED'] else 'muted') }}">{{ o.get('status') }}</span></td>
+      <td class="small muted">{{ o.get('reason') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No orders.</div>{% endif %}
+
+<h2>Fills</h2>
+{% if fills %}
+<table>
+  <thead><tr><th>Time</th><th>Symbol</th><th>Side</th><th>Price</th><th>Qty</th><th>Fee</th><th>Liquidity</th><th>Decision</th></tr></thead>
+  <tbody>
+  {% for f in fills %}
+    <tr><td class="muted">{{ f.get('ts')|ts }}</td><td>{{ f.get('symbol') }}</td><td>{{ f.get('side') }}</td>
+      <td>{{ f.get('price') }}</td><td>{{ f.get('quantity') }}</td><td>{{ f.get('fee') }} {{ f.get('fee_asset') }}</td>
+      <td>{{ f.get('liquidity') }}</td><td class="small muted">{{ f.get('decision_id') }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No fills.</div>{% endif %}
+{% endblock %}

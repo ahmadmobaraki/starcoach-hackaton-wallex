@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+{% set eq = data.get('equity') or {} %}
+{% set counts = data.get('counts') or {} %}
+{% set hb = data.get('heartbeat') or {} %}
+{% set hbd = hb.get('details') or {} %}
+{% set ws = hbd.get('ws') or {} %}
+{% set agent = hbd.get('agent') or {} %}
+{% if not data.get('run') %}
+  <div class="notice">
+    No trading run recorded yet. Start the trader with <code>make shadow</code> or
+    <code>python -m wallex_trader run --duration 300</code>. This dashboard is read-only.
+  </div>
+{% else %}
+<h1>{{ (data.get('run') or {}).get('mode')|upper }} session</h1>
+<div class="muted small">
+  Config hash {{ (data.get('run') or {}).get('config_hash') }} ·
+  heartbeat {{ hb.get('ts')|age }} ·
+  WS {{ 'connected' if ws.get('ws_connected') or ws.get('connected') else 'not connected' }} ·
+  Agent {{ agent.get('type', 'n/a') }}
+</div>
+
+<h2>Portfolio</h2>
+<div class="grid">
+  <div class="card"><div class="label">Equity</div><div class="value">{{ eq.get('equity_tmn')|tmn }} TMN</div><div class="sub">cash {{ eq.get('cash_tmn')|tmn }}</div></div>
+  <div class="card"><div class="label">Net return</div><div class="value {{ 'pos' if (eq.get('net_return_pct')|float) >= 0 else 'neg' }}">{{ eq.get('net_return_pct')|pct }}</div><div class="sub">realized {{ eq.get('realized_pnl_tmn')|tmn }}</div></div>
+  <div class="card"><div class="label">Unrealized</div><div class="value">{{ eq.get('unrealized_pnl_tmn')|tmn }} TMN</div><div class="sub">mark-to-market</div></div>
+  <div class="card"><div class="label">Fees paid</div><div class="value">{{ eq.get('fees_tmn')|tmn }} TMN</div><div class="sub">measured maker/taker</div></div>
+  <div class="card"><div class="label">Current drawdown</div><div class="value {{ 'warn' if (eq.get('drawdown_pct')|float) > 0.02 else '' }}">{{ eq.get('drawdown_pct')|pct }}</div><div class="sub">peak {{ eq.get('peak_equity_tmn')|tmn }}</div></div>
+  <div class="card"><div class="label">Daily PnL</div><div class="value {{ 'pos' if (eq.get('daily_pnl_pct')|float) >= 0 else 'neg' }}">{{ eq.get('daily_pnl_pct')|pct }}</div><div class="sub">daily loss limit {{ settings.daily_loss_limit|pct }}</div></div>
+  <div class="card"><div class="label">Gross exposure</div><div class="value">{{ eq.get('gross_exposure_pct')|pct }}</div><div class="sub">max {{ settings.max_gross_exposure|pct }}</div></div>
+  <div class="card"><div class="label">Open positions</div><div class="value">{{ counts.get('open_positions', 0) }}</div><div class="sub">max {{ settings.max_open_positions }}</div></div>
+  <div class="card"><div class="label">Decisions</div><div class="value">{{ counts.get('decisions', 0) }}</div><div class="sub">AI + risk audit</div></div>
+  <div class="card"><div class="label">Fills</div><div class="value">{{ counts.get('fills', 0) }}</div><div class="sub">simulated orders</div></div>
+  <div class="card"><div class="label">LLM calls</div><div class="value">{{ counts.get('llm_calls', 0) }}</div><div class="sub">errors {{ counts.get('llm_errors', 0) }}</div></div>
+  <div class="card"><div class="label">Agent notes</div><div class="value">{{ counts.get('notes', 0) }}</div><div class="sub">lessons written</div></div>
+</div>
+
+{% set scan = (hb.get('details') or {}).get('scan') or {} %}
+<div class="notice">
+  <strong>Strategy scan:</strong>
+  last scan {{ scan.get('at')|age }} ·
+  candidates {{ scan.get('candidates', 0) }} ·
+  regime {{ scan.get('regime') or '—' }} ·
+  next decision {{ scan.get('next_swing_close')|ts }}
+  {% if scan.get('selected') %} · {{ scan.get('selected')|join(', ') }}{% endif %}
+  <div class="small muted" style="margin-top:4px">
+    Slow trend decisions are evaluated when a strategy-timeframe candle closes. No candidate means no trade,
+    even if the process is healthy. Use STRATEGY_MODE=both for the optional intraday sleeve.
+  </div>
+</div>
+
+<h2>Equity curve</h2>
+<div class="chart"><canvas id="equityChart"></canvas></div>
+<h2>Drawdown</h2>
+<div class="chart small"><canvas id="ddChart"></canvas></div>
+
+<h2>Open positions</h2>
+{% if data.get('positions') %}
+<table>
+  <thead><tr><th>Symbol</th><th>Qty</th><th>Avg entry</th><th>Stop</th><th>Target</th><th>Unrealized</th><th>Opened</th><th>Signal</th></tr></thead>
+  <tbody>
+  {% for p in data.get('positions') %}
+    <tr>
+      <td>{{ p.get('symbol') }}</td>
+      <td>{{ p.get('quantity') }}</td>
+      <td>{{ p.get('avg_entry') }}</td>
+      <td>{{ p.get('stop_price') }}</td>
+      <td>{{ p.get('take_profit_price') }}</td>
+      <td class="{{ 'pos' if (p.get('unrealized_pnl_tmn')|float) >= 0 else 'neg' }}">{{ p.get('unrealized_pnl_tmn')|tmn }}</td>
+      <td class="muted">{{ p.get('opened_at')|ts }}</td>
+      <td>{{ p.get('signal') }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No open positions.</div>{% endif %}
+
+<h2>Decision feed</h2>
+{% if data.get('decisions') %}
+<table>
+  <thead><tr><th>Time</th><th>Symbol</th><th>Action</th><th>Conf.</th><th>Signal</th><th>Rationale</th><th>Risk</th><th>Execution</th><th></th></tr></thead>
+  <tbody>
+  {% for d in data.get('decisions') %}
+    <tr>
+      <td class="nowrap muted">{{ d.get('ts')|ts }}</td>
+      <td>{{ d.get('symbol') }}</td>
+      <td><span class="badge {{ 'ok' if d.get('action') == 'BUY' else ('bad' if d.get('action') == 'SELL' else 'muted') }}">{{ d.get('action') }}</span></td>
+      <td>{{ '%.2f'|format(d.get('confidence') or 0) }}</td>
+      <td>{{ d.get('signal') or '—' }}</td>
+      <td>{{ (d.get('rationale') or '')[:180] }}</td>
+      <td>{{ 'approved' if (d.get('risk') or {}).get('approved') else 'veto' }}</td>
+      <td>{{ (d.get('execution') or {}).get('status', '—') }}</td>
+      <td><details><summary>JSON</summary><pre>{{ d|json }}</pre></details></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="small muted" style="margin-top:6px"><a href="/api/export/decisions.jsonl">Export decisions JSONL</a> · <a href="/test-results/decisions">Full feed</a></div>
+{% else %}<div class="muted">No decisions yet.</div>{% endif %}
+
+<h2>Agent memory — recent lessons</h2>
+{% if data.get('notes') %}
+  {% for n in data.get('notes') %}
+    <div class="note">
+      <div class="head">
+        <span>{{ n.get('ts')|ts }} · {{ n.get('kind') }} {% if n.get('symbol') %}· {{ n.get('symbol') }}{% endif %}</span>
+        <span class="badge {{ 'ok' if n.get('outcome') == 'win' else ('bad' if n.get('outcome') == 'loss' else 'muted') }}">{{ n.get('outcome') }}</span>
+      </div>
+      <div class="body">{{ n.get('note') }}</div>
+      {% if n.get('lesson') %}<div class="lesson">Lesson: {{ n.get('lesson') }}</div>{% endif %}
+      <div class="bar"><span style="width: {{ (n.get('importance') or 0) * 100 }}%"></span></div>
+      <div class="small muted" style="margin-top:4px">
+        importance {{ '%.2f'|format(n.get('importance') or 0) }} · PnL {{ n.get('pnl_tmn')|tmn }}
+        {% for tag in n.get('tags') or [] %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  <div class="small muted"><a href="/test-results/memory">Open full agent journal</a></div>
+{% else %}<div class="muted">No lessons yet. Reflections are written after closed trades and session reviews.</div>{% endif %}
+
+<h2>Risk events</h2>
+{% if data.get('risk_events') %}
+<table>
+  <thead><tr><th>Time</th><th>Severity</th><th>Code</th><th>Message</th></tr></thead>
+  <tbody>
+  {% for e in data.get('risk_events') %}
+    <tr><td class="muted">{{ e.get('ts')|ts }}</td><td>{{ e.get('severity') }}</td><td>{{ e.get('code') }}</td><td>{{ e.get('message') }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No risk events.</div>{% endif %}
+
+<h2>System events</h2>
+<table>
+  <thead><tr><th>Time</th><th>Level</th><th>Component</th><th>Message</th><th></th></tr></thead>
+  <tbody>
+  {% for e in data.get('system_events') %}
+    <tr>
+      <td class="muted">{{ e.get('ts')|ts }}</td>
+      <td>{{ e.get('level') }}</td>
+      <td>{{ e.get('component') }}</td>
+      <td>{{ e.get('message') }}</td>
+      <td><details><summary>context</summary><pre>{{ (e.get('context') or {})|json }}</pre></details></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/chart.umd.min.js"></script>
+<script>
+const eqLabels = {{ equity_labels|safe }};
+const eqValues = {{ equity_values|safe }};
+const ddValues = {{ drawdown_values|safe }};
+if (eqValues.length > 1) {
+  new Chart(document.getElementById('equityChart'), {
+    type: 'line',
+    data: { labels: eqLabels, datasets: [{ label: 'Equity (TMN)', data: eqValues, borderColor: '#5aa9ff', backgroundColor: 'rgba(90,169,255,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 8 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+  });
+  new Chart(document.getElementById('ddChart'), {
+    type: 'line',
+    data: { labels: eqLabels, datasets: [{ label: 'Drawdown (%)', data: ddValues, borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 8 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+  });
+}
+</script>
+{% endblock %}

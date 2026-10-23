@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARGUS Backtest {{ run_id }}</title>
+<style>
+:root { --bg:#0b0f14; --panel:#121923; --line:#223042; --text:#dbe7f3; --muted:#8ea3b8; --green:#3ddc97; --red:#ff6b6b; --blue:#5aa9ff; --amber:#ffc857; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+header { padding:24px 32px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+h1 { margin:0; font-size:22px; letter-spacing:.5px; }
+h2 { font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:28px 0 12px; }
+main { padding:24px 32px 60px; max-width:1400px; margin:0 auto; }
+.badge { background:#1b2a3a; border:1px solid var(--line); padding:4px 10px; border-radius:999px; color:var(--blue); }
+.muted { color:var(--muted); }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.card .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; }
+.card .value { font-size:20px; margin-top:6px; }
+.pos { color:var(--green); } .neg { color:var(--red); } .warn { color:var(--amber); }
+.chart { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; height:340px; }
+table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; }
+tr:hover td { background:#162131; }
+pre { background:var(--panel); border:1px solid var(--line); padding:14px; border-radius:10px; overflow:auto; max-height:420px; }
+.note { border-left:3px solid var(--amber); padding:10px 14px; background:#1a160c; color:#e9d8a6; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>ARGUS — Wallex Backtest Report</h1>
+    <div class="muted">Run {{ run_id }} · {{ period }} · git {{ git_sha }}</div>
+  </div>
+  <div><span class="badge">BACKTEST — SIMULATED</span></div>
+</header>
+<main>
+  <h2>Headline</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Net return</div><div class="value {{ 'pos' if metrics.net_return_pct >= 0 else 'neg' }}">{{ '%.2f'|format(metrics.net_return_pct) }}%</div></div>
+    <div class="card"><div class="label">Max drawdown</div><div class="value">{{ '%.2f'|format(metrics.max_drawdown_pct) }}%</div></div>
+    <div class="card"><div class="label">Realized PnL</div><div class="value {{ 'pos' if metrics.realized_pnl_tmn >= 0 else 'neg' }}">{{ '{:,.0f}'.format(metrics.realized_pnl_tmn) }} TMN</div></div>
+    <div class="card"><div class="label">Fees paid</div><div class="value">{{ '{:,.0f}'.format(metrics.fees_tmn) }} TMN</div></div>
+    <div class="card"><div class="label">Trades</div><div class="value">{{ metrics.trades }}</div></div>
+    <div class="card"><div class="label">Win rate</div><div class="value">{{ '%.1f'|format(metrics.win_rate * 100) }}%</div></div>
+    <div class="card"><div class="label">Profit factor</div><div class="value">{{ metrics.profit_factor }}</div></div>
+    <div class="card"><div class="label">Sharpe</div><div class="value">{{ metrics.sharpe }}</div></div>
+    <div class="card"><div class="label">Sortino</div><div class="value">{{ metrics.sortino }}</div></div>
+    <div class="card"><div class="label">Turnover</div><div class="value">{{ metrics.turnover_x }}x</div></div>
+    <div class="card"><div class="label">Avg holding</div><div class="value">{{ metrics.avg_holding_min }}m</div></div>
+    <div class="card"><div class="label">Decisions</div><div class="value">{{ metrics.decisions }}</div></div>
+  </div>
+
+  <h2>Equity curve (TMN)</h2>
+  <div class="chart"><canvas id="equityChart"></canvas></div>
+
+  <h2>Drawdown (%)</h2>
+  <div class="chart"><canvas id="ddChart"></canvas></div>
+
+  <h2>Per-symbol performance</h2>
+  <table>
+    <thead><tr><th>Symbol</th><th>Trades</th><th>PnL (TMN)</th><th>Win rate</th></tr></thead>
+    <tbody>
+    {% for symbol, row in metrics.per_symbol.items() %}
+      <tr><td>{{ symbol }}</td><td>{{ row.trades }}</td><td class="{{ 'pos' if row.pnl >= 0 else 'neg' }}">{{ '{:,.0f}'.format(row.pnl) }}</td><td>{{ '%.1f'|format(row.win_rate * 100) }}%</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Trades (latest {{ trades|length }})</h2>
+  <table>
+    <thead><tr><th>Exit</th><th>Symbol</th><th>Signal</th><th>Entry</th><th>Exit px</th><th>PnL TMN</th><th>Return bps</th><th>Fees</th><th>Reason</th></tr></thead>
+    <tbody>
+    {% for trade in trades %}
+      <tr>
+        <td>{{ trade.exit_ts[:19] }}</td>
+        <td>{{ trade.symbol }}</td>
+        <td>{{ trade.signal }}</td>
+        <td>{{ trade.entry_price }}</td>
+        <td>{{ trade.exit_price }}</td>
+        <td class="{{ 'pos' if trade.pnl_tmn|float >= 0 else 'neg' }}">{{ '{:,.0f}'.format(trade.pnl_tmn|float) }}</td>
+        <td>{{ trade.return_bps }}</td>
+        <td>{{ '{:,.0f}'.format(trade.fees_tmn|float) }}</td>
+        <td>{{ trade.exit_reason }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Cost and robustness checks</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Fees / initial capital</div><div class="value">{{ '%.2f'|format(metrics.fees_tmn / metrics.initial_capital_tmn * 100) }}%</div></div>
+    <div class="card"><div class="label">PnL without best trade</div><div class="value {{ 'pos' if metrics.pnl_without_best_trade_tmn >= 0 else 'neg' }}">{{ '{:,.0f}'.format(metrics.pnl_without_best_trade_tmn) }} TMN</div></div>
+    <div class="card"><div class="label">Fill rate</div><div class="value">{{ '%.1f'|format(metrics.fill_rate * 100) }}%</div></div>
+    <div class="card"><div class="label">Avg exposure</div><div class="value">{{ metrics.avg_exposure_pct }}%</div></div>
+  </div>
+
+  <h2>Assumptions and limitations</h2>
+  <div class="note">
+    Wallex does not provide historical L2 or trade-tape data. This backtest uses 1-minute OHLCV and a
+    synthetic book with configurable spread and a conservative liquidity proxy. Fees are the measured
+    TMN-market rates ({{ '%.2f'|format(fees_maker * 100) }}% maker / {{ '%.2f'|format(fees_taker * 100) }}% taker).
+    Marketable entries and all exits pay taker fees plus slippage. When stop and target are both inside
+    a bar, the stop is assumed first. No lookahead is used: decisions at bar close execute at the next
+    bar open.
+  </div>
+
+  <h2>Configuration</h2>
+  <pre>{{ config_json }}</pre>
+
+  <h2>Decision summary</h2>
+  <pre>{{ decision_summary_json }}</pre>
+</main>
+<script src="chart.umd.min.js"></script>
+<script>
+const equityLabels = {{ equity_labels|safe }};
+const equityValues = {{ equity_values|safe }};
+const ddLabels = {{ equity_labels|safe }};
+const ddValues = {{ drawdown_values|safe }};
+new Chart(document.getElementById('equityChart'), {
+  type: 'line',
+  data: { labels: equityLabels, datasets: [{ label: 'Equity (TMN)', data: equityValues, borderColor: '#5aa9ff', backgroundColor: 'rgba(90,169,255,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 10 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+});
+new Chart(document.getElementById('ddChart'), {
+  type: 'line',
+  data: { labels: ddLabels, datasets: [{ label: 'Drawdown (%)', data: ddValues, borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 10 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+});
+</script>
+</body>
+</html>

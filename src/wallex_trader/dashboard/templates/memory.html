@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Agent memory{% endblock %}
+{% block content %}
+<h1>Agent memory and learning loop</h1>
+<div class="notice">
+  After each closed trade, DeepSeek reviews the entry context, AI rationale, fees, outcome and
+  confidence calibration. The lesson is stored in PostgreSQL and the append-only
+  <code>artifacts/agent_journal.md</code>, then injected into future decision prompts. Lessons are
+  advisory: they can never change hard risk limits or enable leverage/shorting.
+</div>
+<h2>Lessons</h2>
+{% if notes %}
+  {% for n in notes %}
+    <div class="note">
+      <div class="head">
+        <span>{{ n.get('ts')|ts }} · {{ n.get('kind') }} {% if n.get('symbol') %}· {{ n.get('symbol') }}{% endif %}</span>
+        <span class="badge {{ 'ok' if n.get('outcome') == 'win' else ('bad' if n.get('outcome') == 'loss' else 'muted') }}">{{ n.get('outcome') }}</span>
+      </div>
+      <div class="body">{{ n.get('note') }}</div>
+      {% if n.get('lesson') %}<div class="lesson">Lesson: {{ n.get('lesson') }}</div>{% endif %}
+      <div class="bar"><span style="width: {{ (n.get('importance') or 0) * 100 }}%"></span></div>
+      <div class="small muted" style="margin-top:4px">
+        importance {{ '%.2f'|format(n.get('importance') or 0) }} · PnL {{ n.get('pnl_tmn')|tmn }} TMN
+        {% for tag in n.get('tags') or [] %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </div>
+      <details><summary>metadata</summary><pre>{{ (n.get('metadata') or {})|json }}</pre></details>
+    </div>
+  {% endfor %}
+{% else %}<div class="muted">No lessons yet.</div>{% endif %}
+
+<h2>Append-only journal</h2>
+{% if journal %}
+<pre>{{ journal }}</pre>
+{% else %}<div class="muted">Journal file is empty or does not exist yet.</div>{% endif %}
+{% endblock %}

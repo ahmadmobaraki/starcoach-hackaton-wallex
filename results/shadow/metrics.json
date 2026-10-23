@@ -1,0 +1,117 @@
+{
+  "run_id": "shadow_20261022_120816_2oxj",
+  "generated_at": "2026-10-22T12:10:33.584601+00:00",
+  "mode": "shadow",
+  "snapshot": {
+    "ts": "2026-10-22T12:10:33.578529+00:00",
+    "cash_tmn": "4720494.969428169945217495003",
+    "positions_value_tmn": "278599.55",
+    "equity_tmn": "4999094.519428169945217495003",
+    "realized_pnl_tmn": "0",
+    "unrealized_pnl_tmn": "-69.473501326076552846458",
+    "fees_tmn": "836.007070503978229658539374",
+    "gross_exposure_pct": 0.05573,
+    "cash_buffer_pct": 0.94427,
+    "open_positions": 1,
+    "portfolio_heat_pct": 0.00556,
+    "peak_equity_tmn": "5000000.0",
+    "drawdown_pct": 0.000181,
+    "daily_pnl_pct": -0.000181,
+    "net_return_pct": -0.000181
+  },
+  "symbols": [
+    "PEPETMN",
+    "BTCTMN",
+    "ETHTMN",
+    "USDTTMN",
+    "DOGETMN",
+    "XRPTMN",
+    "XAUTTMN",
+    "SOLTMN"
+  ],
+  "trades": [],
+  "win_rate": 0.0,
+  "decisions": 3,
+  "agent": {
+    "calls": 5,
+    "errors": 1,
+    "success_rate": 0.8,
+    "latency_p50_ms": 5374.2,
+    "latency_p95_ms": 6599.9,
+    "tokens_in": 11628,
+    "tokens_out": 4478,
+    "type": "deepseek"
+  },
+  "reflection": {
+    "notes_written": 0,
+    "failures": 0,
+    "trades_since_session_review": 0
+  },
+  "ws": {
+    "ws_connected": true,
+    "ws": {
+      "connected": true,
+      "channels": 33,
+      "reconnects": 0,
+      "messages": 7399,
+      "last_message_age_ms": 27.4,
+      "last_error": null
+    },
+    "symbols": [
+      "PEPETMN",
+      "BTCTMN",
+      "ETHTMN",
+      "USDTTMN",
+      "DOGETMN",
+      "XRPTMN",
+      "XAUTTMN",
+      "SOLTMN"
+    ],
+    "fresh_books": 8,
+    "symbol_count": 8,
+    "oldest_book_age_ms": 881.5,
+    "max_candle_age_ms": 93584.7,
+    "last_rest_sync": "2026-10-22T12:10:31.128596+00:00",
+    "hourly_symbols": 8,
+    "hourly_age_ms": 633584.8,
+    "rest_calls": 127,
+    "rest_errors": 0,
+    "healthy": true
+  },
+  "fees": {
+    "PEPETMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "BTCTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "ETHTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "USDTTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "DOGETMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "XRPTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "XAUTTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    },
+    "SOLTMN": {
+      "maker": 0.0025,
+      "taker": 0.003
+    }
+  },
+  "git_sha": "no-git",
+  "config_hash": "527a3f63ad8abd93"
+}

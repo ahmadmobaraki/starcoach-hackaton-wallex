@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Audit{% endblock %}
+{% block content %}
+<h1>Audit log</h1>
+<div class="muted small">Full decision records with candidate features, AI response hash, risk checks and execution details. Export JSONL for external verification.</div>
+<div class="toolbar">
+  <a class="badge muted" href="/api/export/decisions.jsonl">Download decisions.jsonl</a>
+  {% if run %}<span class="badge muted">run {{ run.get('run_id') }}</span>{% endif %}
+</div>
+{% if decisions %}
+<table>
+  <thead><tr><th>Time</th><th>Decision ID</th><th>Symbol</th><th>Action</th><th>Prompt hash</th><th>Response hash</th><th>Risk approved</th><th></th></tr></thead>
+  <tbody>
+  {% for d in decisions %}
+    <tr>
+      <td class="muted nowrap">{{ d.get('ts')|ts }}</td>
+      <td class="small">{{ d.get('decision_id') }}</td>
+      <td>{{ d.get('symbol') }}</td>
+      <td>{{ d.get('action') }}</td>
+      <td class="small muted">{{ (d.get('prompt_hash') or '')[:24] }}</td>
+      <td class="small muted">{{ (d.get('response_hash') or '')[:24] }}</td>
+      <td>{{ 'yes' if (d.get('risk') or {}).get('approved') else 'no' }}</td>
+      <td><details><summary>record</summary><pre>{{ d|json }}</pre></details></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No audit records.</div>{% endif %}
+{% endblock %}

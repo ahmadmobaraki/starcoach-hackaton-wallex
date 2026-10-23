@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Decisions{% endblock %}
+{% block content %}
+<h1>Decision feed</h1>
+<div class="muted small">Every candidate, AI response, risk check and execution is stored. Use the JSON to audit the exact reason for each trade.</div>
+<form class="toolbar" method="get" action="/test-results/decisions">
+  <input name="symbol" placeholder="symbol e.g. BTCTMN" value="{{ symbol or '' }}">
+  <select name="action">
+    <option value="">all actions</option>
+    {% for a in ['BUY','SELL','HOLD'] %}<option value="{{ a }}" {{ 'selected' if action == a else '' }}>{{ a }}</option>{% endfor %}
+  </select>
+  <button type="submit">Filter</button>
+  <a class="badge muted" href="/api/export/decisions.jsonl">Export JSONL</a>
+</form>
+{% if decisions %}
+<table>
+  <thead><tr><th>Time</th><th>Symbol</th><th>Action</th><th>Conf.</th><th>Signal</th><th>Score</th><th>AI rationale</th><th>Risk</th><th>Execution</th><th>Audit</th></tr></thead>
+  <tbody>
+  {% for d in decisions %}
+    <tr>
+      <td class="muted nowrap">{{ d.get('ts')|ts }}</td>
+      <td>{{ d.get('symbol') }}</td>
+      <td><span class="badge {{ 'ok' if d.get('action') == 'BUY' else ('bad' if d.get('action') == 'SELL' else 'muted') }}">{{ d.get('action') }}</span></td>
+      <td>{{ '%.2f'|format(d.get('confidence') or 0) }}</td>
+      <td>{{ d.get('signal') or '—' }}</td>
+      <td>{{ '%.2f'|format(d.get('score') or 0) }}</td>
+      <td>{{ d.get('rationale') or '—' }}</td>
+      <td>
+        {% set r = d.get('risk') or {} %}
+        <span class="badge {{ 'ok' if r.get('approved') else 'bad' }}">{{ 'approved' if r.get('approved') else 'veto' }}</span>
+        {% if r.get('reasons') %}<div class="small neg">{{ (r.get('reasons') or [])|join('; ') }}</div>{% endif %}
+      </td>
+      <td>
+        {% set x = d.get('execution') or {} %}
+        {{ x.get('status', '—') }}
+        {% if x.get('client_order_id') %}<div class="small muted">{{ x.get('client_order_id') }}</div>{% endif %}
+        {% if x.get('fills') %}<div class="small">fills: {{ (x.get('fills') or [])|length }}</div>{% endif %}
+      </td>
+      <td><details><summary>full JSON</summary><pre>{{ d|json }}</pre></details></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<div class="muted">No decisions match the filter.</div>{% endif %}
+{% endblock %}

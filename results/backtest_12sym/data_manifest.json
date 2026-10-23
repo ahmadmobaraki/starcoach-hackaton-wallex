@@ -1,0 +1,19 @@
+{
+  "manifest_path": "/var/www/projects/hackatons/wallex/data/manifests/download_manifest.json",
+  "entries": 1812,
+  "symbols": [
+    "BTCTMN",
+    "ETHTMN",
+    "SOLTMN",
+    "USDTTMN",
+    "XRPTMN",
+    "DOGETMN",
+    "PEPETMN",
+    "XAUTTMN",
+    "BNBTMN",
+    "TRXTMN",
+    "LTCTMN",
+    "ZECTMN"
+  ],
+  "manifest_sha": "c4c4747556ec0eae"
+}

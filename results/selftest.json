@@ -1,0 +1,379 @@
+{
+  "run_id": "selftest_20261022_101348",
+  "risk_approved": true,
+  "risk_checks": {
+    "approved": true,
+    "checks": [
+      {
+        "name": "no_position",
+        "passed": true,
+        "value": null,
+        "limit": null,
+        "reason": "position already open for symbol"
+      },
+      {
+        "name": "confidence",
+        "passed": true,
+        "value": 0.78,
+        "limit": 0.55,
+        "reason": "agent confidence below minimum"
+      },
+      {
+        "name": "size_fraction",
+        "passed": true,
+        "value": 0.5,
+        "limit": null,
+        "reason": "invalid agent size fraction"
+      },
+      {
+        "name": "stop_bounds",
+        "passed": true,
+        "value": 100.0,
+        "limit": [
+          40.0,
+          400.0
+        ],
+        "reason": "stop outside allowed bounds"
+      },
+      {
+        "name": "take_profit_bounds",
+        "passed": true,
+        "value": 200.0,
+        "limit": [
+          60.0,
+          800.0
+        ],
+        "reason": "take-profit outside allowed bounds"
+      },
+      {
+        "name": "horizon",
+        "passed": true,
+        "value": 600,
+        "limit": [
+          60,
+          14400
+        ],
+        "reason": "horizon outside allowed bounds"
+      },
+      {
+        "name": "order_type",
+        "passed": true,
+        "value": "MARKETABLE_LIMIT",
+        "limit": null,
+        "reason": "unsupported order type"
+      },
+      {
+        "name": "price_sanity",
+        "passed": true,
+        "value": "100076",
+        "limit": null,
+        "reason": "limit price more than 2% from mid"
+      },
+      {
+        "name": "slippage",
+        "passed": true,
+        "value": 5.1,
+        "limit": 25.0,
+        "reason": "estimated slippage above limit"
+      },
+      {
+        "name": "self_trade",
+        "passed": true,
+        "value": null,
+        "limit": null,
+        "reason": "opposite own order exists (self-trade prevention)"
+      },
+      {
+        "name": "size_cap",
+        "passed": true,
+        "value": "374999.99956416",
+        "limit": 750000.0,
+        "reason": "size cap"
+      },
+      {
+        "name": "min_notional",
+        "passed": true,
+        "value": "374999.99956416",
+        "limit": 50000.0,
+        "reason": "order below minimum notional"
+      },
+      {
+        "name": "gross_exposure_after",
+        "passed": true,
+        "value": "0.075",
+        "limit": 0.6,
+        "reason": "gross exposure cap after order"
+      },
+      {
+        "name": "portfolio_heat_after",
+        "passed": true,
+        "value": 0.00075,
+        "limit": 0.025,
+        "reason": "portfolio heat cap after order"
+      },
+      {
+        "name": "correlated_exposure",
+        "passed": true,
+        "value": 0.075,
+        "limit": 0.35,
+        "reason": "correlated exposure cap after order"
+      },
+      {
+        "name": "cash_buffer_after",
+        "passed": true,
+        "value": "0.9248",
+        "limit": 0.25,
+        "reason": "cash buffer cap after order"
+      }
+    ],
+    "reasons": [],
+    "quantity": "3.74715216",
+    "price": "100076",
+    "notional_tmn": "374999.99956416",
+    "fee_tmn": "1124.99999869248",
+    "stop_price": "99075.24",
+    "take_profit_price": "102077.52",
+    "order_type": "MARKETABLE_LIMIT",
+    "max_notional_tmn": "750000.0"
+  },
+  "decision": {
+    "action": "BUY",
+    "confidence": 0.78,
+    "size_fraction": 0.5,
+    "order_type": "MARKETABLE_LIMIT",
+    "limit_offset_bps": 5.0,
+    "take_profit_bps": 200.0,
+    "stop_loss_bps": 100.0,
+    "horizon_sec": 600,
+    "regime": "range",
+    "rationale": "selftest synthetic entry",
+    "risk_flags": []
+  },
+  "entry": {
+    "client_order_id": "argus_221013_BTCTMN_64028_0001",
+    "exchange_order_id": null,
+    "status": "FILLED",
+    "type": "MARKETABLE_LIMIT",
+    "price": "100076",
+    "quantity": "3.74715216",
+    "filled_quantity": "3.74715216",
+    "avg_fill_price": "100048.00347115843200",
+    "fee_tmn": "1124.685276931916448513039360",
+    "fills": [
+      {
+        "fill_id": "argus_221013_BTCTMN_64028_0001_0001",
+        "order_id": "argus_221013_BTCTMN_64028_0001",
+        "symbol": "BTCTMN",
+        "side": "BUY",
+        "price": "100048.00347115843200",
+        "quantity": "3.74715216",
+        "fee": "1124.685276931916448513039360",
+        "fee_asset": "TMN",
+        "ts": "2026-10-22T10:13:48.595414+00:00",
+        "liquidity": "taker",
+        "decision_id": "selftest_entry"
+      }
+    ],
+    "closed_trades": []
+  },
+  "position_after_entry": {
+    "symbol": "BTCTMN",
+    "quantity": "3.74715216",
+    "avg_entry": "100048.00347115843200",
+    "stop_price": "99047.5234364468476800",
+    "take_profit_price": "102048.9635405816006400",
+    "opened_at": "2026-10-22T10:13:48.595414+00:00",
+    "horizon_sec": 600,
+    "decision_id": "selftest_entry",
+    "signal": "MR",
+    "confidence": 0.78,
+    "rationale": "selftest synthetic entry",
+    "regime": "range",
+    "high_water": "100048.00347115843200",
+    "low_water": "100048.00347115843200",
+    "entry_fee_tmn": "1124.685276931916448513039360",
+    "realized_pnl_tmn": "0",
+    "last_review_at": null,
+    "metadata": {
+      "price": 100000.0,
+      "ret_1m": -0.004,
+      "ret_5m": -0.009,
+      "ret_15m": -0.012,
+      "rsi_14": 28.0,
+      "bb_z_20": -2.4,
+      "atr_bps": 90.0,
+      "rv_1m_bps": 22.0,
+      "volume_z_60": 2.1,
+      "book_imbalance_5": 0.62,
+      "aggressive_buy_ratio": 0.68,
+      "btc_ret_15m": 0.001,
+      "spread_bps": 1.0,
+      "top5_depth_tmn": 50000000.0,
+      "agent": {
+        "model": "selftest",
+        "confidence": 0.78
+      },
+      "entry_price": "100048.00347115843200",
+      "entry_ts": "2026-10-22T10:13:48.595414+00:00"
+    }
+  },
+  "exit": {
+    "client_order_id": "argus_221013_BTCTMN_64028_0002",
+    "exchange_order_id": null,
+    "status": "FILLED",
+    "type": "MARKETABLE_LIMIT",
+    "price": "99870",
+    "quantity": "3.74715216",
+    "filled_quantity": "3.74715216",
+    "avg_fill_price": "99972.00342815808640",
+    "fee_tmn": "1123.830925756049934825679872",
+    "fills": [
+      {
+        "fill_id": "argus_221013_BTCTMN_64028_0002_0002",
+        "order_id": "argus_221013_BTCTMN_64028_0002",
+        "symbol": "BTCTMN",
+        "side": "SELL",
+        "price": "99972.00342815808640",
+        "quantity": "3.74715216",
+        "fee": "1123.830925756049934825679872",
+        "fee_asset": "TMN",
+        "ts": "2026-10-22T10:13:48.603276+00:00",
+        "liquidity": "taker",
+        "decision_id": "selftest_exit"
+      }
+    ],
+    "closed_trades": [
+      {
+        "symbol": "BTCTMN",
+        "entry_ts": "2026-10-22T10:13:48.595414+00:00",
+        "exit_ts": "2026-10-22T10:13:48.603276+00:00",
+        "duration_sec": 0.007862,
+        "quantity": "3.74715216",
+        "entry_price": "100048.00347115843200",
+        "exit_price": "99972.00342815808640",
+        "entry_notional_tmn": "374895.0923106388161710131200",
+        "exit_notional_tmn": "374610.3085853499782752266240",
+        "gross_pnl_tmn": "-284.7837252888378957864960",
+        "pnl_tmn": "-2533.299927976804279125215232",
+        "fees_tmn": "2248.516202687966383338719232",
+        "return_bps": -7.6,
+        "win": false,
+        "signal": "MR",
+        "confidence": 0.78,
+        "rationale": "selftest synthetic entry",
+        "regime": "range",
+        "decision_id": "selftest_entry",
+        "exit_decision_id": "selftest_exit",
+        "exit_reason": "selftest_exit",
+        "features": {
+          "price": 100000.0,
+          "ret_1m": -0.004,
+          "ret_5m": -0.009,
+          "ret_15m": -0.012,
+          "rsi_14": 28.0,
+          "bb_z_20": -2.4,
+          "atr_bps": 90.0,
+          "rv_1m_bps": 22.0,
+          "volume_z_60": 2.1,
+          "book_imbalance_5": 0.62,
+          "aggressive_buy_ratio": 0.68,
+          "btc_ret_15m": 0.001,
+          "spread_bps": 1.0,
+          "top5_depth_tmn": 50000000.0,
+          "entry_price": "100048.00347115843200",
+          "entry_ts": "2026-10-22T10:13:48.595414+00:00"
+        },
+        "agent": {
+          "model": "selftest",
+          "confidence": 0.78
+        }
+      }
+    ]
+  },
+  "snapshot": {
+    "ts": "2026-10-22T10:13:48.595131+00:00",
+    "cash_tmn": "4997466.700072023195720874785",
+    "positions_value_tmn": "0",
+    "equity_tmn": "4997466.700072023195720874785",
+    "realized_pnl_tmn": "-2533.299927976804279125215232",
+    "unrealized_pnl_tmn": "0",
+    "fees_tmn": "2248.516202687966383338719232",
+    "gross_exposure_pct": 0.0,
+    "cash_buffer_pct": 1.0,
+    "open_positions": 0,
+    "portfolio_heat_pct": 0.0,
+    "peak_equity_tmn": "5000000.0",
+    "drawdown_pct": 0.000507,
+    "daily_pnl_pct": -0.000507,
+    "net_return_pct": -0.000507
+  },
+  "trades": [
+    {
+      "symbol": "BTCTMN",
+      "entry_ts": "2026-10-22T10:13:48.595414+00:00",
+      "exit_ts": "2026-10-22T10:13:48.603276+00:00",
+      "duration_sec": 0.007862,
+      "quantity": "3.74715216",
+      "entry_price": "100048.00347115843200",
+      "exit_price": "99972.00342815808640",
+      "entry_notional_tmn": "374895.0923106388161710131200",
+      "exit_notional_tmn": "374610.3085853499782752266240",
+      "gross_pnl_tmn": "-284.7837252888378957864960",
+      "pnl_tmn": "-2533.299927976804279125215232",
+      "fees_tmn": "2248.516202687966383338719232",
+      "return_bps": -7.6,
+      "win": false,
+      "signal": "MR",
+      "confidence": 0.78,
+      "rationale": "selftest synthetic entry",
+      "regime": "range",
+      "decision_id": "selftest_entry",
+      "exit_decision_id": "selftest_exit",
+      "exit_reason": "selftest_exit",
+      "features": {
+        "price": 100000.0,
+        "ret_1m": -0.004,
+        "ret_5m": -0.009,
+        "ret_15m": -0.012,
+        "rsi_14": 28.0,
+        "bb_z_20": -2.4,
+        "atr_bps": 90.0,
+        "rv_1m_bps": 22.0,
+        "volume_z_60": 2.1,
+        "book_imbalance_5": 0.62,
+        "aggressive_buy_ratio": 0.68,
+        "btc_ret_15m": 0.001,
+        "spread_bps": 1.0,
+        "top5_depth_tmn": 50000000.0,
+        "entry_price": "100048.00347115843200",
+        "entry_ts": "2026-10-22T10:13:48.595414+00:00"
+      },
+      "agent": {
+        "model": "selftest",
+        "confidence": 0.78
+      }
+    }
+  ],
+  "ok": true,
+  "reflection": {
+    "outcome": "loss",
+    "note": "Synthetic selftest entry was exited almost instantly (0.008s). Gross loss was small (-284.8 Tmn) but fees of 2248.5 Tmn dominated, turning it into a net loss of -2533.3 Tmn. Entry had a mean-reversion signal in oversold conditions (RSI 28, z-score -2.4) but the trade was not held long enough for any meaningful price recovery. Confidence 0.78 was not supported by outcome; the trade appears to be a pipeline test rather than a genuine signal.",
+    "lesson": "Do not enter trades that will be exited immediately; require a minimum holding period and ensure expected gross PnL exceeds 2x estimated costs before execution.",
+    "tags": [
+      "synthetic",
+      "selftest",
+      "high fees",
+      "instant exit",
+      "mean reversion"
+    ],
+    "importance": 0.3,
+    "confidence_calibration": "Confidence 0.78 was not justified; the trade was exited within 0.008 seconds, indicating either an error or test intent. A real MR signal in oversold range conditions would need time to play out, so the confidence likely overestimated the edge.",
+    "suggested_adjustment": "Estimate holding period and cost-adjusted edge before sending any live order. Flag selftest trades to exclude them from performance metrics and lessons.",
+    "avoid_patterns": [
+      "selftest entries treated as real signals",
+      "instant exits with no price improvement",
+      "entering with high fees relative to ATR",
+      "confidence > 0.7 on untested signal paths"
+    ]
+  }
+}
