@@ -130,6 +130,8 @@ class TradingEngine:
         self._stopped = False
         self._ws_down_since: float | None = None
         self._kill_handled = False
+        self._position_seen: set[str] = set()
+        self._position_tombstones: set[str] = set()
         self._reconcile_failures = 0
         self._endgame_flattened = False
         self._decision_seq = 0
@@ -304,6 +306,7 @@ class TradingEngine:
                 actual = Decimal(str((balances.get(asset) or {}).get("value", 0) or 0))
                 if actual <= 0:
                     self.portfolio.positions.pop(symbol, None)
+                    self._position_tombstones.add(symbol)
                     await self.repo.system_event(
                         "warning",
                         "portfolio",
@@ -336,6 +339,23 @@ class TradingEngine:
                             f"stored position for {symbol} differs from exchange balance",
                             severity="critical",
                             evidence={
+                                "stored": str(position.quantity),
+                                "exchange": str(actual),
+                            },
+                        )
+                        # The exchange balance is the source of truth. A large
+                        # shortfall means the position no longer exists on the
+                        # exchange (e.g. restored after a flatten or an external
+                        # sale); keeping the stale quantity would only trip the
+                        # reconciliation kill. Clamp to the balance and let the
+                        # dust logic below drop non-sellable remnants.
+                        position.quantity = actual
+                        await self.repo.system_event(
+                            "warning",
+                            "portfolio",
+                            "position quantity clamped to exchange balance after large shortfall: "
+                            f"{symbol}",
+                            {
                                 "stored": str(position.quantity),
                                 "exchange": str(actual),
                             },
@@ -389,6 +409,7 @@ class TradingEngine:
                     actual = Decimal(str((balances.get(asset) or {}).get("value", 0) or 0))
                     set_dust(self.dust, asset, max(position.quantity, actual))
                     self.portfolio.positions.pop(symbol, None)
+                    self._position_tombstones.add(symbol)
                     await self.repo.system_event(
                         "warning",
                         "portfolio",
@@ -428,6 +449,18 @@ class TradingEngine:
                     "tracked non-sellable dust",
                     {asset: str(quantity) for asset, quantity in self.dust.items()},
                 )
+            if self._position_tombstones:
+                try:
+                    await self.repo.save_position_snapshot(
+                        self.portfolio.snapshot(datetime.now(UTC)),
+                        self.portfolio,
+                        closed_symbols=sorted(self._position_tombstones),
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    self.log.warning(
+                        "startup position tombstone write failed: %s", exc
+                    )
+                self._position_tombstones.clear()
             self.log.info(
                 "live portfolio restored",
                 extra={
@@ -532,6 +565,9 @@ class TradingEngine:
             with contextlib.suppress(asyncio.CancelledError, Exception):
                 await task
         try:
+            held_at_stop: set[str] = set()
+            if self.portfolio is not None:
+                held_at_stop = set(self.portfolio.positions)
             if (
                 self.settings.flatten_on_stop
                 and self.portfolio is not None
@@ -550,10 +586,20 @@ class TradingEngine:
                     self.portfolio.marks_for(self.feed.books_map())
                 snapshot = self.portfolio.snapshot(now)
                 if self.feed is not None:
+                    # Symbols held at stop but gone from the portfolio now must
+                    # be tombstoned; otherwise restore resurrects them from the
+                    # stale last-open snapshot rows.
+                    closed_at_stop = held_at_stop - set(self.portfolio.positions)
+                    self._position_tombstones.update(closed_at_stop)
                     try:
-                        await self.repo.save_position_snapshot(snapshot, self.portfolio)
+                        await self.repo.save_position_snapshot(
+                            snapshot,
+                            self.portfolio,
+                            closed_symbols=sorted(self._position_tombstones),
+                        )
                     except Exception as exc:  # noqa: BLE001
                         logger.warning("final position snapshot failed: %s", exc)
+                    self._position_tombstones.clear()
                 try:
                     await self.repo.save_equity(snapshot)
                 except Exception as exc:  # noqa: BLE001
@@ -1234,7 +1280,18 @@ class TradingEngine:
                 snapshot = self.portfolio.snapshot(now)
                 self.latest_snapshot = snapshot
                 await self.repo.save_equity(snapshot)
-                await self.repo.save_position_snapshot(snapshot, self.portfolio)
+                # Positions that disappeared since the previous flush were
+                # closed (exits, flatten, dust drop); persist tombstones so a
+                # restart cannot resurrect them.
+                current_symbols = set(self.portfolio.positions)
+                self._position_tombstones.update(self._position_seen - current_symbols)
+                self._position_seen = current_symbols
+                await self.repo.save_position_snapshot(
+                    snapshot,
+                    self.portfolio,
+                    closed_symbols=sorted(self._position_tombstones),
+                )
+                self._position_tombstones.clear()
                 await self._check_kill_conditions(now, snapshot)
             except asyncio.CancelledError:
                 raise

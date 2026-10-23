@@ -148,6 +148,7 @@ deliberately after inspection.
 | Kill switch active | inspect `risk_events`, clear `data/KILL_SWITCH`, restart deliberately |
 | Live refuses to start | balance < minimum, missing confirmation, open orders, or preflight fail |
 | Order 422 / code 1006, balance 0.39 TMN | API key is the main-account key while funds are in the prop sub-account. Use the prop account's API key and clear `WALLEX_SUB_ACCOUNT_CLIENT_ID`; preflight `api_key_matches_sub_account` must pass. |
+| Reconciliation kill right after live start, stored positions ≫ tiny dust balances | Stale position rows from a previous run whose flatten/close was not tombstoned. Fixed 2026-10-23: startup reconciliation clamps stored quantity to the exchange balance and drops non-sellable remainders to dust; tombstone rows prevent resurrection. Wait for `engine stopped`, then restart. |
 | `deque already at its maximum size` | fixed in CandleStore; out-of-order candles are ignored instead of inserted into a full deque |
 | Clock skew | NTP sync; live halts above 5s (Date-header granularity) |
 

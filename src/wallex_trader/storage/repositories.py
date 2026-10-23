@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from decimal import Decimal
 from enum import Enum
@@ -336,7 +337,20 @@ class Repository:
             )
 
     # ---- portfolio -----------------------------------------------------
-    async def save_position_snapshot(self, snapshot: PortfolioSnapshot, portfolio: Any) -> None:
+    async def save_position_snapshot(
+        self,
+        snapshot: PortfolioSnapshot,
+        portfolio: Any,
+        closed_symbols: Sequence[str] = (),
+    ) -> None:
+        # Closed positions must leave a zero-quantity tombstone row, otherwise
+        # the newest row per symbol stays at the last open quantity and the
+        # next live start resurrects a phantom position the exchange no longer
+        # holds (incident 2026-10-23 14:21 flatten → restore → reconciliation
+        # kill).
+        tombstones = [
+            symbol for symbol in closed_symbols if symbol not in portfolio.positions
+        ]
         async with self.db.session() as session:
             for symbol, position in portfolio.positions.items():
                 mark = portfolio.marks.get(symbol, position.avg_entry)
@@ -352,6 +366,24 @@ class Repository:
                         unrealized_pnl=str((mark - position.avg_entry) * position.quantity),
                         realized_pnl=str(position.realized_pnl_tmn),
                         metadata_json=json_safe(position.to_dict()),
+                    )
+                )
+            for symbol in tombstones:
+                session.add(
+                    PositionSnapshotRow(
+                        run_id=self.run_id,
+                        ts=snapshot.ts,
+                        symbol=symbol,
+                        quantity="0",
+                        avg_entry="0",
+                        stop_price="0",
+                        take_profit_price="0",
+                        unrealized_pnl="0",
+                        realized_pnl="0",
+                        metadata_json={
+                            "closed": True,
+                            "opened_at": snapshot.ts.isoformat(),
+                        },
                     )
                 )
 
@@ -561,7 +593,7 @@ class Repository:
             ).all()
         latest: dict[str, dict[str, Any]] = {}
         for row in rows:
-            if row.symbol not in latest:
+            if row.symbol not in latest and Decimal(row.quantity) > 0:
                 latest[row.symbol] = _position_dict(row)
         return list(latest.values())
 

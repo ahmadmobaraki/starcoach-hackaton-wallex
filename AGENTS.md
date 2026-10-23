@@ -857,6 +857,26 @@ docker build -t argus-local .
     start a second live process before the first logs `engine stopped`. `replay` now
     recovers base-asset fees from the persisted order payload, so the killed run
     replays PASS. Keep the reconciler, replay and lock unit tests green.
+17. **Phantom position resurrection after shutdown flatten (2026-10-23 14:21)**:
+    `FLATTEN_ON_STOP` sold the two open positions (fills and cash recorded), but
+    `save_position_snapshot` only writes *open* positions, so the newest
+    `positions` rows per symbol stayed at the last open quantity. The next live
+    start restored two phantom positions the exchange no longer held; a large
+    shortfall (dust balance vs stored quantity) passed the ≤2% fee adjustment
+    branch untouched, survived three reconciliation checks, and killed the
+    engine — its own recovery flatten attempts were then rejected (nothing to
+    sell). Fixes: (a) `save_position_snapshot(snapshot, portfolio,
+    closed_symbols=...)` writes zero-quantity tombstone rows; the equity loop
+    diffs vanished positions and flushes tombstones every cycle, the stop path
+    tombstones symbols held at stop, and startup dust drops tombstone too;
+    (b) startup reconciliation clamps any stored position to the exchange
+    balance after a >2% shortfall (keeps the critical `startup_position_mismatch`
+    risk event as the audit signal) and lets the existing unsellable-dust logic
+    drop the remainder; (c) restore skips zero rows and the dashboard position
+    list filters them. `restore_positions` already ignored `quantity <= 0`.
+    After a **reconciliation-killed start, wait for `engine stopped` before
+    restarting** — the first restart legitimately killed because the DB state
+    was stale, not because the exchange was wrong.
 
 ---
 
