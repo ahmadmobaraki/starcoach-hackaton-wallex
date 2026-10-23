@@ -13,6 +13,7 @@ from wallex_trader.config import Settings
 from wallex_trader.exchange.mcp import AGENT_ALLOWED_TOOLS, WallexMCPClient
 from wallex_trader.exchange.rest import WallexAPIError, WallexRESTClient
 from wallex_trader.exchange.ws import WallexWebSocket
+from wallex_trader.tradability import blocked_markets
 
 logger = logging.getLogger("trader.preflight")
 
@@ -40,6 +41,20 @@ async def run_preflight(settings: Settings, *, include_ws: bool = True) -> dict[
         except WallexAPIError as exc:
             markets = {}
             add("wallex_markets", False, str(exc))
+        blocked = blocked_markets(settings.blocked_markets_file)
+        allowlist = settings.universe_or_default()
+        conflicts = sorted(set(allowlist) & blocked)
+        add(
+            "tradable_universe",
+            not conflicts,
+            {
+                "allowlist": allowlist,
+                "blocked_conflicts": conflicts,
+                "blocked_markets": len(blocked),
+                "min_notional_tmn": settings.min_notional_tmn,
+            },
+            required=True,
+        )
         try:
             depth = await rest.depth("BTCTMN", limit=10)
             add(

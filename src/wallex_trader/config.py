@@ -18,7 +18,10 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
+from wallex_trader.tradability import blocked_markets
+
 LIVE_CONFIRM_PHRASE = "I_UNDERSTAND_REAL_MONEY"
+MIN_NOTIONAL_FLOOR_TMN = 100_000.0
 
 
 def _find_project_root() -> Path:
@@ -119,12 +122,14 @@ class Settings(BaseSettings):
     universe_min_quote_volume_24h: float = 5_000_000_000
     universe_min_listing_age_days: int = 14
     universe_refresh_sec: int = 3600
+    blocked_markets_file: Path = PROJECT_ROOT / "configs" / "blocked_markets.txt"
     max_spread_bps: float = 35.0
     max_depth_age_ms: int = 5000
     max_tick_age_ms: int = 10000
 
     # ---- strategy ------------------------------------------------------
     strategy_mode: str = "swing"  # swing | intraday | both
+    intraday_timeframe_minutes: int = 1
     intraday_risk_multiplier: float = 0.25
     candidate_threshold: float = 0.65
     alpha_threshold_bps: float = 100.0
@@ -166,7 +171,7 @@ class Settings(BaseSettings):
     min_confidence: float = 0.55
     max_slippage_bps: float = 25.0
     max_depth_fraction: float = 0.10
-    min_notional_tmn: float = 50_000.0
+    min_notional_tmn: float = MIN_NOTIONAL_FLOOR_TMN
     max_order_notional_tmn: float = 750_000.0
 
     # ---- execution -----------------------------------------------------
@@ -272,6 +277,15 @@ class Settings(BaseSettings):
                 raise ValueError("live canary requires RISK_PER_TRADE <= 0.005")
         if self.mode != Mode.LIVE and self.live_confirm:
             raise ValueError("LIVE_CONFIRM must be empty unless MODE=live")
+        if self.mode in (Mode.LIVE, Mode.SHADOW):
+            conflicts = sorted(
+                set(self.universe_allowlist) & blocked_markets(self.blocked_markets_file)
+            )
+            if conflicts:
+                raise ValueError(
+                    "UNIVERSE_ALLOWLIST contains markets not tradable in this account: "
+                    + ", ".join(conflicts)
+                )
         if not self.universe_allowlist:
             raise ValueError("UNIVERSE_ALLOWLIST cannot be empty")
         if self.max_position_pct > self.max_gross_exposure:
@@ -284,12 +298,18 @@ class Settings(BaseSettings):
             raise ValueError("MAX_DRAWDOWN must be in (0, 0.25]")
         if self.stop_loss_bps <= 0 or self.take_profit_bps <= 0:
             raise ValueError("stop/take-profit must be positive")
+        if self.min_notional_tmn < MIN_NOTIONAL_FLOOR_TMN:
+            raise ValueError(
+                f"MIN_NOTIONAL_TMN must be >= {MIN_NOTIONAL_FLOOR_TMN:.0f}"
+            )
         if self.min_notional_tmn > self.max_order_notional_tmn:
             raise ValueError("MIN_NOTIONAL_TMN must be <= MAX_ORDER_NOTIONAL_TMN")
         if not 0 <= self.maker_fee < 0.05 or not 0 <= self.taker_fee < 0.05:
             raise ValueError("fees must be in [0, 0.05)")
         if not 1 <= self.swing_timeframe_hours <= 24:
             raise ValueError("SWING_TIMEFRAME_HOURS must be between 1 and 24")
+        if not 1 <= self.intraday_timeframe_minutes <= 15:
+            raise ValueError("INTRADAY_TIMEFRAME_MINUTES must be between 1 and 15")
         if self.challenge_start and self.challenge_end:
             if self.challenge_end <= self.challenge_start:
                 raise ValueError("CHALLENGE_END must be after CHALLENGE_START")

@@ -37,8 +37,9 @@ The project was tested against the real Wallex REST API, WebSocket, private acco
 endpoints, MCP server and DeepSeek API. The hackathon's prop sub-account is funded with
 **5,000,000 TMN**. The first live attempt used the main-account key and was correctly
 rejected by Wallex; after switching to the prop account's key, **live preflight passes**
-(balance 5M, identity check true, no open orders). No real order has filled yet. A
-bounded live canary is the next deliberate operator step.
+(balance 5M, identity check true, no open orders). A later live run did fill two buys; the
+base-fee/metadata incident in §7.5 was resolved by selling the positions at 07:32. Only
+unsellable dust remains.
 
 **The most important finding:** Wallex's measured fees are **0.25% maker / 0.30%
 taker**. A taker round trip costs about **0.55–0.60%** before spread and slippage.
@@ -78,7 +79,7 @@ full runs are in `artifacts/`.
 | Final profit percentage | 90 | Positive, cost-aware swing strategy; AI-gated variant also positive; stress tests positive | `results/backtest_deterministic/report.html`, `results/backtest_ai/report.html`, `docs/RESULTS.md` |
 | Loss control | 30 | 10% hard stop, 8% trailing stop, 0.75% risk/trade, 3% portfolio heat, 2.5% daily loss limit, 6% drawdown kill, 3%/4.5% de-risking | `docs/RISK.md`, `RiskKernel`, backtest DD 5.39% |
 | Algorithm activity | 15 | 38 trades / 113 days with 4 positions; not a forced scalper. The negative intraday alternative is documented. | trade logs, `docs/STRATEGY.md` §activity |
-| Execution stability | 15 | Persist-before-send, idempotent client IDs, retries, WS reconnect, reconciliation, kill switch, Docker health, 39 tests | `docs/OPERATIONS.md`, preflight, shadow logs, Docker stack |
+| Execution stability | 15 | Persist-before-send, idempotent client IDs, retries, WS reconnect, reconciliation, kill switch, Docker health, 42 tests | `docs/OPERATIONS.md`, preflight, shadow logs, Docker stack |
 
 ### 2.2 Technical-quality scorecard
 
@@ -289,7 +290,11 @@ The obvious way to get more trades — a faster timeframe — was tested and rej
 | 4h breakout | 116–139 | −1.28% to −1.79% | 2.8–3.4% |
 
 At Wallex's 25/30 bps fees, these variants pay more in costs than they capture. The
-recommended way to increase opportunity is therefore:
+true resampled intraday tests with a 25% sleeve are also negative: 1m −1.39% / 1.43% DD /
+113 trades; 2m −1.55% / 1.68% / 103; 5m −2.77% / 2.86% / 115. Short live-data shadow
+samples (1m/2m/5m, 2–3 minutes, 12 symbols) produced zero candidates and zero fills;
+the 113-day 1m stream averages ~1.2 decisions/day, so a short window is not a frequency
+test. The recommended way to increase opportunity is therefore:
 
 1. **More symbols:** the live `.env` now lists **12** (BTC, ETH, SOL, USDT, XRP, DOGE,
    PEPE, XAUT, BNB, TRX, LTC, ZEC). The 12-symbol backtest returns **+16.46%** with
@@ -522,6 +527,31 @@ Three code fixes came out of this trial:
 This incident is documented instead of hidden: it demonstrates the safety checks doing
 their job and the exact remediation required.
 
+### 7.5 Second live incident: base-asset fees and entry metadata (2026-10-23)
+
+The operator ran a one-hour live session with the 1-hour swing config
+(`live_20261023_062625_nvuw`). Two buys filled:
+
+| Symbol | Gross qty | Fill | Fee charged | Net balance |
+|---|---:|---:|---:|---:|
+| PEPE | 149,712 | 1.2511 | 449.136 PEPE | 149,262.864 PEPE |
+| BNB | 0.0003 | 202,000,000 | 0.0000009 BNB | 0.0002991 BNB |
+
+Wallex charged the fee in the **base asset**. The old accounting treated it as a TMN
+fee and kept the gross quantity; cash and positions diverged, reconciliation correctly
+killed the engine, and every exit tried to sell the gross quantity (149,712 PEPE),
+which the exchange rejected with `error_code 1006`, *“insufficient quantity; your
+balance is 149,262.86 PEPE”*. The exit loop retried for the rest of the session,
+producing 1,393 rejected sell orders. `LiveBroker` also overwrote the OMS request
+metadata with the exchange payload, so the position lost its 20-day horizon/signal and
+fell back to the 20-minute default time stop.
+
+Fixes implemented: base-fee quantity is tracked separately; positions use net quantity
+and an all-in average entry; live broker preserves `entry_meta`; exit failures get a
+60-second backoff; entries are disabled when the kill switch activates; startup
+reconciles restored live quantities to exchange balances. The two positions were still
+open at the end of the run and should be flattened before the next live session.
+
 ---
 
 ## 8. Why the AI is real (detailed evidence)
@@ -635,7 +665,7 @@ exceeding 15% of starting equity.
 
 ## 10. Execution stability and quality
 
-- **39 unit tests pass**, 1 live integration test skipped by default (`RUN_LIVE_TESTS=1`
+- **42 unit tests pass**, 1 live integration test skipped by default (`RUN_LIVE_TESTS=1`
   enables it).
 - **mypy** clean (64 source files).
 - **ruff** clean.
@@ -740,9 +770,10 @@ phrase, a sufficient balance and no stale orders.
    behavior; otherwise positions are held subject to the 20-day stop.
 6. **Wallex UDF limits.** 4h resolution falls back to 1h; ARGUS resamples locally.
 7. **Live canary not filled yet.** The first attempt was rejected for using the main key;
-   the second (24-minute) run authenticated 5M but had no signal. No real order has
-   filled. The live broker and reconciliation are unit/integration smoke-tested, but the
-   first real fill is still the next milestone.
+   the second (24-minute) run authenticated 5M but had no signal. A later run filled PEPE
+   and BNB and hit the base-fee/metadata incident in §7.5; the positions were sold and
+   only dust remains. The live broker and reconciliation are now covered by that incident
+   plus unit tests.
 
 ---
 
@@ -798,7 +829,7 @@ risk controls, a full audit trail, a working dashboard, Docker reproducibility, 
 unusually honest account of the failed intraday hypothesis.
 
 **Weaknesses:** the sample is a bull market; activity is lower than a scalper's; no
-historical L2; the supplied key was main-only, so no live order filled (preflight now catches this); the AI can be variable.
+historical L2; a later live run filled two buys and exposed the base-fee/metadata bug (fixed; positions need flattening); the AI can be variable.
 
 **Why it deserves credit against the judges' tables:** it targets the highest-weight
 criterion (profit) with a positive, cost-aware strategy; it protects the second

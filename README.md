@@ -1,7 +1,7 @@
 # ARGUS — an auditable AI trading agent for Wallex
 
 ARGUS is a spot-only, long-only trading system for Wallex TMN markets. It combines
-a slow 4-hour trend strategy, a real DeepSeek decision agent, a deterministic risk
+a configurable slow trend strategy (4-hour default), a real DeepSeek decision agent, a deterministic risk
 kernel, a pessimistic shadow broker, a full audit trail, a learning journal and a
 read-only dashboard.
 
@@ -14,8 +14,9 @@ markets. In shadow mode it uses live market data but never sends an order.
 Wallex TMN markets charge **0.25% maker / 0.30% taker** on the challenge account
 (measured via `/v1/account/fee`). A round trip therefore costs about **0.55%**
 before spread and slippage. A 1-minute mean-reversion prototype lost money after
-costs in the 113-day sample (−3.94% net, 48 trades), so the default strategy is a
-slower 4-hour trend follower that targets multi-day moves. The failed intraday
+costs in the 113-day sample (−3.94% net, 48 trades), and true 1m/2m/5m tests are also
+negative. The default strategy is therefore a slower trend follower (4-hour bars by
+default) that targets multi-day moves. The failed intraday
 research is kept and selectable via `STRATEGY_MODE=intraday` for transparency.
 
 ## Headline backtest
@@ -37,7 +38,7 @@ stops, no lookahead.
 | Turnover | 6.1× |
 | PnL without best trade | +694,165 TMN |
 
-Every one of the eight symbols was profitable. A 12-symbol variant (BNB, TRX, LTC, ZEC added) returns **+16.46%** with 4.69% drawdown and 39 trades; the live `.env` lists 12 symbols for more opportunity surface. Faster 1h/15m variants were tested and lose after fees, so `STRATEGY_MODE=both` is an opt-in activity sleeve (25% risk), not the default. The AI-gated variant (DeepSeek reviews
+Every one of the eight symbols was profitable. A 12-symbol variant (BNB, TRX, LTC, ZEC added) returns **+16.46%** with 4.69% drawdown and 39 trades; ZEC/TMN is not tradable in the credit account, so the live `.env` now lists the 11 permitted symbols. Faster intraday variants (1h/15m trend prototypes) lose after fees; the 1h **slow swing** is a different configuration and is positive (see below). `STRATEGY_MODE=both` is an opt-in activity sleeve (25% risk), not the default. The AI-gated variant (DeepSeek reviews
 the same candidates without outcome knowledge) returns **+12.52%** with **4.34% max
 drawdown** and 34 trades: lower return, lower risk, and the AI vetoed the two most
 extended late entries. The 2× fee stress is still positive (**+9.36%**, 5.53% DD), and
@@ -46,27 +47,192 @@ the 2× slippage stress returns **+15.23%**. See `docs/RESULTS.md` and
 committed in [`results/`](results/README.md) so judges can open the reports without
 running the downloader.
 
-## Signal timeframe
+## Strategy timeframes — comparison and how to run
 
-The trader's **signal timeframe is configurable from `.env`**:
+ARGUS can run a **slow trend** on hourly-to-daily bars, or a separate **1-minute intraday engine**.
+They are different engines, not just a number in one setting. All results below are from
+2026-07-01 → 2026-10-21, measured Wallex fees (0.25% maker / 0.30% taker), 8 bps
+slippage, no lookahead. Intraday results use the 25% risk sleeve.
+
+### Which one should I use?
+
+> **Recommended for live: 4-hour swing on the 12-symbol `.env` universe.**
+> It has the best measured return (+16.46%, 4.69% max DD, 39 trades).
+>
+> **If you want more decision points: 1-hour swing.** It has slightly lower return but
+> lower drawdown (+15.34%, 3.77% DD, 35 trades) and evaluates 24 times per day instead
+> of 6.
+>
+> **Do not run 1m/2m/5m live.** All three are negative after fees; they are research
+> and shadow-only modes.
+
+| Strategy | Important `.env` | Net | Max DD | Trades | Verdict |
+|---|---|---:|---:|---:|---|
+| **4h swing** | `SWING_TIMEFRAME_HOURS=4` | **+15.79%** (8 symbols) | 5.39% | 38 | Recommended default |
+| **4h swing, 12 symbols** | same + `UNIVERSE_MAX_SYMBOLS=12` | **+16.46%** | 4.69% | 39 | Historical; ZEC/TMN excluded from live |
+| **1h swing** | `SWING_TIMEFRAME_HOURS=1` | +15.34% | 3.77% | 35 | Recommended if you want hourly decisions |
+| 2h swing | `SWING_TIMEFRAME_HOURS=2` | +9.60% | 5.19% | 42 | Positive, but lower return |
+| 1m intraday | `STRATEGY_MODE=intraday`, `INTRADAY_TIMEFRAME_MINUTES=1` | −1.39% | 1.43% | 113 | Not viable |
+| 2m intraday | `INTRADAY_TIMEFRAME_MINUTES=2` | −1.55% | 1.68% | 103 | Not viable |
+| 5m intraday | `INTRADAY_TIMEFRAME_MINUTES=5` | −2.77% | 2.86% | 115 | Not viable |
+| daily swing | `SWING_TIMEFRAME_HOURS=24` | — | — | — | Not validated; needs ~300 days |
+
+The 1h/2h and intraday rows are **8-symbol** tests; the 4h 12-symbol live universe is +16.46% / 4.69% / 39. Re-run with the same symbols when comparing.
+
+The 4h AI-gated ablation is +12.52% / 4.34% DD / 34 trades: lower return, lower risk,
+and a different trade set because DeepSeek vetoed the two most extended entries. The
+2× fee stress is still +9.36% (5.53% DD); 2× slippage is +15.23% (5.34% DD).
+
+### 1) 4-hour swing — recommended
 
 ```dotenv
-SWING_TIMEFRAME_HOURS=4      # default: 8d/40d EMA on 4h bars
+STRATEGY_MODE=swing
+SWING_TIMEFRAME_HOURS=4
 SWING_FAST_EMA=48
 SWING_SLOW_EMA=240
-SWING_HORIZON_SEC=1728000    # 20-day time stop
+SWING_HORIZON_SEC=1728000
+UNIVERSE_MAX_SYMBOLS=11
 ```
 
-- `SWING_TIMEFRAME_HOURS=4` builds completed 4h bars from 1h candles (default).
-- `SWING_TIMEFRAME_HOURS=1` builds hourly bars; with 48/240 EMAs this is a 2d/10d
-  trend with hourly decision points. Backtest: +15.34% net, 3.77% DD, 35 trades.
-- `SWING_TIMEFRAME_HOURS=2` gives 4d/20d EMAs; +9.60%, 5.19% DD, 42 trades.
-- `SWING_TIMEFRAME_HOURS=24` builds daily bars; 48/240 then means 48d/240d and needs
-  roughly 300 days of history, so the current 150-day sample cannot validate it.
+```bash
+# Backtest this strategy (explicit comparable universe; ZEC/TMN is excluded as
+# non-tradable in the credit account, so this run has 11 symbols)
+python -m wallex_trader backtest \
+  --symbols BTCTMN,ETHTMN,SOLTMN,USDTTMN,XRPTMN,DOGETMN,PEPETMN,XAUTTMN,BNBTMN,TRXTMN,LTCTMN \
+  --start 2026-07-01 --end 2026-10-21
 
-The 1-minute data feed and 1-second position management do not change with this setting.
-New entries are evaluated at each completed signal-timeframe bar; exits are checked every
-second. The legacy `STRATEGY_MODE=both/intraday` sleeve still uses 1-minute features.
+# Live-data rehearsal; never sends an order
+make shadow
+
+# Real money, bounded, foreground; closes positions on Ctrl-C
+MODE=live LIVE_CONFIRM=I_UNDERSTAND_REAL_MONEY FLATTEN_ON_STOP=true make live
+```
+
+The 4h setting is already in `.env`. It evaluates at 00:00, 04:00, 08:00, 12:00,
+16:00 and 20:00 UTC. The position/risk loop still runs every second.
+
+### 2) 1-hour swing — recommended alternative
+
+```dotenv
+STRATEGY_MODE=swing
+SWING_TIMEFRAME_HOURS=1
+SWING_FAST_EMA=48
+SWING_SLOW_EMA=240
+```
+
+With 48/240 bar counts, this is a **2-day / 10-day EMA** trend with hourly decisions.
+It was tested at **+15.34% / 3.77% DD / 35 trades** on eight symbols. It is a good choice
+if 4-hour decision points feel too slow, but it is a different strategy and should get
+its own 12-symbol/AI-gated backtest before scaling live.
+
+```bash
+SWING_TIMEFRAME_HOURS=1 make shadow
+SWING_TIMEFRAME_HOURS=1 MODE=live LIVE_CONFIRM=I_UNDERSTAND_REAL_MONEY FLATTEN_ON_STOP=true make live
+```
+
+### 3) 2-hour swing — optional
+
+```dotenv
+SWING_TIMEFRAME_HOURS=2
+```
+
+Tested at +9.60% / 5.19% DD / 42 trades. It is positive but dominated by 4h or 1h in
+this sample; use it only if you specifically want a 4-day / 20-day trend.
+
+```bash
+SWING_TIMEFRAME_HOURS=2 make backtest
+SWING_TIMEFRAME_HOURS=2 make shadow
+```
+
+### 4) 1m / 2m / 5m intraday — research and shadow only
+
+```dotenv
+STRATEGY_MODE=intraday
+INTRADAY_TIMEFRAME_MINUTES=1     # 1, 2, or 5
+INTRADAY_RISK_MULTIPLIER=0.25
+```
+
+The intraday engine uses 1-minute data, resamples to the configured bar, scans every
+5 seconds, and evaluates completed bars. These are true N-minute backtests, with the
+same fee model:
+
+| Bar | Net | Max DD | Trades |
+|---|---:|---:|---:|
+| 1m | −1.39% | 1.43% | 113 |
+| 2m | −1.55% | 1.68% | 103 |
+| 5m | −2.77% | 2.86% | 115 |
+
+Short live-data shadow samples (12 symbols, 2–3 minutes) produced **0 candidates and
+0 fills** because the fee-aware signal had no candidate; the 113-day 1m stream averages
+only ~1.2 decisions/day. That is not a bug and not a reason to force trades.
+
+```bash
+# Backtest a specific intraday bar size
+STRATEGY_MODE=intraday INTRADAY_TIMEFRAME_MINUTES=2 make backtest
+
+# Shadow only; use a tiny sleeve while experimenting
+STRATEGY_MODE=intraday INTRADAY_TIMEFRAME_MINUTES=2 INTRADAY_RISK_MULTIPLIER=0.10 make shadow
+```
+
+Do **not** use this mode with real money on Wallex's 25/30 bps fee schedule.
+
+### 5) Hybrid (slow swing + intraday sleeve) — opt-in only
+
+```dotenv
+STRATEGY_MODE=both
+SWING_TIMEFRAME_HOURS=4
+INTRADAY_TIMEFRAME_MINUTES=5
+INTRADAY_RISK_MULTIPLIER=0.10
+```
+
+It runs both engines; the intraday sleeve trades more but has negative measured
+expectancy. Use it only if activity points matter more than profit/loss control.
+
+```bash
+STRATEGY_MODE=both INTRADAY_RISK_MULTIPLIER=0.10 make shadow
+```
+
+### 6) 10-day horizon — more turnover, still positive
+
+This is not a different timeframe; it shortens holding time:
+
+```dotenv
+STRATEGY_MODE=swing
+SWING_TIMEFRAME_HOURS=4
+SWING_HORIZON_SEC=864000
+```
+
+Tested at **+11.82% / 4.45% DD / 52 trades**. Lower return than the 20-day default,
+but more turnover. Re-run the backtest and cost stress if you change it.
+
+### Switching rules
+
+- `SWING_TIMEFRAME_HOURS` accepts **1–24 hours** and only applies to the swing engine.
+- `INTRADAY_TIMEFRAME_MINUTES` accepts **1–15 minutes** and only applies when
+  `STRATEGY_MODE=intraday` or `both`.
+- `SWING_FAST_EMA` and `SWING_SLOW_EMA` are **bar counts**, not days. At 4h, 48/240 =
+  8d/40d; at 1h, 48/240 = 2d/10d. Changing both the timeframe and the EMA counts is a
+  new strategy: re-run the backtest, 2× fees, 2× slippage and AI ablation.
+- Daily (`24`) needs about 300 days of 1h history; the current downloaded sample is
+  150 days, so daily is not validated.
+- `make shadow` uses live market data and never sends an order. `make live` requires
+  the prop account key, `LIVE_CONFIRM`, and ideally `FLATTEN_ON_STOP=true`.
+
+## Logs and run artifacts
+
+Every shadow/live run is identified by a `run_id` printed in the `engine started` log.
+
+- Console: JSON logs to stdout/stderr.
+- Aggregate log: `logs/trader.jsonl` (all runs, rotated).
+- **Per-run log:** `logs/runs/<run_id>.jsonl`; every line carries `run_id` and `mode`.
+- Shadow artifacts: `artifacts/shadow/<run_id>/` (metrics, decisions, positions, orders,
+  fills, equity, journal).
+- Live artifacts: `artifacts/live/<run_id>/` (same files, after flatten-on-stop if set).
+- Database: `runs`, `decisions`, `orders`, `fills`, `positions`, `equity`, notes.
+
+```bash
+tail -f logs/runs/<run_id>.jsonl
+```
 
 ## What is implemented
 
@@ -74,7 +240,7 @@ second. The legacy `STRATEGY_MODE=both/intraday` sleeve still uses 1-minute feat
   client IDs, order lookup after ambiguous POSTs and a read-only MCP client.
 - Centrifugo WebSocket feed with automatic reconnect and REST resync.
 - Local order books, trade tape, 1m/1h/4h candles and feature engine.
-- Slow 4h trend strategy plus a legacy intraday mean-reversion/momentum engine.
+- Configurable slow trend (4h default, 1h–24h) plus a legacy intraday mean-reversion/momentum engine (1m/2m/5m).
 - DeepSeek agent with strict JSON schema validation, prompt/response hashes, daily
   budget, circuit breaker, caching and optional MCP escalation.
 - Trade reflection and session review: lessons are stored in PostgreSQL and an
@@ -156,8 +322,10 @@ Live mode is deliberately hard to start:
 
 The prop sub-account is funded with **5,000,000 TMN** and its API key is now in
 `.env`. Live preflight passes (`api_key_matches_sub_account = true`, 0 open orders).
-The first attempt used the main key and was correctly rejected; see the incident in
-`report.md` §7.4. A bounded live test can be started in the foreground with:
+The first attempt used the main key and was correctly rejected; a later live run hit
+base-asset fee/quantity accounting. The positions were sold at 07:32 and the flatten
+command then found only unsellable dust. The bugs are fixed; see `report.md` §7.5 and
+`results/live_incident_20261023.md`. A bounded live test can be started in the foreground with:
 
 ```bash
 MODE=live LIVE_CONFIRM=I_UNDERSTAND_REAL_MONEY FLATTEN_ON_STOP=true make live

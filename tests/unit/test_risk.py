@@ -77,6 +77,7 @@ def make_decision(**overrides):
 
 def test_risk_approval_sizes_within_caps(settings) -> None:
     meta, book, candidate, portfolio, regime = setup_objects(settings)
+    settings.risk_per_trade = 0.02
     kernel = RiskKernel(settings, KillSwitch(settings))
     pre = kernel.pre_check(
         candidate,
@@ -92,7 +93,7 @@ def test_risk_approval_sizes_within_caps(settings) -> None:
     )
     assert pre.approved
     approval = kernel.approve(
-        make_decision(),
+        make_decision(size_fraction=0.8),
         candidate,
         portfolio,
         book,
@@ -194,6 +195,7 @@ def test_trend_size_floor_rejects_small_ai_size(settings) -> None:
 
 def test_intraday_sleeve_uses_a_smaller_risk_budget(settings) -> None:
     meta, book, candidate, portfolio, _ = setup_objects(settings)
+    settings.risk_per_trade = 0.02
     kernel = RiskKernel(settings, KillSwitch(settings))
     candidate.signal = "TREND"
     trend = kernel.approve(
@@ -222,3 +224,22 @@ def test_intraday_sleeve_uses_a_smaller_risk_budget(settings) -> None:
     assert trend.approved and intraday.approved
     assert intraday.quantity < trend.quantity
     assert intraday.notional_tmn < trend.notional_tmn
+
+
+def test_order_below_min_notional_is_vetoed(settings) -> None:
+    meta, book, candidate, portfolio, _ = setup_objects(settings)
+    settings.min_notional_tmn = 400_000
+    kernel = RiskKernel(settings, KillSwitch(settings))
+    approval = kernel.approve(
+        make_decision(),
+        candidate,
+        portfolio,
+        book,
+        meta,
+        fee_rate=FeeRate(0.0025, 0.003),
+        position=None,
+        open_orders=[],
+        now=datetime.now(UTC),
+    )
+    assert not approval.approved
+    assert any("minimum notional" in reason for reason in approval.reasons)

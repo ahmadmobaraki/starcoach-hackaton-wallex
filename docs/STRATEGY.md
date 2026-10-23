@@ -137,9 +137,17 @@ with 55 bps round-trip fees the edge is too small:
 - most exits were time stops after 49 minutes with gross moves under 50 bps;
 - fees were 214k TMN on 5M capital, larger than the gross PnL.
 
-This is exactly the kind of honest negative result the plan asked for. The code is
-kept for research and can be enabled with `STRATEGY_MODE=intraday`; it is not the
-default.
+With the current 25% intraday sleeve, true resampled backtests are:
+
+| Intraday bar | Net | Max DD | Trades |
+|---|---:|---:|---:|
+| 1m | −1.39% | 1.43% | 113 |
+| 2m | −1.55% | 1.68% | 103 |
+| 5m | −2.77% | 2.86% | 115 |
+
+Configure with `STRATEGY_MODE=intraday`, `INTRADAY_TIMEFRAME_MINUTES=1|2|5`, and
+`INTRADAY_RISK_MULTIPLIER=0.25`. This is exactly the kind of honest negative result the
+plan asked for; the code is kept for research, not the default.
 
 ## Activity versus quality
 

@@ -60,7 +60,13 @@ class LiveBroker:
             "price": fmt_decimal(order.price, meta.price_precision),
             "quantity": fmt_decimal(order.quantity, meta.amount_precision),
         }
-        order.raw_request = payload
+        # Keep OMS metadata (entry_meta/exit_reason) when attaching the exchange
+        # payload. Overwriting it used to reset the position to the default
+        # 20-minute time stop after a live fill.
+        order.raw_request = {
+            **dict(order.raw_request or {}),
+            "exchange_payload": payload,
+        }
         self.orders[order.client_order_id] = order
         order.status = OrderStatus.PENDING_SEND
         order.updated_at = now or datetime.now(UTC)

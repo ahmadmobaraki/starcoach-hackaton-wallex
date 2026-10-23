@@ -181,12 +181,21 @@ class Portfolio:
         """Apply a fill and return a closed-trade record when a position closes."""
         self._daily_rollover(fill.ts)
         if fill.side == Side.BUY:
-            total_cost = fill.notional + fill.fee
-            if total_cost > self.cash_tmn + Decimal("1"):
+            gross_qty = fill.quantity
+            net_qty = gross_qty - max(ZERO, fill.base_fee_quantity)
+            if net_qty <= 0:
+                raise PortfolioError("buy fill is fully consumed by the base-asset fee")
+            # Base-asset fees reduce the quantity credited, not TMN cash. TMN
+            # fees are added to cash cost. The all-in average entry includes
+            # both, so realized PnL must not subtract the entry fee again.
+            cash_cost = fill.price * gross_qty
+            if fill.base_fee_quantity <= 0:
+                cash_cost += fill.fee
+            if cash_cost > self.cash_tmn + Decimal("1"):
                 raise PortfolioError(
-                    f"insufficient cash: need {total_cost}, have {self.cash_tmn}"
+                    f"insufficient cash: need {cash_cost}, have {self.cash_tmn}"
                 )
-            self.cash_tmn -= total_cost
+            self.cash_tmn -= cash_cost
             self.fees_tmn += fill.fee
             self.total_volume_tmn += fill.notional
             existing = self.positions.get(fill.symbol)
@@ -196,8 +205,8 @@ class Portfolio:
                 take_bps = float(meta.get("take_profit_bps", self.settings.take_profit_bps))
                 position = Position(
                     symbol=fill.symbol,
-                    quantity=fill.quantity,
-                    avg_entry=fill.price,
+                    quantity=net_qty,
+                    avg_entry=cash_cost / net_qty,
                     stop_price=fill.price * (Decimal(1) - Decimal(str(stop_bps)) / Decimal(10_000)),
                     take_profit_price=fill.price
                     * (Decimal(1) + Decimal(str(take_bps)) / Decimal(10_000)),
@@ -215,14 +224,16 @@ class Portfolio:
                         **meta.get("features", {}),
                         "agent": meta.get("agent", {}),
                         "entry_price": str(fill.price),
+                        "entry_quantity_gross": str(gross_qty),
+                        "entry_fee_base_quantity": str(fill.base_fee_quantity),
                         "entry_ts": fill.ts.isoformat(),
                     },
                 )
                 self.positions[fill.symbol] = position
             else:
-                total_qty = existing.quantity + fill.quantity
+                total_qty = existing.quantity + net_qty
                 existing.avg_entry = (
-                    existing.avg_entry * existing.quantity + fill.price * fill.quantity
+                    existing.avg_entry * existing.quantity + cash_cost
                 ) / total_qty
                 existing.quantity = total_qty
                 existing.entry_fee_tmn += fill.fee
@@ -253,10 +264,15 @@ class Portfolio:
             else ZERO
         )
         gross_pnl = (fill.price - sell_position.avg_entry) * qty
-        net_pnl = gross_pnl - entry_fee_share - fill.fee
+        # avg_entry is all-in, so the entry fee is already in the basis; only
+        # the exit fee is subtracted here.
+        net_pnl = gross_pnl - fill.fee
         self.realized_pnl_tmn += net_pnl
-        sell_position.quantity -= qty
-        sell_position.entry_fee_tmn -= entry_fee_share
+        reduction = min(qty + max(ZERO, fill.base_fee_quantity), sell_position.quantity)
+        sell_position.quantity -= reduction
+        sell_position.entry_fee_tmn = max(
+            ZERO, sell_position.entry_fee_tmn - entry_fee_share
+        )
         sell_position.realized_pnl_tmn += net_pnl
         self.mark(fill.symbol, fill.price)
         trade: dict[str, Any] | None = None

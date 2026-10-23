@@ -115,7 +115,10 @@ deliberately after inspection.
 
 ## Logs
 
-- JSON lines to stdout/stderr and `logs/trader.jsonl`, rotated 20MB × 10.
+- JSON lines to stdout/stderr and `logs/trader.jsonl` (aggregate), rotated 20MB × 10.
+- Each trader/shadow/live run also writes `logs/runs/<run_id>.jsonl`; every line has
+  `run_id` and `mode`. The run ID is printed in `engine started` and is the artifact
+  directory name.
 - `logs/preflight.jsonl`, `logs/backtest.jsonl`, `logs/download.jsonl`, etc.
 - Secrets are redacted from structured context; never log full API keys.
 - Docker uses json-file logging with rotation (20MB × 5).

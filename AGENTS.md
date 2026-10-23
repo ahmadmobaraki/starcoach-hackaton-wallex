@@ -22,9 +22,11 @@ ARGUS is a complete trading system, not a notebook:
 - A deterministic risk kernel can veto or force exits and owns all hard limits.
 - A shadow broker and a guarded live broker share the same OMS/portfolio path.
 - PostgreSQL/SQLite audit trail, FastAPI dashboard, HTML backtest reports, Docker.
-- Current live state: funded prop account (5,000,000 TMN), live preflight passes, but
-  **no real order has filled yet**. The first attempt used the main-account key and was
-  rejected; the second ran 24 minutes with no 4h signal and correctly did nothing.
+- Current live state: funded prop account (5,000,000 TMN), live preflight passes. Two
+  buys filled in a later live run; the base-asset fee/entry-metadata incident (§18.15)
+  was resolved by selling at 07:32. Cash is **4,996,524 TMN**, dust ~3 TMN, no open
+  orders. Earlier: the first attempt used the main-account key and was rejected; the
+  second ran 24 minutes with no 4h signal and correctly did nothing.
 
 The single most important economic fact: Wallex TMN fees are **0.25% maker / 0.30%
 taker**, so a taker round trip costs about **55–60 bps** before spread/slippage. This is
@@ -58,7 +60,7 @@ why the default is a multi-day trend strategy, not a scalper.
 make install                 # uv sync --frozen --extra dev
 make lint                    # ruff
 make typecheck               # mypy
-make test                    # pytest (39 passed, 1 live skipped)
+make test                    # pytest (49 passed, 1 live skipped)
 make test-live               # RUN_LIVE_TESTS=1, public Wallex API test
 
 # Validation without real orders
@@ -100,18 +102,32 @@ Valid commands: `run`, `shadow`, `live`, `preflight`, `download`, `backtest`,
 ## 3. Current state (do not hallucinate older states)
 
 - Mode in `.env`: `shadow`. Live is started with shell environment overrides.
-- Strategy: `STRATEGY_MODE=swing` (slow trend; `SWING_TIMEFRAME_HOURS=4` default), universe **12 symbols**:
+- Strategy: `STRATEGY_MODE=swing` (slow trend; `SWING_TIMEFRAME_HOURS=4` default), universe **11 symbols**:
   BTCTMN, ETHTMN, SOLTMN, USDTTMN, XRPTMN, DOGETMN, PEPETMN, XAUTTMN,
-  BNBTMN, TRXTMN, LTCTMN, ZECTMN.
+  BNBTMN, TRXTMN, LTCTMN. ZECTMN was removed because ZEC/TMN is not tradable in the
+  credit account; see `configs/blocked_markets.txt`.
 - Prop sub-account: **5,000,000 TMN**, 0 open orders.
 - `.env` now contains the prop-account API key and the prop sub-account client ID.
 - Live preflight: **PASS** (`api_key_matches_sub_account=true`, balance 5M).
-- No real order has filled. The first live attempt (`live_20261022_131200_0w87`) used
-  the main-account key and was rejected; the second (`live_20261022_152628_52xl`) ran
-  24 minutes with **0 decisions** because no completed 4h bar produced a candidate.
+- **Real live run:** `live_20261023_062625_nvuw` (06:26–07:17) filled PEPE 149,712 and
+  BNB 0.0003 (net fee-adjusted: 149,262.864 PEPE / 0.0002991 BNB). Base-asset fees and a
+  live `entry_meta` overwrite caused a reconciliation kill and rejected exits. The
+  positions were sold at 07:32 by a follow-up run; the 07:34 flatten command found only
+  unsellable dust and sent zero orders. Current cash **4,996,524 TMN**, dust ~3 TMN, no
+  open orders. Do not trade the dust.
+- Earlier: first live attempt (`live_20261022_131200_0w87`) used the main-account key and
+  was rejected; the second (`live_20261022_152628_52xl`) ran 24 minutes with **0 decisions**
+  because no completed 4h bar produced a candidate.
+- **Live canary:** `live_20261023_095238_krcf` (09:52–11:18 UTC) ran in live mode with
+  **0 decisions, 0 orders, 0 fills**, no kill, 6 WS reconnects, 0 REST errors, flat
+  equity at 4,996,524 TMN, and `replay` PASS. It ended before the 12:00 UTC 4h close, so
+  it validated live startup/reconciliation only; the execution path is still unproven.
+- Universe is now **11 symbols** (ZECTMN removed); `MIN_NOTIONAL_TMN=100000` is a
+  validator-enforced floor. Live/shadow refuse to start if the allowlist contains any
+  symbol from `configs/blocked_markets.txt`.
 - Dashboard: LIVE badge has a blinking green dot while running; overview shows last
   scan, candidate count, regime and next signal-timeframe decision.
-- Tests: **39 passed, 1 skipped**; ruff clean; mypy clean (64 files); Docker build OK.
+- Tests: **49 passed, 1 skipped**; ruff clean; mypy clean (65 files); Docker build OK.
 - Results snapshot: `results/`; full artifacts: `artifacts/` (gitignored).
 - Canonical full report: `report.md`; detailed docs in `docs/`.
 
@@ -318,6 +334,25 @@ It emits MR/MOM candidates. It is kept for research and for the optional activit
 On the 113-day sample it lost **−3.94%** over 48 trades after fees. Do not enable it by
 default or claim it is profitable.
 
+If the user asks for “1-minute scalping”, explain that:
+
+- `SWING_TIMEFRAME_HOURS` is intentionally 1–24 hours (the slow strategy); 1m is a
+  different engine.
+- `STRATEGY_MODE=intraday` (or `both`) is the built-in 1m path; decisions scan every 5s,
+  but the candidate horizon is still minutes, not HFT, and the fee hurdle remains.
+- With the 25% sleeve, true backtests: 1m **−1.39% / 1.43% DD / 113 trades**, 2m
+  **−1.55% / 1.68% / 103**, 5m **−2.77% / 2.86% / 115**. The earlier full-risk 1m
+  variant lost −3.94% over 48 trades. A true 1m scalp cannot pay 55–60 bps round-trip
+  costs reliably. Configure the bar size with `INTRADAY_TIMEFRAME_MINUTES=1|2|5` and
+  keep `INTRADAY_RISK_MULTIPLIER` small.
+- If experimenting, use `STRATEGY_MODE=intraday` with `INTRADAY_RISK_MULTIPLIER=0.10`
+  in **shadow** first; do not start a full-size live 1m sleeve. Do not lower
+  `ALPHA_THRESHOLD_BPS`/`Z_ENTRY` just to force fills; that converts a fee-aware
+  candidate into a negative-expectancy one.
+- `STRATEGY_MODE=both` combines the slow swing with the small 1m sleeve; it will trade
+  more but the sleeve has negative expectancy in the measured sample.
+
+
 ### 7.3 Why faster is not the default
 
 Measured on the same 113-day data after fees (250k notional per trade, 4 positions):
@@ -336,7 +371,7 @@ if acceptable, a smaller horizon or a small activity sleeve — not 1m scalping.
 ### 7.4 How to get more trades (approved levers)
 
 - **Signal timeframe**: `SWING_TIMEFRAME_HOURS=1` (2d/10d EMAs) was validated at +15.34% / 3.77% DD / 35 trades; `2` at +9.60% / 5.19% / 42; default `4` at +15.79% / 5.39% / 38. A 24h bar needs ~300 days of history and is not validated on the current 150-day sample.
-- **Universe**: 12 symbols already in `.env`; 12-symbol run +16.46% / 4.69% DD / 39 trades.
+- **Universe**: 11 tradable symbols in `.env`. The historical 12-symbol run (+16.46% / 4.69% DD / 39 trades) included ZECTMN, which is not tradable in the credit account and is now excluded.
 - **10-day horizon**: `SWING_HORIZON_SEC=864000`; +11.82% / 4.45% DD / 52 trades.
 - **Activity sleeve**: `STRATEGY_MODE=both` and `INTRADAY_RISK_MULTIPLIER=0.25`; it
   trades more but the intraday variants are negative after fees. Not recommended for
@@ -354,12 +389,18 @@ count, regime and next decision time. Never “fix” this by inserting forced o
 
 ### 7.6 Universe
 
-Default `.env` allowlist has 12 liquid TMN spot markets. Selection checks:
+Default `.env` allowlist has 11 liquid TMN spot markets. Selection checks:
 
+- not present in `configs/blocked_markets.txt` (account-specific hard blocklist);
 - listed, spot, TMN-quoted;
 - not flagged risky, not new (<14 days);
 - 24h quote volume ≥ 5B TMN;
 - valid price/precision.
+
+Live and shadow modes refuse to start if `UNIVERSE_ALLOWLIST` contains a blocked
+market. A blocked market is also excluded by `UniverseSelector` with reason
+`not tradable in this account`. Do not re-add a blocked market, and do not bypass the
+blocklist for convenience.
 
 Do not permanently exclude a symbol for a transiently wide book; the risk kernel
 checks spread/depth at order time.
@@ -466,7 +507,8 @@ Then apply soft de-risk (×0.5 at 3% DD) and, for non-TREND signals, the intrada
 multiplier (default 0.25). Checks include min notional, gross exposure, portfolio heat,
 correlated exposure, cash buffer, spread/depth/age, slippage, price sanity, self-trade,
 open order/position caps, daily loss, drawdown, volatility, WS/API health, clock skew,
-and endgame.
+and endgame. Orders below **100,000 TMN** are vetoed; the kernel never upsizes a
+counter to clear the floor.
 
 ### 9.2 Defaults (shadow/backtest)
 
@@ -484,7 +526,7 @@ and endgame.
 | Soft de-risk | 3% |
 | Hard de-risk | 4.5% |
 | Max order | 750,000 TMN |
-| Min order | 50,000 TMN |
+| Min order | 100,000 TMN |
 | Max spread | 50 bps |
 | Max slippage | 25 bps |
 | Stop / TP | 10% / 25% |
@@ -492,8 +534,9 @@ and endgame.
 | Horizon | 20 days |
 
 Live canary is enforced by `Settings._validate` and `configs/live.yaml`:
-**250,000 TMN max order, 10% max position, 0.5% risk**. Do not bypass these. Environment
-variables were intentionally removed for these three values so the live YAML applies.
+**250,000 TMN max order, 100,000 TMN min order, 10% max position, 0.5% risk**. Do not
+bypass these. Environment variables were intentionally removed for the order/position/risk
+caps so the live YAML applies; the 100,000 TMN floor is validator-enforced in every mode.
 
 ### 9.3 Kill switch
 
@@ -605,7 +648,7 @@ Key variables (not exhaustive):
 - `POSTGRES_DSN`, PostgreSQL Compose credentials.
 - `DASHBOARD_HOST/PORT/BASIC_AUTH_USER/BASIC_AUTH_PASSWORD/KILL_TOKEN`.
 - `UNIVERSE_ALLOWLIST`, `UNIVERSE_MAX_SYMBOLS`.
-- `STRATEGY_MODE`, `INTRADAY_RISK_MULTIPLIER`, `SWING_TIMEFRAME_HOURS`, `SWING_FAST_EMA`, `SWING_SLOW_EMA`, `SWING_*`, `Z_ENTRY`,
+- `STRATEGY_MODE`, `INTRADAY_TIMEFRAME_MINUTES`, `INTRADAY_RISK_MULTIPLIER`, `SWING_TIMEFRAME_HOURS`, `SWING_FAST_EMA`, `SWING_SLOW_EMA`, `SWING_*`, `Z_ENTRY`,
   `ALPHA_THRESHOLD_BPS`, `CANDIDATE_THRESHOLD`.
 - `RISK_PER_TRADE`, `MAX_POSITION_PCT`, `MAX_ORDER_NOTIONAL_TMN` are **mode YAML**
   values for live (do not re-add them to `.env` unless intentionally changing a mode).
@@ -728,7 +771,7 @@ make shadow -- --duration 120     # bounded
 docker build -t argus-local .
 ```
 
-- Current: 39 passed, 1 skipped (live integration).
+- Current: 49 passed, 1 skipped (live integration).
 - Add unit tests for any new behavior; keep tests fast and offline by default.
 - `RUN_LIVE_TESTS=1 pytest -m live` exercises public Wallex endpoints only.
 - `self-test` and `agent-test` must never send a network order.
@@ -745,7 +788,7 @@ docker build -t argus-local .
 - Dashboard binds `127.0.0.1:8080`; trader has no exposed port; Caddy profile optional.
 - Trader healthcheck uses `python -m wallex_trader health --max-age 120`.
 - `docker compose --profile tools run --rm backtest` seeds PostgreSQL backtest rows.
-- Logs rotate; JSON logs to `logs/*.jsonl`.
+- Logs rotate; `logs/trader.jsonl` is the aggregate JSON log and `logs/runs/<run_id>.jsonl` is the per-run log. Every run line includes `run_id` and `mode`; the run ID is printed at startup.
 - Do not expose the dashboard publicly without basic auth/Caddy/TLS.
 
 ---
@@ -781,6 +824,15 @@ docker build -t argus-local .
     shadow. Keep the mode filter.
 14. **Flatten on stop**: `FLATTEN_ON_STOP=true` closes positions on normal stop; live
     artifacts are written after flatten. Keep this option for bounded tests.
+15. **Base-asset fees + live entry metadata (2026-10-23)**: Wallex charged PEPE/BNB
+    buy fees in the base asset. The old code booked gross quantity and a TMN fee, so
+    portfolio quantities/cash diverged; reconciliation killed and sell orders for the
+    gross quantity were rejected (`code 1006`, insufficient quantity). `LiveBroker` also
+    overwrote OMS `raw_request`, losing `entry_meta` and silently using the 20-minute
+    default horizon/stop. Fixes: `Fill.base_fee_quantity`, net position quantity,
+    all-in average entry, preserve `entry_meta` under `exchange_payload`, exit-rejection
+    backoff, entries disabled on kill, startup position reconciliation. Run a shadow
+    test after any fee/quantity change.
 
 ---
 

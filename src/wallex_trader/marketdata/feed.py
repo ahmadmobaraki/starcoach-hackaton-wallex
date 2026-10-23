@@ -34,7 +34,7 @@ class MarketDataFeed:
         self.rest = rest
         self.symbols = list(dict.fromkeys(symbols))
         self.books = books or BookStore()
-        self.candles = candles or CandleStore()
+        self.candles = candles or CandleStore(maxlen=5000)
         self.hourly = CandleStore(maxlen=12000)
         self.tape = tape or TradeTape()
         self.last_hourly_sync: dict[str, datetime] = {}

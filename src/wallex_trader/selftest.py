@@ -53,7 +53,7 @@ def _synthetic_setup(settings: Settings) -> tuple[Portfolio, MarketMeta, OrderBo
     candidate = Candidate(
         symbol="BTCTMN",
         side=Side.BUY,
-        signal="MR",
+        signal="TREND",
         score=0.82,
         expected_edge_bps=180.0,
         spread_bps=1.0,
@@ -75,11 +75,11 @@ def _synthetic_setup(settings: Settings) -> tuple[Portfolio, MarketMeta, OrderBo
             "top5_depth_tmn": 50_000_000.0,
         },
         regime="range",
-        rationale="selftest: synthetic oversold snapshot with bid support",
+        rationale="selftest: synthetic trend entry with bid support",
         expected_move_bps=250.0,
-        recommended_stop_bps=100.0,
-        recommended_take_profit_bps=200.0,
-        recommended_horizon_sec=600,
+        recommended_stop_bps=1000.0,
+        recommended_take_profit_bps=2500.0,
+        recommended_horizon_sec=1_728_000,
     )
     return portfolio, meta, book, candidate
 
@@ -121,12 +121,12 @@ async def run_self_test(
     decision = AgentDecision(
         action=AgentAction.BUY,
         confidence=0.78,
-        size_fraction=0.5,
+        size_fraction=0.8,
         order_type="MARKETABLE_LIMIT",
         limit_offset_bps=5.0,
-        take_profit_bps=200.0,
-        stop_loss_bps=100.0,
-        horizon_sec=600,
+        take_profit_bps=2500.0,
+        stop_loss_bps=1000.0,
+        horizon_sec=1_728_000,
         regime="range",
         rationale="selftest synthetic entry",
         risk_flags=[],

@@ -348,6 +348,7 @@ class Fill:
     quantity: Decimal
     fee: Decimal
     fee_asset: str
+    base_fee_quantity: Decimal = ZERO
     ts: datetime = field(default_factory=utcnow)
     liquidity: str = "taker"
     decision_id: str | None = None
@@ -366,6 +367,7 @@ class Fill:
             "quantity": str(self.quantity),
             "fee": str(self.fee),
             "fee_asset": self.fee_asset,
+            "base_fee_quantity": str(self.base_fee_quantity),
             "ts": self.ts.isoformat(),
             "liquidity": self.liquidity,
             "decision_id": self.decision_id,

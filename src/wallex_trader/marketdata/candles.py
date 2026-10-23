@@ -82,10 +82,69 @@ class CandleStore:
         values = list(series)
         return values[-limit:] if limit else values
 
+    def resampled(
+        self,
+        symbol: str,
+        minutes: int = 1,
+        limit: int = 400,
+        *,
+        now: datetime | None = None,
+        drop_incomplete: bool = True,
+    ) -> list[Candle]:
+        """Aggregate the 1m store into N-minute bars for the intraday engine."""
+        if minutes <= 1:
+            return self.candles(symbol, limit)
+        raw = self.candles(symbol, (limit + 2) * minutes)
+        if not raw:
+            return []
+        bucket_seconds = minutes * 60
+        current = now or datetime.now(UTC)
+        buckets: dict[int, dict[str, Any]] = {}
+        for candle in raw:
+            start = int(candle.ts.timestamp()) // bucket_seconds * bucket_seconds
+            bucket = buckets.setdefault(
+                start,
+                {
+                    "symbol": candle.symbol,
+                    "open": candle.open,
+                    "high": candle.high,
+                    "low": candle.low,
+                    "close": candle.close,
+                    "volume": candle.volume,
+                },
+            )
+            bucket["high"] = max(float(bucket["high"]), candle.high)
+            bucket["low"] = min(float(bucket["low"]), candle.low)
+            bucket["close"] = candle.close
+            bucket["volume"] = float(bucket["volume"]) + candle.volume
+        result: list[Candle] = []
+        for start in sorted(buckets):
+            end = start + bucket_seconds
+            if drop_incomplete and end > int(current.timestamp()):
+                continue
+            values = buckets[start]
+            result.append(
+                Candle(
+                    symbol=str(values["symbol"]),
+                    ts=datetime.fromtimestamp(end, tz=UTC),
+                    open=float(values["open"]),
+                    high=float(values["high"]),
+                    low=float(values["low"]),
+                    close=float(values["close"]),
+                    volume=float(values["volume"]),
+                )
+            )
+        return result[-limit:]
+
     def arrays(
-        self, symbol: str, limit: int | None = None
+        self,
+        symbol: str,
+        limit: int | None = None,
+        *,
+        minutes: int = 1,
+        now: datetime | None = None,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray] | None:
-        candles = self.candles(symbol, limit)
+        candles = self.resampled(symbol, minutes, limit or 400, now=now)
         if len(candles) < 3:
             return None
         open_ = np.array([c.open for c in candles], dtype=float)

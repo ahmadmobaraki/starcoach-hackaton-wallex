@@ -65,6 +65,16 @@ DOGE +77,924; XRP +43,478; PEPE +35,901; USDT +12,829.
 
 1h and 2h are configurable via `SWING_TIMEFRAME_HOURS`; EMA counts remain 48/240.
 
+## 2d. 1m/2m/5m intraday tests (25% sleeve)
+
+| Bar | Net | Max DD | Trades | Fees |
+|---|---:|---:|---:|---:|
+| 1m | −1.39% | 1.43% | 113 | 127,253 TMN |
+| 2m | −1.55% | 1.68% | 103 | 115,942 TMN |
+| 5m | −2.77% | 2.86% | 115 | 129,258 TMN |
+
+These use `STRATEGY_MODE=intraday` and resampled bars. They are not viable after fees.
+
 ## 3. Failed intraday baseline (honest negative)
 
 Original 1m mean-reversion/momentum engine, 4 symbols, same 113 days:
@@ -152,6 +162,12 @@ Source: `artifacts/shadow/`.
 
 See `docs/SHADOW_TESTING.md` for the full transcript summary and acceptance checklist.
 
+A live run on 2026-10-23 (06:26–07:17) filled PEPE and BNB; base-asset fees caused a
+reconciliation kill and rejected gross-quantity exits. The positions were sold at 07:32;
+the follow-up flatten found only unsellable dust and sent zero orders. Cash is
+4,996,524 TMN, no open orders. The fee/quantity/metadata bugs are fixed. Details in
+`report.md` §7.5 and `results/live_incident_20261023.md`.
+
 A first live attempt (13:12–14:06) started correctly but the order was rejected because
 the first attempt used the main-account key; the prop sub-account held the 5M. The
 order endpoint saw the main balance (0.39665 TMN, error code 1006) and rejected it. A
@@ -176,7 +192,7 @@ make dashboard
   decisions.
 - `replay` reconstructs accounting and verifies hashes.
 - Docker Compose runs PostgreSQL + trader + dashboard (+ optional Caddy).
-- Unit tests: 39 passed, 1 live test skipped by default.
+- Unit tests: 49 passed, 1 live test skipped by default.
 
 ## 8. What these results do and do not prove
 

@@ -97,6 +97,20 @@ fields are decimal-place counts on some markets (fixed by using precision), and
 universe selection was too strict on a transiently wide book (fixed by checking the
 book at order time).
 
+### Intraday timeframe shadow samples
+
+Short live-data shadow runs with 12 symbols and no real orders:
+
+| Bar | Run | Duration | Candidates/decisions | Orders/fills |
+|---|---|---:|---:|---:|
+| 1m | `shadow_20261023_060325_ehh4` | 3 min | 0 / 0 | 0 / 0 |
+| 2m | `shadow_20261023_060720_acge` | 2 min | 0 / 0 | 0 / 0 |
+| 5m | `shadow_20261023_060952_tvnn` | 2 min | 0 / 0 | 0 / 0 |
+
+The windows are too short to conclude frequency: the 113-day 1m backtest has about 1.2
+decisions/day. The runs confirm the live path starts, resamples the configured bar,
+and does not force trades when the fee-aware signal has no candidate.
+
 ### Learning loop
 
 `make self-test --reflection` produced a real DeepSeek reflection and journal note.
@@ -135,5 +149,6 @@ shadow window it opened two positions; over three days it may open only a handfu
 That is intentional: each round trip costs ~55–90 bps, so forcing activity would turn
 a positive-expectancy swing system into a negative-expectancy one. The **Activity**
 score is 15 points; the **Profit** score is 90. If the judges require more activity,
-increase the universe to 12 symbols (data and backtest are supported) or lower the
-horizon after re-running the cost stress; do not enable the losing intraday baseline.
+use the full permitted 11-symbol universe (ZEC/TMN is blocked in the credit account) or
+lower the horizon after re-running the cost stress; do not enable the losing intraday
+baseline.

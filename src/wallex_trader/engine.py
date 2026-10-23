@@ -26,9 +26,10 @@ from wallex_trader.exchange.mcp import MCPError, WallexMCPClient
 from wallex_trader.exchange.rest import WallexAPIError, WallexRESTClient
 from wallex_trader.execution.live_broker import LiveBroker
 from wallex_trader.execution.oms import OMS
+from wallex_trader.execution.precision import floor_quantity
 from wallex_trader.execution.reconciler import Reconciler
 from wallex_trader.execution.shadow_broker import ShadowBroker
-from wallex_trader.logging import setup_logging
+from wallex_trader.logging import attach_run_log, setup_logging
 from wallex_trader.marketdata.features import FeatureEngine
 from wallex_trader.marketdata.feed import MarketDataFeed
 from wallex_trader.models import (
@@ -92,6 +93,7 @@ class TradingEngine:
         self.log = setup_logging(settings, component="trader")
         self.db = create_database(settings)
         self.run_id = self._make_run_id()
+        self.run_log_path = attach_run_log(settings, self.run_id, settings.mode.value)
         self.repo = Repository(self.db, self.run_id)
         self.rest = WallexRESTClient(settings)
         self.mcp: WallexMCPClient | None = None
@@ -130,7 +132,10 @@ class TradingEngine:
         self._decision_seq = 0
         self._review_lock = asyncio.Lock()
         self._last_strategy_check: dict[str, float] = {}
+        self._exit_cooldowns: dict[str, float] = {}
+        self._last_kill_flatten_at = 0.0
         self._last_swing_bar: dict[str, datetime] = {}
+        self._last_intraday_bar: dict[str, datetime] = {}
         self.last_scan_at: datetime | None = None
         self.last_candidate_count = 0
         self.last_scan_candidates: list[str] = []
@@ -280,9 +285,80 @@ class TradingEngine:
                 )
             restore = await self.repo.latest_positions_for_mode("live")
             self.portfolio.restore_positions(restore)
+            # The exchange balance is the source of truth. A base-asset fee
+            # reduces the credited quantity, so stored gross quantities must be
+            # reconciled to the actual balance before any exit is attempted.
+            for symbol, position in list(self.portfolio.positions.items()):
+                base_asset = symbol[:-3] if symbol.endswith("TMN") else symbol
+                actual = Decimal(
+                    str((balances.get(base_asset) or {}).get("value", 0) or 0)
+                )
+                if actual <= 0:
+                    self.portfolio.positions.pop(symbol, None)
+                    await self.repo.system_event(
+                        "warning",
+                        "portfolio",
+                        f"removed stored position with zero exchange balance: {symbol}",
+                    )
+                    continue
+                if actual != position.quantity:
+                    if abs(actual - position.quantity) <= position.quantity * Decimal("0.02"):
+                        await self.repo.system_event(
+                            "warning",
+                            "portfolio",
+                            f"position quantity reconciled to exchange balance: {symbol}",
+                            {
+                                "stored": str(position.quantity),
+                                "exchange": str(actual),
+                            },
+                        )
+                        position.quantity = actual
+                    else:
+                        await self.repo.risk_event(
+                            "startup_position_mismatch",
+                            f"stored position for {symbol} differs from exchange balance",
+                            severity="critical",
+                            evidence={
+                                "stored": str(position.quantity),
+                                "exchange": str(actual),
+                            },
+                        )
+            # Ignore exchange dust that cannot satisfy the market step/min
+            # notional. It is not tradable and would otherwise cause exit
+            # rejection every loop.
+            for symbol, position in list(self.portfolio.positions.items()):
+                meta = self.metadatas.get(symbol)
+                if meta is None:
+                    continue
+                book = self.feed.books.get(symbol) if self.feed else None
+                mark = (
+                    book.best_bid
+                    if book is not None and book.best_bid is not None
+                    else Decimal(str(meta.price or 0))
+                )
+                sellable = floor_quantity(position.quantity, meta.step)
+                if sellable <= 0 or (
+                    mark > 0 and sellable * mark < Decimal(str(meta.min_notional))
+                ):
+                    self.portfolio.positions.pop(symbol, None)
+                    await self.repo.system_event(
+                        "warning",
+                        "portfolio",
+                        f"ignored non-sellable dust position: {symbol}",
+                        {
+                            "quantity": str(position.quantity),
+                            "step": str(meta.step),
+                            "mark": str(mark),
+                        },
+                    )
             self.log.info(
                 "live portfolio restored",
-                extra={"context": {"cash_tmn": str(tmn), "positions": len(restore)}},
+                extra={
+                    "context": {
+                        "cash_tmn": str(tmn),
+                        "positions": len(self.portfolio.positions),
+                    }
+                },
             )
         else:
             self.portfolio = Portfolio(
@@ -465,9 +541,15 @@ class TradingEngine:
             self.regime.memo = f"{self.regime.memo} AI regime memo: {self.ai_memo}"
         candidates: list[tuple[Candidate, dict[str, Any], OrderBook, MarketMeta]] = []
         if self.settings.strategy_mode in ("intraday", "both"):
+            intraday_tf = self.settings.intraday_timeframe_minutes
+            completed_bar = _last_completed_bar(now, intraday_tf) if intraday_tf > 1 else None
             for symbol in self.symbols:
                 if symbol in self.portfolio.positions:
                     continue
+                if completed_bar is not None:
+                    if self._last_intraday_bar.get(symbol) == completed_bar:
+                        continue
+                    self._last_intraday_bar[symbol] = completed_bar
                 book = books.get(symbol)
                 meta = self.metadatas.get(symbol)
                 if (
@@ -485,6 +567,7 @@ class TradingEngine:
                     tape=self.feed.tape,
                     cross_symbols=self.symbols,
                     now=now,
+                    timeframe_minutes=intraday_tf,
                 )
                 if features is None:
                     continue
@@ -633,6 +716,21 @@ class TradingEngine:
                     rationale="; ".join(approval.reasons)[:600],
                 )
                 continue
+            if self.kill.state.active:
+                await self._record_decision(
+                    decision_id=decision_id,
+                    ts=now,
+                    symbol=candidate.symbol,
+                    action="HOLD",
+                    confidence=result.decision.confidence,
+                    candidate=candidate,
+                    features=features,
+                    agent=agent_payload,
+                    risk=approval.to_dict(),
+                    execution={"status": "KILL_ABORT"},
+                    rationale="kill switch activated before order send",
+                )
+                continue
             execution = await self.oms.execute_entry(
                 decision=result.decision,
                 candidate=candidate,
@@ -770,6 +868,14 @@ class TradingEngine:
                         continue
                     if self._should_review(position, now):
                         self._schedule_position_review(position, pos_book, mark, now)
+                if (
+                    self.kill.state.active
+                    and self.settings.flatten_on_kill
+                    and self.portfolio.positions
+                    and time.monotonic() - self._last_kill_flatten_at >= 30
+                ):
+                    self._last_kill_flatten_at = time.monotonic()
+                    await self._flatten_all("kill_switch")
                 await self._maybe_endgame_flatten(now)
             except asyncio.CancelledError:
                 raise
@@ -828,6 +934,11 @@ class TradingEngine:
                 tape=self.feed.tape,
                 cross_symbols=self.symbols,
                 now=now,
+                timeframe_minutes=(
+                    self.settings.intraday_timeframe_minutes
+                    if position.signal != "TREND"
+                    else 1
+                ),
             )
             if features is None:
                 features = dict(position.metadata or {})
@@ -886,6 +997,13 @@ class TradingEngine:
         meta = self.metadatas.get(position.symbol)
         if meta is None:
             return None
+        if time.monotonic() < self._exit_cooldowns.get(position.symbol, 0.0):
+            return None
+        if any(
+            order.side == Side.SELL
+            for order in self.oms.open_orders(position.symbol)
+        ):
+            return None
         did = decision_id or self._new_decision_id(position.symbol)
         approval = self.risk.approve_exit(
             position,
@@ -913,6 +1031,15 @@ class TradingEngine:
             reason=reason,
             fee_rate=self.fee_rates.get(position.symbol),
         )
+        if execution.get("status") in ("REJECTED", "UNKNOWN") or execution.get("error"):
+            self._exit_cooldowns[position.symbol] = time.monotonic() + 60.0
+            await self.repo.risk_event(
+                "exit_rejected",
+                f"exit rejected for {position.symbol}: {execution.get('error') or execution.get('status')}",
+                severity="error",
+                evidence=execution,
+            )
+            return None
         trades = execution.get("closed_trades", []) or []
         trade = trades[0] if trades else None
         await self._record_decision(
@@ -1295,6 +1422,8 @@ class TradingEngine:
             return
         self._kill_handled = True
         self.kill.activate(reason, trigger=trigger)
+        if self.oms is not None:
+            self.oms.entries_enabled = False
         logger.error("KILL SWITCH: %s (%s)", reason, trigger)
         await self.repo.risk_event(
             "kill_switch",
@@ -1310,6 +1439,7 @@ class TradingEngine:
         if self.oms is not None:
             await self.oms.cancel_all()
         if self.settings.flatten_on_kill and self.feed is not None:
+            self._last_kill_flatten_at = time.monotonic()
             await self._flatten_all(f"kill:{trigger}")
 
     def _entries_allowed(self) -> bool:
@@ -1507,6 +1637,14 @@ class TradingEngine:
         stamp = int(time.time() * 1000)
         token = self.oms.run_token if self.oms else "run"
         return f"dec_{token}_{symbol}_{stamp}_{self._decision_seq:05d}"
+
+
+def _last_completed_bar(now: datetime, minutes: int) -> datetime:
+    from datetime import timedelta
+
+    floor = now.replace(second=0, microsecond=0)
+    floor = floor - timedelta(minutes=floor.minute % minutes)
+    return floor - timedelta(minutes=minutes)
 
 
 def _next_swing_close(now: datetime, timeframe_hours: int) -> datetime:

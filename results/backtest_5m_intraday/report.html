@@ -1,0 +1,1673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARGUS Backtest bt_20261023_055845_fcfaa67f</title>
+<style>
+:root { --bg:#0b0f14; --panel:#121923; --line:#223042; --text:#dbe7f3; --muted:#8ea3b8; --green:#3ddc97; --red:#ff6b6b; --blue:#5aa9ff; --amber:#ffc857; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+header { padding:24px 32px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+h1 { margin:0; font-size:22px; letter-spacing:.5px; }
+h2 { font-size:15px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:28px 0 12px; }
+main { padding:24px 32px 60px; max-width:1400px; margin:0 auto; }
+.badge { background:#1b2a3a; border:1px solid var(--line); padding:4px 10px; border-radius:999px; color:var(--blue); }
+.muted { color:var(--muted); }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.card .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.8px; }
+.card .value { font-size:20px; margin-top:6px; }
+.pos { color:var(--green); } .neg { color:var(--red); } .warn { color:var(--amber); }
+.chart { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px; height:340px; }
+table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--line); }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+th { color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.6px; }
+tr:hover td { background:#162131; }
+pre { background:var(--panel); border:1px solid var(--line); padding:14px; border-radius:10px; overflow:auto; max-height:420px; }
+.note { border-left:3px solid var(--amber); padding:10px 14px; background:#1a160c; color:#e9d8a6; border-radius:4px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>ARGUS — Wallex Backtest Report</h1>
+    <div class="muted">Run bt_20261023_055845_fcfaa67f · 2026-07-01 → 2026-10-21 (8 symbols, 1m) · git 05876e9b9f54</div>
+  </div>
+  <div><span class="badge">BACKTEST — SIMULATED</span></div>
+</header>
+<main>
+  <h2>Headline</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Net return</div><div class="value neg">-2.77%</div></div>
+    <div class="card"><div class="label">Max drawdown</div><div class="value">2.86%</div></div>
+    <div class="card"><div class="label">Realized PnL</div><div class="value neg">-138,366 TMN</div></div>
+    <div class="card"><div class="label">Fees paid</div><div class="value">129,258 TMN</div></div>
+    <div class="card"><div class="label">Trades</div><div class="value">115</div></div>
+    <div class="card"><div class="label">Win rate</div><div class="value">27.8%</div></div>
+    <div class="card"><div class="label">Profit factor</div><div class="value">0.247</div></div>
+    <div class="card"><div class="label">Sharpe</div><div class="value">-9.372</div></div>
+    <div class="card"><div class="label">Sortino</div><div class="value">-1.865</div></div>
+    <div class="card"><div class="label">Turnover</div><div class="value">8.617x</div></div>
+    <div class="card"><div class="label">Avg holding</div><div class="value">35.65m</div></div>
+    <div class="card"><div class="label">Decisions</div><div class="value">137</div></div>
+  </div>
+
+  <h2>Equity curve (TMN)</h2>
+  <div class="chart"><canvas id="equityChart"></canvas></div>
+
+  <h2>Drawdown (%)</h2>
+  <div class="chart"><canvas id="ddChart"></canvas></div>
+
+  <h2>Per-symbol performance</h2>
+  <table>
+    <thead><tr><th>Symbol</th><th>Trades</th><th>PnL (TMN)</th><th>Win rate</th></tr></thead>
+    <tbody>
+    
+      <tr><td>PEPETMN</td><td>47</td><td class="neg">-50,916</td><td>31.9%</td></tr>
+    
+      <tr><td>SOLTMN</td><td>18</td><td class="neg">-15,369</td><td>38.9%</td></tr>
+    
+      <tr><td>ETHTMN</td><td>9</td><td class="neg">-14,559</td><td>11.1%</td></tr>
+    
+      <tr><td>XAUTTMN</td><td>2</td><td class="neg">-478</td><td>50.0%</td></tr>
+    
+      <tr><td>DOGETMN</td><td>20</td><td class="neg">-39,575</td><td>20.0%</td></tr>
+    
+      <tr><td>XRPTMN</td><td>17</td><td class="neg">-13,595</td><td>23.5%</td></tr>
+    
+      <tr><td>BTCTMN</td><td>2</td><td class="neg">-3,874</td><td>0.0%</td></tr>
+    
+    </tbody>
+  </table>
+
+  <h2>Trades (latest 115)</h2>
+  <table>
+    <thead><tr><th>Exit</th><th>Symbol</th><th>Signal</th><th>Entry</th><th>Exit px</th><th>PnL TMN</th><th>Return bps</th><th>Fees</th><th>Reason</th></tr></thead>
+    <tbody>
+    
+      <tr>
+        <td>2026-10-20T17:10:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.1813443199999998</td>
+        <td>1.20443837784</td>
+        <td class="pos">2,518</td>
+        <td>195.49</td>
+        <td>1,131</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-20T06:30:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>27005192.8848</td>
+        <td>27280264.3152</td>
+        <td class="pos">779</td>
+        <td>101.86</td>
+        <td>1,131</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-18T20:15:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.9915926399999999</td>
+        <td>0.9808913722291198</td>
+        <td class="neg">-3,136</td>
+        <td>-107.92</td>
+        <td>1,117</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-18T19:40:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>20209.0</td>
+        <td>19990.904472</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-18T13:35:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>20553.4296</td>
+        <td>20331.616987756803</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-17T22:45:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>20664.518399999997</td>
+        <td>20927.2448</td>
+        <td class="pos">1,247</td>
+        <td>127.14</td>
+        <td>1,128</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-17T22:40:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>338269.3992</td>
+        <td>340923.0432</td>
+        <td class="pos">341</td>
+        <td>78.45</td>
+        <td>1,129</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-17T21:40:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.0203156</td>
+        <td>1.0093043540448</td>
+        <td class="neg">-3,136</td>
+        <td>-107.92</td>
+        <td>1,117</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-17T21:40:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>27171719.999999996</td>
+        <td>26878482.797759995</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-17T21:35:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>20922.7248</td>
+        <td>20696.9267539584</td>
+        <td class="neg">-3,139</td>
+        <td>-107.92</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T16:25:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>28122477.9984</td>
+        <td>28113014.5816</td>
+        <td class="neg">-1,188</td>
+        <td>-3.37</td>
+        <td>1,125</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T16:25:00</td>
+        <td>ETHTMN</td>
+        <td>MOM</td>
+        <td>645259509.9719999</td>
+        <td>646882080.0</td>
+        <td class="neg">-655</td>
+        <td>25.15</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T16:15:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>21409.113599999997</td>
+        <td>21615.6936</td>
+        <td class="pos">676</td>
+        <td>96.49</td>
+        <td>1,125</td>
+        <td>momentum_reversal</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T16:10:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.10568384</td>
+        <td>1.09375129999872</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T13:40:00</td>
+        <td>ETHTMN</td>
+        <td>MR</td>
+        <td>625659715.6703999</td>
+        <td>626915082.3872</td>
+        <td class="neg">-750</td>
+        <td>20.06</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-15T02:25:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>21523.2048</td>
+        <td>21290.9263737984</td>
+        <td class="neg">-3,140</td>
+        <td>-107.92</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-11T17:20:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.0888704</td>
+        <td>1.0927251199999999</td>
+        <td class="neg">-463</td>
+        <td>35.4</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-06T02:05:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.1639304</td>
+        <td>1.1513692631232</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-05T14:50:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.1723</td>
+        <td>1.17745038552</td>
+        <td class="neg">-304</td>
+        <td>43.93</td>
+        <td>1,127</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-02T06:20:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.17553968</td>
+        <td>1.16926384</td>
+        <td class="neg">-2,119</td>
+        <td>-53.39</td>
+        <td>1,120</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-02T05:10:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.1850472799999998</td>
+        <td>1.1722582497542398</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-10-01T07:25:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>30480311.7576</td>
+        <td>30151368.233111978</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-30T13:40:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.1259</td>
+        <td>1.1137492871999999</td>
+        <td class="neg">-3,102</td>
+        <td>-107.92</td>
+        <td>1,105</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-28T04:30:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.01220912</td>
+        <td>1.02547896</td>
+        <td class="pos">1,321</td>
+        <td>131.1</td>
+        <td>1,128</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-27T16:10:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.0369288799999998</td>
+        <td>1.0485604800000001</td>
+        <td class="pos">972</td>
+        <td>112.17</td>
+        <td>1,131</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-27T10:00:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>1.0298231999999998</td>
+        <td>1.04006728</td>
+        <td class="pos">734</td>
+        <td>99.47</td>
+        <td>1,130</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-23T05:55:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>1.1694347999999999</td>
+        <td>1.1568142596384</td>
+        <td class="neg">-3,140</td>
+        <td>-107.92</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-21T23:30:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>356018.58719999995</td>
+        <td>352176.4346069375</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-21T21:10:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>22906.3104</td>
+        <td>22659.1054981632</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-21T16:00:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>21872.483999999997</td>
+        <td>22116.262824</td>
+        <td class="pos">957</td>
+        <td>111.45</td>
+        <td>1,130</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-19T18:10:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.9465566399999998</td>
+        <td>0.9618441086399999</td>
+        <td class="pos">1,894</td>
+        <td>161.51</td>
+        <td>1,134</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-19T09:10:00</td>
+        <td>ETHTMN</td>
+        <td>MOM</td>
+        <td>603830475.2376</td>
+        <td>597313936.7488358</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-19T02:30:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.8457760799999999</td>
+        <td>0.85251744</td>
+        <td class="pos">365</td>
+        <td>79.71</td>
+        <td>1,129</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-18T21:45:00</td>
+        <td>ETHTMN</td>
+        <td>MR</td>
+        <td>585231095.6279999</td>
+        <td>578307128.2168009</td>
+        <td class="neg">-3,336</td>
+        <td>-118.31</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-18T16:15:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>313533.62639999995</td>
+        <td>315108.7112</td>
+        <td class="neg">-185</td>
+        <td>50.24</td>
+        <td>1,123</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-18T15:40:00</td>
+        <td>ETHTMN</td>
+        <td>MOM</td>
+        <td>583825715.2224</td>
+        <td>584795895.7143999</td>
+        <td class="neg">-814</td>
+        <td>16.62</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-18T15:05:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>311249.80079999997</td>
+        <td>315519.3963888</td>
+        <td class="pos">1,439</td>
+        <td>137.18</td>
+        <td>1,133</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-13T21:20:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.79883856</td>
+        <td>0.8014583200000001</td>
+        <td class="neg">-512</td>
+        <td>32.79</td>
+        <td>1,127</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-12T08:05:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.7855279199999999</td>
+        <td>0.78756944</td>
+        <td class="neg">-639</td>
+        <td>25.99</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-11T14:10:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>24019198.999199998</td>
+        <td>24699479.596</td>
+        <td class="pos">4,169</td>
+        <td>283.22</td>
+        <td>1,141</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-09T23:15:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>327261.6</td>
+        <td>328725.8088</td>
+        <td class="neg">-289</td>
+        <td>44.74</td>
+        <td>1,127</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-09T22:30:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>23819041.0008</td>
+        <td>24090734.981599998</td>
+        <td class="pos">1,007</td>
+        <td>114.07</td>
+        <td>1,131</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-05T19:05:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>20920.723199999997</td>
+        <td>20669.234851681224</td>
+        <td class="neg">-3,371</td>
+        <td>-120.21</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-04T12:50:00</td>
+        <td>ETHTMN</td>
+        <td>MR</td>
+        <td>546478509.3407999</td>
+        <td>540580913.267994</td>
+        <td class="neg">-3,125</td>
+        <td>-107.92</td>
+        <td>1,113</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-04T12:45:00</td>
+        <td>BTCTMN</td>
+        <td>MR</td>
+        <td>17798229214.610397</td>
+        <td>17606150724.926323</td>
+        <td class="neg">-3,141</td>
+        <td>-107.92</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-09-04T12:35:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>18915.12</td>
+        <td>18710.98802496</td>
+        <td class="neg">-3,121</td>
+        <td>-107.92</td>
+        <td>1,111</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-27T10:25:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>21097716.681599997</td>
+        <td>20893958.4504</td>
+        <td class="neg">-2,930</td>
+        <td>-96.58</td>
+        <td>1,119</td>
+        <td>thesis_invalidated</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-27T10:05:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>17864.28</td>
+        <td>17828.725599999998</td>
+        <td class="neg">-1,497</td>
+        <td>-19.9</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-27T09:55:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7846272</td>
+        <td>0.7904902015199999</td>
+        <td class="pos">272</td>
+        <td>74.72</td>
+        <td>1,129</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-27T09:55:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>288579.67919999996</td>
+        <td>288322.1576</td>
+        <td class="neg">-1,292</td>
+        <td>-8.92</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-27T08:55:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>20760511.132799998</td>
+        <td>20936756.1848</td>
+        <td class="pos">462</td>
+        <td>84.89</td>
+        <td>1,130</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-25T06:50:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.8575855199999999</td>
+        <td>0.84932</td>
+        <td class="neg">-2,926</td>
+        <td>-96.38</td>
+        <td>1,119</td>
+        <td>thesis_invalidated</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-25T01:45:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>20427713.107199997</td>
+        <td>20207257.227347095</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-23T14:45:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>302372.70479999995</td>
+        <td>299109.49856979836</td>
+        <td class="neg">-3,134</td>
+        <td>-107.92</td>
+        <td>1,116</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-23T14:25:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.8192548799999999</td>
+        <td>0.8104134813350399</td>
+        <td class="neg">-3,141</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-23T11:40:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>294835.68</td>
+        <td>295763.2</td>
+        <td class="neg">-537</td>
+        <td>31.46</td>
+        <td>1,127</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-22T23:55:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>17383.895999999997</td>
+        <td>17610.899999999998</td>
+        <td class="pos">1,316</td>
+        <td>130.58</td>
+        <td>1,132</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-22T21:05:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>290847.49199999997</td>
+        <td>287708.66586633597</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-22T13:55:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>18062308.296</td>
+        <td>17897670.4</td>
+        <td class="neg">-2,829</td>
+        <td>-91.15</td>
+        <td>1,120</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-22T13:40:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>17534.016</td>
+        <td>17344.788899328</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-22T13:00:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7726175999999999</td>
+        <td>0.7642795108607998</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T23:50:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>269959.7952</td>
+        <td>271864.3344</td>
+        <td class="pos">194</td>
+        <td>70.55</td>
+        <td>1,129</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T23:30:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>17655.1128</td>
+        <td>17447.64347350103</td>
+        <td class="neg">-3,321</td>
+        <td>-117.51</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T23:20:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7672132799999999</td>
+        <td>0.778881396</td>
+        <td class="pos">1,716</td>
+        <td>152.08</td>
+        <td>1,132</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T22:35:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>17301.8304</td>
+        <td>17369.0936</td>
+        <td class="neg">-398</td>
+        <td>38.88</td>
+        <td>1,127</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T22:30:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7505999999999999</td>
+        <td>0.7560606672</td>
+        <td class="pos">235</td>
+        <td>72.75</td>
+        <td>1,129</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T17:35:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7252797599999999</td>
+        <td>0.73451192</td>
+        <td class="pos">1,255</td>
+        <td>127.29</td>
+        <td>1,132</td>
+        <td>momentum_reversal</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T17:15:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.7122</td>
+        <td>0.73433136456</td>
+        <td class="pos">4,684</td>
+        <td>310.75</td>
+        <td>1,142</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T10:20:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.6685344</td>
+        <td>0.68432420232</td>
+        <td class="pos">3,287</td>
+        <td>236.19</td>
+        <td>1,137</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T09:05:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.6709363199999999</td>
+        <td>0.6626832718824344</td>
+        <td class="neg">-3,424</td>
+        <td>-123.01</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T08:50:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>253208.4048</td>
+        <td>261382.86137486165</td>
+        <td class="pos">4,902</td>
+        <td>322.84</td>
+        <td>1,141</td>
+        <td>take_profit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-21T00:40:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.6107882399999999</td>
+        <td>0.6041966133139199</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T23:15:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>15018.004799999999</td>
+        <td>15009.982399999999</td>
+        <td class="neg">-1,225</td>
+        <td>-5.34</td>
+        <td>1,125</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T17:55:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>252359.72639999999</td>
+        <td>249298.3687289419</td>
+        <td class="neg">-3,392</td>
+        <td>-121.31</td>
+        <td>1,118</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T17:05:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.602982</td>
+        <td>0.60231776</td>
+        <td class="neg">-1,330</td>
+        <td>-11.02</td>
+        <td>1,123</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T13:35:00</td>
+        <td>XRPTMN</td>
+        <td>MOM</td>
+        <td>225104.93999999997</td>
+        <td>226222.8768</td>
+        <td class="neg">-197</td>
+        <td>49.66</td>
+        <td>1,128</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T10:10:00</td>
+        <td>BTCTMN</td>
+        <td>MOM</td>
+        <td>13540823999.999998</td>
+        <td>13569180059.723999</td>
+        <td class="neg">-733</td>
+        <td>20.94</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T05:15:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.5576</td>
+        <td>0.5515823808</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-20T04:05:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>15879818.7</td>
+        <td>15896852.336</td>
+        <td class="neg">-924</td>
+        <td>10.73</td>
+        <td>1,125</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-19T22:35:00</td>
+        <td>DOGETMN</td>
+        <td>MOM</td>
+        <td>14156.0</td>
+        <td>14003.228448</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-19T22:05:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>16295551.019999998</td>
+        <td>16119689.433392158</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-19T08:05:00</td>
+        <td>ETHTMN</td>
+        <td>MR</td>
+        <td>357887913.46559995</td>
+        <td>361333273.9424</td>
+        <td class="pos">675</td>
+        <td>96.27</td>
+        <td>1,130</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-18T08:00:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.4745</td>
+        <td>0.47631864</td>
+        <td class="neg">-409</td>
+        <td>38.33</td>
+        <td>1,127</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-18T01:00:00</td>
+        <td>XAUTTMN</td>
+        <td>MR</td>
+        <td>810920507.8319999</td>
+        <td>809278719.6712</td>
+        <td class="neg">-1,503</td>
+        <td>-20.25</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-16T02:05:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.48839039999999995</td>
+        <td>0.49330504000000003</td>
+        <td class="pos">756</td>
+        <td>100.63</td>
+        <td>1,130</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-12T22:05:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>13097.469599999999</td>
+        <td>12956.121708076798</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-12T21:35:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.5174135999999999</td>
+        <td>0.5118296724287998</td>
+        <td class="neg">-3,137</td>
+        <td>-107.92</td>
+        <td>1,117</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-10T09:50:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>14237882.200799998</td>
+        <td>14220100.8112</td>
+        <td class="neg">-1,358</td>
+        <td>-12.49</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-10T03:40:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>14205693.470399998</td>
+        <td>14328528.0</td>
+        <td class="pos">491</td>
+        <td>86.47</td>
+        <td>1,130</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-05T04:35:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.5434344</td>
+        <td>0.5438645599999999</td>
+        <td class="neg">-977</td>
+        <td>7.92</td>
+        <td>1,125</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-04T07:50:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>206296.90559999997</td>
+        <td>207395.9504</td>
+        <td class="neg">-129</td>
+        <td>53.27</td>
+        <td>1,128</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-04T05:20:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>206906.39279999997</td>
+        <td>207809.6192</td>
+        <td class="neg">-309</td>
+        <td>43.65</td>
+        <td>1,127</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-08-03T01:00:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>207383.7744</td>
+        <td>206600.5872</td>
+        <td class="neg">-1,831</td>
+        <td>-37.77</td>
+        <td>1,123</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-29T04:45:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>14011199.999999998</td>
+        <td>14200116.8112</td>
+        <td class="pos">1,395</td>
+        <td>134.83</td>
+        <td>1,132</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-26T07:55:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.56295</td>
+        <td>0.5568746435999999</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-26T04:45:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.54183312</td>
+        <td>0.5359856569689601</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-23T13:50:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>13679.935199999998</td>
+        <td>13580.127199999999</td>
+        <td class="neg">-2,489</td>
+        <td>-72.96</td>
+        <td>1,121</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-21T03:05:00</td>
+        <td>SOLTMN</td>
+        <td>MR</td>
+        <td>14536289.736</td>
+        <td>14681698.2376</td>
+        <td class="pos">745</td>
+        <td>100.03</td>
+        <td>1,131</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-20T16:35:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.5499396</td>
+        <td>0.5440046518368</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-20T06:10:00</td>
+        <td>XRPTMN</td>
+        <td>MR</td>
+        <td>208760.87519999998</td>
+        <td>206786.43839999998</td>
+        <td class="neg">-2,893</td>
+        <td>-94.58</td>
+        <td>1,120</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-20T05:35:00</td>
+        <td>DOGETMN</td>
+        <td>MR</td>
+        <td>13838.061599999999</td>
+        <td>13683.0448</td>
+        <td class="neg">-3,219</td>
+        <td>-112.02</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-18T04:30:00</td>
+        <td>XAUTTMN</td>
+        <td>MR</td>
+        <td>765933891.3072</td>
+        <td>774746130.8608</td>
+        <td class="pos">1,026</td>
+        <td>115.05</td>
+        <td>1,131</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-16T08:10:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.51721344</td>
+        <td>0.51163167255552</td>
+        <td class="neg">-3,141</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-15T14:30:00</td>
+        <td>ETHTMN</td>
+        <td>MOM</td>
+        <td>361555471.16639996</td>
+        <td>357916867.256</td>
+        <td class="neg">-3,006</td>
+        <td>-100.64</td>
+        <td>1,119</td>
+        <td>thesis_invalidated</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-15T14:10:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.54223344</td>
+        <td>0.5363112227605977</td>
+        <td class="neg">-3,166</td>
+        <td>-109.22</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-07T17:00:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.47798208</td>
+        <td>0.47941616</td>
+        <td class="neg">-564</td>
+        <td>30.0</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-07T00:40:00</td>
+        <td>PEPETMN</td>
+        <td>MR</td>
+        <td>0.47277791999999996</td>
+        <td>0.47721792</td>
+        <td class="pos">630</td>
+        <td>93.91</td>
+        <td>1,130</td>
+        <td>mean_reversion_exit</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-06T17:25:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>14341463.999999998</td>
+        <td>14295247.6456</td>
+        <td class="neg">-1,726</td>
+        <td>-32.23</td>
+        <td>1,122</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-06T17:00:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.47738159999999996</td>
+        <td>0.47671832000000003</td>
+        <td class="neg">-1,384</td>
+        <td>-13.89</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-04T17:15:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.4823855999999999</td>
+        <td>0.48151447999999997</td>
+        <td class="neg">-1,462</td>
+        <td>-18.06</td>
+        <td>1,124</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-03T21:45:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.4766</td>
+        <td>0.48720991999999996</td>
+        <td class="pos">3,037</td>
+        <td>222.62</td>
+        <td>1,138</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-02T14:20:00</td>
+        <td>ETHTMN</td>
+        <td>MOM</td>
+        <td>300239998.9992</td>
+        <td>301396840.4792</td>
+        <td class="neg">-405</td>
+        <td>38.53</td>
+        <td>1,127</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-02T12:25:00</td>
+        <td>SOLTMN</td>
+        <td>MOM</td>
+        <td>14415451.142399998</td>
+        <td>14433279.132</td>
+        <td class="neg">-894</td>
+        <td>12.37</td>
+        <td>1,126</td>
+        <td>time_stop</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-01T23:00:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.416</td>
+        <td>0.411510528</td>
+        <td class="neg">-3,142</td>
+        <td>-107.92</td>
+        <td>1,119</td>
+        <td>stop_loss</td>
+      </tr>
+    
+      <tr>
+        <td>2026-07-01T16:55:00</td>
+        <td>PEPETMN</td>
+        <td>MOM</td>
+        <td>0.40982759999999996</td>
+        <td>0.40887264</td>
+        <td class="neg">-1,558</td>
+        <td>-23.3</td>
+        <td>1,122</td>
+        <td>time_stop</td>
+      </tr>
+    
+    </tbody>
+  </table>
+
+  <h2>Cost and robustness checks</h2>
+  <div class="grid">
+    <div class="card"><div class="label">Fees / initial capital</div><div class="value">2.59%</div></div>
+    <div class="card"><div class="label">PnL without best trade</div><div class="value neg">-143,267 TMN</div></div>
+    <div class="card"><div class="label">Fill rate</div><div class="value">94.3%</div></div>
+    <div class="card"><div class="label">Avg exposure</div><div class="value">0.1%</div></div>
+  </div>
+
+  <h2>Assumptions and limitations</h2>
+  <div class="note">
+    Wallex does not provide historical L2 or trade-tape data. This backtest uses 1-minute OHLCV and a
+    synthetic book with configurable spread and a conservative liquidity proxy. Fees are the measured
+    TMN-market rates (0.25% maker / 0.30% taker).
+    Marketable entries and all exits pay taker fees plus slippage. When stop and target are both inside
+    a bar, the stop is assumed first. No lookahead is used: decisions at bar close execute at the next
+    bar open.
+  </div>
+
+  <h2>Configuration</h2>
+  <pre>{
+  &#34;mode&#34;: &#34;backtest&#34;,
+  &#34;log_level&#34;: &#34;INFO&#34;,
+  &#34;run_id&#34;: &#34;argus-local&#34;,
+  &#34;timezone&#34;: &#34;Asia/Tehran&#34;,
+  &#34;git_sha&#34;: &#34;05876e9b9f54&#34;,
+  &#34;heartbeat_sec&#34;: 15,
+  &#34;challenge_start&#34;: null,
+  &#34;challenge_end&#34;: null,
+  &#34;wallex_api_base&#34;: &#34;https://api.wallex.ir&#34;,
+  &#34;wallex_ws_url&#34;: &#34;wss://api.wallex.ir/connection/websocket&#34;,
+  &#34;wallex_mcp_url&#34;: &#34;https://api.wallex.ir/mcp&#34;,
+  &#34;wallex_api_key&#34;: &#34;***&#34;,
+  &#34;wallex_sub_account_client_id&#34;: &#34;2000096400-PROP-A3094A3D-EC6A-414F-A984-55BF911417F1&#34;,
+  &#34;wallex_public_rate_limit&#34;: 3.0,
+  &#34;wallex_order_rate_limit&#34;: 1.5,
+  &#34;deepseek_api_key&#34;: &#34;***&#34;,
+  &#34;deepseek_model&#34;: &#34;deepseek-flash&#34;,
+  &#34;deepseek_deep_model&#34;: &#34;deepseek-v4-pro&#34;,
+  &#34;deepseek_base_url&#34;: &#34;https://api.deepseek.com&#34;,
+  &#34;deepseek_reasoning_effort&#34;: &#34;low&#34;,
+  &#34;deepseek_deep_reasoning_effort&#34;: &#34;high&#34;,
+  &#34;postgres_dsn&#34;: &#34;sqlite+aiosqlite:///data/argus.db&#34;,
+  &#34;data_dir&#34;: &#34;/var/www/projects/hackatons/wallex/data&#34;,
+  &#34;artifacts_dir&#34;: &#34;/var/www/projects/hackatons/wallex/artifacts&#34;,
+  &#34;logs_dir&#34;: &#34;/var/www/projects/hackatons/wallex/logs&#34;,
+  &#34;cache_dir&#34;: &#34;/var/www/projects/hackatons/wallex/data/cache&#34;,
+  &#34;run_state_dir&#34;: &#34;/var/www/projects/hackatons/wallex/data/runs&#34;,
+  &#34;journal_path&#34;: &#34;/var/www/projects/hackatons/wallex/artifacts/agent_journal.md&#34;,
+  &#34;dashboard_host&#34;: &#34;127.0.0.1&#34;,
+  &#34;dashboard_port&#34;: 8080,
+  &#34;dashboard_basic_auth_user&#34;: &#34;admin&#34;,
+  &#34;dashboard_basic_auth_password&#34;: &#34;***&#34;,
+  &#34;dashboard_kill_token&#34;: &#34;***&#34;,
+  &#34;universe_allowlist&#34;: [
+    &#34;BTCTMN&#34;,
+    &#34;ETHTMN&#34;,
+    &#34;SOLTMN&#34;,
+    &#34;USDTTMN&#34;,
+    &#34;XRPTMN&#34;,
+    &#34;DOGETMN&#34;,
+    &#34;PEPETMN&#34;,
+    &#34;XAUTTMN&#34;,
+    &#34;BNBTMN&#34;,
+    &#34;TRXTMN&#34;,
+    &#34;LTCTMN&#34;,
+    &#34;ZECTMN&#34;
+  ],
+  &#34;universe_max_symbols&#34;: 12,
+  &#34;universe_min_quote_volume_24h&#34;: 5000000000.0,
+  &#34;universe_min_listing_age_days&#34;: 14,
+  &#34;universe_refresh_sec&#34;: 3600,
+  &#34;max_spread_bps&#34;: 35.0,
+  &#34;max_depth_age_ms&#34;: 5000,
+  &#34;max_tick_age_ms&#34;: 10000,
+  &#34;strategy_mode&#34;: &#34;intraday&#34;,
+  &#34;intraday_timeframe_minutes&#34;: 5,
+  &#34;intraday_risk_multiplier&#34;: 0.25,
+  &#34;candidate_threshold&#34;: 0.65,
+  &#34;alpha_threshold_bps&#34;: 100.0,
+  &#34;z_entry&#34;: 2.2,
+  &#34;min_expected_move_bps&#34;: 80.0,
+  &#34;cost_buffer_bps&#34;: 12.0,
+  &#34;max_candidates_per_cycle&#34;: 3,
+  &#34;decision_interval_sec&#34;: 5.0,
+  &#34;position_interval_sec&#34;: 1.0,
+  &#34;regime_memo_interval_sec&#34;: 1800,
+  &#34;max_spread_to_trade_bps&#34;: 50.0,
+  &#34;max_volatility_percentile&#34;: 99.0,
+  &#34;initial_capital_tmn&#34;: 5000000.0,
+  &#34;risk_per_trade&#34;: 0.0075,
+  &#34;risk_aversion&#34;: 0.25,
+  &#34;max_position_pct&#34;: 0.2,
+  &#34;max_gross_exposure&#34;: 0.6,
+  &#34;max_portfolio_heat&#34;: 0.03,
+  &#34;de_risk_drawdown_pct&#34;: 0.03,
+  &#34;hard_de_risk_drawdown_pct&#34;: 0.045,
+  &#34;max_open_positions&#34;: 4,
+  &#34;max_correlated_exposure&#34;: 0.35,
+  &#34;min_cash_buffer&#34;: 0.25,
+  &#34;daily_loss_limit&#34;: 0.025,
+  &#34;max_drawdown&#34;: 0.06,
+  &#34;max_consecutive_losses&#34;: 2,
+  &#34;losing_streak_cooldown_sec&#34;: 900,
+  &#34;stop_loss_bps&#34;: 100.0,
+  &#34;take_profit_bps&#34;: 180.0,
+  &#34;time_stop_sec&#34;: 1200,
+  &#34;trail_trigger_bps&#34;: 120.0,
+  &#34;trail_distance_bps&#34;: 70.0,
+  &#34;min_stop_bps&#34;: 40.0,
+  &#34;max_stop_bps&#34;: 1200.0,
+  &#34;min_take_profit_bps&#34;: 60.0,
+  &#34;max_take_profit_bps&#34;: 3000.0,
+  &#34;min_confidence&#34;: 0.55,
+  &#34;max_slippage_bps&#34;: 25.0,
+  &#34;max_depth_fraction&#34;: 0.1,
+  &#34;min_notional_tmn&#34;: 50000.0,
+  &#34;max_order_notional_tmn&#34;: 750000.0,
+  &#34;maker_fee&#34;: 0.0025,
+  &#34;taker_fee&#34;: 0.003,
+  &#34;order_rate_limit_per_10s&#34;: 15,
+  &#34;max_open_orders&#34;: 12,
+  &#34;order_timeout_sec&#34;: 20,
+  &#34;max_reprices&#34;: 3,
+  &#34;min_order_lifetime_sec&#34;: 2,
+  &#34;flatten_on_kill&#34;: true,
+  &#34;flatten_on_stop&#34;: false,
+  &#34;live_order_dry_run&#34;: false,
+  &#34;flatten_at_end&#34;: true,
+  &#34;ws_flatten_after_sec&#34;: 60,
+  &#34;ws_down_kill_sec&#34;: 30,
+  &#34;clock_skew_kill_sec&#34;: 5.0,
+  &#34;no_new_entries_before_end_sec&#34;: 7200,
+  &#34;flatten_before_end_sec&#34;: 1800,
+  &#34;agent_enabled&#34;: true,
+  &#34;agent_min_confidence&#34;: 0.55,
+  &#34;agent_min_size_fraction&#34;: 0.7,
+  &#34;agent_max_calls_per_day&#34;: 2000,
+  &#34;agent_timeout_sec&#34;: 20.0,
+  &#34;agent_temperature&#34;: 0.0,
+  &#34;agent_max_concurrent&#34;: 3,
+  &#34;agent_symbol_cooldown_sec&#34;: 30,
+  &#34;agent_max_tokens&#34;: 900,
+  &#34;allow_agent_fallback&#34;: false,
+  &#34;agent_escalation_enabled&#34;: true,
+  &#34;agent_reflection_enabled&#34;: true,
+  &#34;agent_reflection_model&#34;: null,
+  &#34;agent_reflection_min_interval_sec&#34;: 20,
+  &#34;agent_review_trend_positions&#34;: false,
+  &#34;agent_session_review_interval_sec&#34;: 7200,
+  &#34;agent_notes_in_prompt&#34;: 6,
+  &#34;backtest_start&#34;: &#34;2026-07-01&#34;,
+  &#34;backtest_end&#34;: &#34;2026-10-21&#34;,
+  &#34;backtest_resolution&#34;: &#34;1&#34;,
+  &#34;backtest_slippage_bps&#34;: 8.0,
+  &#34;backtest_latency_ms&#34;: 250,
+  &#34;backtest_initial_capital_tmn&#34;: 5000000.0,
+  &#34;backtest_maker_fee&#34;: 0.0025,
+  &#34;backtest_taker_fee&#34;: 0.003,
+  &#34;backtest_agent_mode&#34;: &#34;deterministic&#34;,
+  &#34;backtest_cache_file&#34;: &#34;&#34;,
+  &#34;backtest_decision_interval_sec&#34;: 300,
+  &#34;swing_fast_ema&#34;: 48,
+  &#34;swing_slow_ema&#34;: 240,
+  &#34;swing_momentum_bars&#34;: 6,
+  &#34;swing_stop_bps&#34;: 1000.0,
+  &#34;swing_take_profit_bps&#34;: 2500.0,
+  &#34;swing_horizon_sec&#34;: 1728000,
+  &#34;swing_trail_trigger_bps&#34;: 800.0,
+  &#34;swing_trail_distance_bps&#34;: 800.0,
+  &#34;swing_min_score&#34;: 0.6,
+  &#34;swing_prefer_marketable&#34;: true,
+  &#34;swing_btc_filter&#34;: false,
+  &#34;swing_timeframe_hours&#34;: 4,
+  &#34;swing_history_days&#34;: 60,
+  &#34;live_confirm&#34;: &#34;&#34;
+}</pre>
+
+  <h2>Decision summary</h2>
+  <pre>{
+  &#34;HOLD&#34;: 15,
+  &#34;BUY&#34;: 122
+}</pre>
+</main>
+<script src="chart.umd.min.js"></script>
+<script>
+const equityLabels = ["2026-07-01T00:00:00", "2026-07-01T01:20:00", "2026-07-01T02:40:00", "2026-07-01T04:00:00", "2026-07-01T05:20:00", "2026-07-01T06:40:00", "2026-07-01T08:00:00", "2026-07-01T09:20:00", "2026-07-01T10:40:00", "2026-07-01T12:00:00", "2026-07-01T13:20:00", "2026-07-01T14:40:00", "2026-07-01T16:00:00", "2026-07-01T17:20:00", "2026-07-01T18:40:00", "2026-07-01T20:00:00", "2026-07-01T21:20:00", "2026-07-01T22:40:00", "2026-07-02T00:00:00", "2026-07-02T01:20:00", "2026-07-02T02:40:00", "2026-07-02T04:00:00", "2026-07-02T05:20:00", "2026-07-02T06:40:00", "2026-07-02T08:00:00", "2026-07-02T09:20:00", "2026-07-02T10:40:00", "2026-07-02T12:00:00", "2026-07-02T13:20:00", "2026-07-02T14:40:00", "2026-07-02T16:00:00", "2026-07-02T17:20:00", "2026-07-02T18:40:00", "2026-07-02T20:00:00", "2026-07-02T21:20:00", "2026-07-02T22:40:00", "2026-07-03T00:00:00", "2026-07-03T01:20:00", "2026-07-03T02:40:00", "2026-07-03T04:00:00", "2026-07-03T05:20:00", "2026-07-03T06:40:00", "2026-07-03T08:00:00", "2026-07-03T09:20:00", "2026-07-03T10:40:00", "2026-07-03T12:00:00", "2026-07-03T13:20:00", "2026-07-03T14:40:00", "2026-07-03T16:00:00", "2026-07-03T17:20:00", "2026-07-03T18:40:00", "2026-07-03T20:00:00", "2026-07-03T21:20:00", "2026-07-03T22:40:00", "2026-07-04T00:00:00", "2026-07-04T01:20:00", "2026-07-04T02:40:00", "2026-07-04T04:00:00", "2026-07-04T05:20:00", "2026-07-04T06:40:00", "2026-07-04T08:00:00", "2026-07-04T09:20:00", "2026-07-04T10:40:00", "2026-07-04T12:00:00", "2026-07-04T13:20:00", "2026-07-04T14:40:00", "2026-07-04T16:00:00", "2026-07-04T17:20:00", "2026-07-04T18:40:00", "2026-07-04T20:00:00", "2026-07-04T21:20:00", "2026-07-04T22:40:00", "2026-07-05T00:00:00", "2026-07-05T01:20:00", "2026-07-05T02:40:00", "2026-07-05T04:00:00", "2026-07-05T05:20:00", "2026-07-05T06:40:00", "2026-07-05T08:00:00", "2026-07-05T09:20:00", "2026-07-05T10:40:00", "2026-07-05T12:00:00", "2026-07-05T13:20:00", "2026-07-05T14:40:00", "2026-07-05T16:00:00", "2026-07-05T17:20:00", "2026-07-05T18:40:00", "2026-07-05T20:00:00", "2026-07-05T21:20:00", "2026-07-05T22:40:00", "2026-07-06T00:00:00", "2026-07-06T01:20:00", "2026-07-06T02:40:00", "2026-07-06T04:00:00", "2026-07-06T05:20:00", "2026-07-06T06:40:00", "2026-07-06T08:00:00", "2026-07-06T09:20:00", "2026-07-06T10:40:00", "2026-07-06T12:00:00", "2026-07-06T13:20:00", "2026-07-06T14:40:00", "2026-07-06T16:00:00", "2026-07-06T17:20:00", "2026-07-06T18:40:00", "2026-07-06T20:00:00", "2026-07-06T21:20:00", "2026-07-06T22:40:00", "2026-07-07T00:00:00", "2026-07-07T01:20:00", "2026-07-07T02:40:00", "2026-07-07T04:00:00", "2026-07-07T05:20:00", "2026-07-07T06:40:00", "2026-07-07T08:00:00", "2026-07-07T09:20:00", "2026-07-07T10:40:00", "2026-07-07T12:00:00", "2026-07-07T13:20:00", "2026-07-07T14:40:00", "2026-07-07T16:00:00", "2026-07-07T17:20:00", "2026-07-07T18:40:00", "2026-07-07T20:00:00", "2026-07-07T21:20:00", "2026-07-07T22:40:00", "2026-07-08T00:00:00", "2026-07-08T01:20:00", "2026-07-08T02:40:00", "2026-07-08T04:00:00", "2026-07-08T05:20:00", "2026-07-08T06:40:00", "2026-07-08T08:00:00", "2026-07-08T09:20:00", "2026-07-08T10:40:00", "2026-07-08T12:00:00", "2026-07-08T13:20:00", "2026-07-08T14:40:00", "2026-07-08T16:00:00", "2026-07-08T17:20:00", "2026-07-08T18:40:00", "2026-07-08T20:00:00", "2026-07-08T21:20:00", "2026-07-08T22:40:00", "2026-07-09T00:00:00", "2026-07-09T01:20:00", "2026-07-09T02:40:00", "2026-07-09T04:00:00", "2026-07-09T05:20:00", "2026-07-09T06:40:00", "2026-07-09T08:00:00", "2026-07-09T09:20:00", "2026-07-09T10:40:00", "2026-07-09T12:00:00", "2026-07-09T13:20:00", "2026-07-09T14:40:00", "2026-07-09T16:00:00", "2026-07-09T17:20:00", "2026-07-09T18:40:00", "2026-07-09T20:00:00", "2026-07-09T21:20:00", "2026-07-09T22:40:00", "2026-07-10T00:00:00", "2026-07-10T01:20:00", "2026-07-10T02:40:00", "2026-07-10T04:00:00", "2026-07-10T05:20:00", "2026-07-10T06:40:00", "2026-07-10T08:00:00", "2026-07-10T09:20:00", "2026-07-10T10:40:00", "2026-07-10T12:00:00", "2026-07-10T13:20:00", "2026-07-10T14:40:00", "2026-07-10T16:00:00", "2026-07-10T17:20:00", "2026-07-10T18:40:00", "2026-07-10T20:00:00", "2026-07-10T21:20:00", "2026-07-10T22:40:00", "2026-07-11T00:00:00", "2026-07-11T01:20:00", "2026-07-11T02:40:00", "2026-07-11T04:00:00", "2026-07-11T05:20:00", "2026-07-11T06:40:00", "2026-07-11T08:00:00", "2026-07-11T09:20:00", "2026-07-11T10:40:00", "2026-07-11T12:00:00", "2026-07-11T13:20:00", "2026-07-11T14:40:00", "2026-07-11T16:00:00", "2026-07-11T17:20:00", "2026-07-11T18:40:00", "2026-07-11T20:00:00", "2026-07-11T21:20:00", "2026-07-11T22:40:00", "2026-07-12T00:00:00", "2026-07-12T01:20:00", "2026-07-12T02:40:00", "2026-07-12T04:00:00", "2026-07-12T05:20:00", "2026-07-12T06:40:00", "2026-07-12T08:00:00", "2026-07-12T09:20:00", "2026-07-12T10:40:00", "2026-07-12T12:00:00", "2026-07-12T13:20:00", "2026-07-12T14:40:00", "2026-07-12T16:00:00", "2026-07-12T17:20:00", "2026-07-12T18:40:00", "2026-07-12T20:00:00", "2026-07-12T21:20:00", "2026-07-12T22:40:00", "2026-07-13T00:00:00", "2026-07-13T01:20:00", "2026-07-13T02:40:00", "2026-07-13T04:00:00", "2026-07-13T05:20:00", "2026-07-13T06:40:00", "2026-07-13T08:00:00", "2026-07-13T09:20:00", "2026-07-13T10:40:00", "2026-07-13T12:00:00", "2026-07-13T13:20:00", "2026-07-13T14:40:00", "2026-07-13T16:00:00", "2026-07-13T17:20:00", "2026-07-13T18:40:00", "2026-07-13T20:00:00", "2026-07-13T21:20:00", "2026-07-13T22:40:00", "2026-07-14T00:00:00", "2026-07-14T01:20:00", "2026-07-14T02:40:00", "2026-07-14T04:00:00", "2026-07-14T05:20:00", "2026-07-14T06:40:00", "2026-07-14T08:00:00", "2026-07-14T09:20:00", "2026-07-14T10:40:00", "2026-07-14T12:00:00", "2026-07-14T13:20:00", "2026-07-14T14:40:00", "2026-07-14T16:00:00", "2026-07-14T17:20:00", "2026-07-14T18:40:00", "2026-07-14T20:00:00", "2026-07-14T21:20:00", "2026-07-14T22:40:00", "2026-07-15T00:00:00", "2026-07-15T01:20:00", "2026-07-15T02:40:00", "2026-07-15T04:00:00", "2026-07-15T05:20:00", "2026-07-15T06:40:00", "2026-07-15T08:00:00", "2026-07-15T09:20:00", "2026-07-15T10:40:00", "2026-07-15T12:00:00", "2026-07-15T13:20:00", "2026-07-15T14:40:00", "2026-07-15T16:00:00", "2026-07-15T17:20:00", "2026-07-15T18:40:00", "2026-07-15T20:00:00", "2026-07-15T21:20:00", "2026-07-15T22:40:00", "2026-07-16T00:00:00", "2026-07-16T01:20:00", "2026-07-16T02:40:00", "2026-07-16T04:00:00", "2026-07-16T05:20:00", "2026-07-16T06:40:00", "2026-07-16T08:00:00", "2026-07-16T09:20:00", "2026-07-16T10:40:00", "2026-07-16T12:00:00", "2026-07-16T13:20:00", "2026-07-16T14:40:00", "2026-07-16T16:00:00", "2026-07-16T17:20:00", "2026-07-16T18:40:00", "2026-07-16T20:00:00", "2026-07-16T21:20:00", "2026-07-16T22:40:00", "2026-07-17T00:00:00", "2026-07-17T01:20:00", "2026-07-17T02:40:00", "2026-07-17T04:00:00", "2026-07-17T05:20:00", "2026-07-17T06:40:00", "2026-07-17T08:00:00", "2026-07-17T09:20:00", "2026-07-17T10:40:00", "2026-07-17T12:00:00", "2026-07-17T13:20:00", "2026-07-17T14:40:00", "2026-07-17T16:00:00", "2026-07-17T17:20:00", "2026-07-17T18:40:00", "2026-07-17T20:00:00", "2026-07-17T21:20:00", "2026-07-17T22:40:00", "2026-07-18T00:00:00", "2026-07-18T01:20:00", "2026-07-18T02:40:00", "2026-07-18T04:00:00", "2026-07-18T05:20:00", "2026-07-18T06:40:00", "2026-07-18T08:00:00", "2026-07-18T09:20:00", "2026-07-18T10:40:00", "2026-07-18T12:00:00", "2026-07-18T13:20:00", "2026-07-18T14:40:00", "2026-07-18T16:00:00", "2026-07-18T17:20:00", "2026-07-18T18:40:00", "2026-07-18T20:00:00", "2026-07-18T21:20:00", "2026-07-18T22:40:00", "2026-07-19T00:00:00", "2026-07-19T01:20:00", "2026-07-19T02:40:00", "2026-07-19T04:00:00", "2026-07-19T05:20:00", "2026-07-19T06:40:00", "2026-07-19T08:00:00", "2026-07-19T09:20:00", "2026-07-19T10:40:00", "2026-07-19T12:00:00", "2026-07-19T13:20:00", "2026-07-19T14:40:00", "2026-07-19T16:00:00", "2026-07-19T17:20:00", "2026-07-19T18:40:00", "2026-07-19T20:00:00", "2026-07-19T21:20:00", "2026-07-19T22:40:00", "2026-07-20T00:00:00", "2026-07-20T01:20:00", "2026-07-20T02:40:00", "2026-07-20T04:00:00", "2026-07-20T05:20:00", "2026-07-20T06:40:00", "2026-07-20T08:00:00", "2026-07-20T09:20:00", "2026-07-20T10:40:00", "2026-07-20T12:00:00", "2026-07-20T13:20:00", "2026-07-20T14:40:00", "2026-07-20T16:00:00", "2026-07-20T17:20:00", "2026-07-20T18:40:00", "2026-07-20T20:00:00", "2026-07-20T21:20:00", "2026-07-20T22:40:00", "2026-07-21T00:00:00", "2026-07-21T01:20:00", "2026-07-21T02:40:00", "2026-07-21T04:00:00", "2026-07-21T05:20:00", "2026-07-21T06:40:00", "2026-07-21T08:00:00", "2026-07-21T09:20:00", "2026-07-21T10:40:00", "2026-07-21T12:00:00", "2026-07-21T13:20:00", "2026-07-21T14:40:00", "2026-07-21T16:00:00", "2026-07-21T17:20:00", "2026-07-21T18:40:00", "2026-07-21T20:00:00", "2026-07-21T21:20:00", "2026-07-21T22:40:00", "2026-07-22T00:00:00", "2026-07-22T01:20:00", "2026-07-22T02:40:00", "2026-07-22T04:00:00", "2026-07-22T05:20:00", "2026-07-22T06:40:00", "2026-07-22T08:00:00", "2026-07-22T09:20:00", "2026-07-22T10:40:00", "2026-07-22T12:00:00", "2026-07-22T13:20:00", "2026-07-22T14:40:00", "2026-07-22T16:00:00", "2026-07-22T17:20:00", "2026-07-22T18:40:00", "2026-07-22T20:00:00", "2026-07-22T21:20:00", "2026-07-22T22:40:00", "2026-07-23T00:00:00", "2026-07-23T01:20:00", "2026-07-23T02:40:00", "2026-07-23T04:00:00", "2026-07-23T05:20:00", "2026-07-23T06:40:00", "2026-07-23T08:00:00", "2026-07-23T09:20:00", "2026-07-23T10:40:00", "2026-07-23T12:00:00", "2026-07-23T13:20:00", "2026-07-23T14:40:00", "2026-07-23T16:00:00", "2026-07-23T17:20:00", "2026-07-23T18:40:00", "2026-07-23T20:00:00", "2026-07-23T21:20:00", "2026-07-23T22:40:00", "2026-07-24T00:00:00", "2026-07-24T01:20:00", "2026-07-24T02:40:00", "2026-07-24T04:00:00", "2026-07-24T05:20:00", "2026-07-24T06:40:00", "2026-07-24T08:00:00", "2026-07-24T09:20:00", "2026-07-24T10:40:00", "2026-07-24T12:00:00", "2026-07-24T13:20:00", "2026-07-24T14:40:00", "2026-07-24T16:00:00", "2026-07-24T17:20:00", "2026-07-24T18:40:00", "2026-07-24T20:00:00", "2026-07-24T21:20:00", "2026-07-24T22:40:00", "2026-07-25T00:00:00", "2026-07-25T01:20:00", "2026-07-25T02:40:00", "2026-07-25T04:00:00", "2026-07-25T05:20:00", "2026-07-25T06:40:00", "2026-07-25T08:00:00", "2026-07-25T09:20:00", "2026-07-25T10:40:00", "2026-07-25T12:00:00", "2026-07-25T13:20:00", "2026-07-25T14:40:00", "2026-07-25T16:00:00", "2026-07-25T17:20:00", "2026-07-25T18:40:00", "2026-07-25T20:00:00", "2026-07-25T21:20:00", "2026-07-25T22:40:00", "2026-07-26T00:00:00", "2026-07-26T01:20:00", "2026-07-26T02:40:00", "2026-07-26T04:00:00", "2026-07-26T05:20:00", "2026-07-26T06:40:00", "2026-07-26T08:00:00", "2026-07-26T09:20:00", "2026-07-26T10:40:00", "2026-07-26T12:00:00", "2026-07-26T13:20:00", "2026-07-26T14:40:00", "2026-07-26T16:00:00", "2026-07-26T17:20:00", "2026-07-26T18:40:00", "2026-07-26T20:00:00", "2026-07-26T21:20:00", "2026-07-26T22:40:00", "2026-07-27T00:00:00", "2026-07-27T01:20:00", "2026-07-27T02:40:00", "2026-07-27T04:00:00", "2026-07-27T05:20:00", "2026-07-27T06:40:00", "2026-07-27T08:00:00", "2026-07-27T09:20:00", "2026-07-27T10:40:00", "2026-07-27T12:00:00", "2026-07-27T13:20:00", "2026-07-27T14:40:00", "2026-07-27T16:00:00", "2026-07-27T17:20:00", "2026-07-27T18:40:00", "2026-07-27T20:00:00", "2026-07-27T21:20:00", "2026-07-27T22:40:00", "2026-07-28T00:00:00", "2026-07-28T01:20:00", "2026-07-28T02:40:00", "2026-07-28T04:00:00", "2026-07-28T05:20:00", "2026-07-28T06:40:00", "2026-07-28T08:00:00", "2026-07-28T09:20:00", "2026-07-28T10:40:00", "2026-07-28T12:00:00", "2026-07-28T13:20:00", "2026-07-28T14:40:00", "2026-07-28T16:00:00", "2026-07-28T17:20:00", "2026-07-28T18:40:00", "2026-07-28T20:00:00", "2026-07-28T21:20:00", "2026-07-28T22:40:00", "2026-07-29T00:00:00", "2026-07-29T01:20:00", "2026-07-29T02:40:00", "2026-07-29T04:00:00", "2026-07-29T05:20:00", "2026-07-29T06:40:00", "2026-07-29T08:00:00", "2026-07-29T09:20:00", "2026-07-29T10:40:00", "2026-07-29T12:00:00", "2026-07-29T13:20:00", "2026-07-29T14:40:00", "2026-07-29T16:00:00", "2026-07-29T17:20:00", "2026-07-29T18:40:00", "2026-07-29T20:00:00", "2026-07-29T21:20:00", "2026-07-29T22:40:00", "2026-07-30T00:00:00", "2026-07-30T01:20:00", "2026-07-30T02:40:00", "2026-07-30T04:00:00", "2026-07-30T05:20:00", "2026-07-30T06:40:00", "2026-07-30T08:00:00", "2026-07-30T09:20:00", "2026-07-30T10:40:00", "2026-07-30T12:00:00", "2026-07-30T13:20:00", "2026-07-30T14:40:00", "2026-07-30T16:00:00", "2026-07-30T17:20:00", "2026-07-30T18:40:00", "2026-07-30T20:00:00", "2026-07-30T21:20:00", "2026-07-30T22:40:00", "2026-07-31T00:00:00", "2026-07-31T01:20:00", "2026-07-31T02:40:00", "2026-07-31T04:00:00", "2026-07-31T05:20:00", "2026-07-31T06:40:00", "2026-07-31T08:00:00", "2026-07-31T09:20:00", "2026-07-31T10:40:00", "2026-07-31T12:00:00", "2026-07-31T13:20:00", "2026-07-31T14:40:00", "2026-07-31T16:00:00", "2026-07-31T17:20:00", "2026-07-31T18:40:00", "2026-07-31T20:00:00", "2026-07-31T21:20:00", "2026-07-31T22:40:00", "2026-08-01T00:00:00", "2026-08-01T01:20:00", "2026-08-01T02:40:00", "2026-08-01T04:00:00", "2026-08-01T05:20:00", "2026-08-01T06:40:00", "2026-08-01T08:00:00", "2026-08-01T09:20:00", "2026-08-01T10:40:00", "2026-08-01T12:00:00", "2026-08-01T13:20:00", "2026-08-01T14:40:00", "2026-08-01T16:00:00", "2026-08-01T17:20:00", "2026-08-01T18:40:00", "2026-08-01T20:00:00", "2026-08-01T21:20:00", "2026-08-01T22:40:00", "2026-08-02T00:00:00", "2026-08-02T01:20:00", "2026-08-02T02:40:00", "2026-08-02T04:00:00", "2026-08-02T05:20:00", "2026-08-02T06:40:00", "2026-08-02T08:00:00", "2026-08-02T09:20:00", "2026-08-02T10:40:00", "2026-08-02T12:00:00", "2026-08-02T13:20:00", "2026-08-02T14:40:00", "2026-08-02T16:00:00", "2026-08-02T17:20:00", "2026-08-02T18:40:00", "2026-08-02T20:00:00", "2026-08-02T21:20:00", "2026-08-02T22:40:00", "2026-08-03T00:00:00", "2026-08-03T01:20:00", "2026-08-03T02:40:00", "2026-08-03T04:00:00", "2026-08-03T05:20:00", "2026-08-03T06:40:00", "2026-08-03T08:00:00", "2026-08-03T09:20:00", "2026-08-03T10:40:00", "2026-08-03T12:00:00", "2026-08-03T13:20:00", "2026-08-03T14:40:00", "2026-08-03T16:00:00", "2026-08-03T17:20:00", "2026-08-03T18:40:00", "2026-08-03T20:00:00", "2026-08-03T21:20:00", "2026-08-03T22:40:00", "2026-08-04T00:00:00", "2026-08-04T01:20:00", "2026-08-04T02:40:00", "2026-08-04T04:00:00", "2026-08-04T05:20:00", "2026-08-04T06:40:00", "2026-08-04T08:00:00", "2026-08-04T09:20:00", "2026-08-04T10:40:00", "2026-08-04T12:00:00", "2026-08-04T13:20:00", "2026-08-04T14:40:00", "2026-08-04T16:00:00", "2026-08-04T17:20:00", "2026-08-04T18:40:00", "2026-08-04T20:00:00", "2026-08-04T21:20:00", "2026-08-04T22:40:00", "2026-08-05T00:00:00", "2026-08-05T01:20:00", "2026-08-05T02:40:00", "2026-08-05T04:00:00", "2026-08-05T05:20:00", "2026-08-05T06:40:00", "2026-08-05T08:00:00", "2026-08-05T09:20:00", "2026-08-05T10:40:00", "2026-08-05T12:00:00", "2026-08-05T13:20:00", "2026-08-05T14:40:00", "2026-08-05T16:00:00", "2026-08-05T17:20:00", "2026-08-05T18:40:00", "2026-08-05T20:00:00", "2026-08-05T21:20:00", "2026-08-05T22:40:00", "2026-08-06T00:00:00", "2026-08-06T01:20:00", "2026-08-06T02:40:00", "2026-08-06T04:00:00", "2026-08-06T05:20:00", "2026-08-06T06:40:00", "2026-08-06T08:00:00", "2026-08-06T09:20:00", "2026-08-06T10:40:00", "2026-08-06T12:00:00", "2026-08-06T13:20:00", "2026-08-06T14:40:00", "2026-08-06T16:00:00", "2026-08-06T17:20:00", "2026-08-06T18:40:00", "2026-08-06T20:00:00", "2026-08-06T21:20:00", "2026-08-06T22:40:00", "2026-08-07T00:00:00", "2026-08-07T01:20:00", "2026-08-07T02:40:00", "2026-08-07T04:00:00", "2026-08-07T05:20:00", "2026-08-07T06:40:00", "2026-08-07T08:00:00", "2026-08-07T09:20:00", "2026-08-07T10:40:00", "2026-08-07T12:00:00", "2026-08-07T13:20:00", "2026-08-07T14:40:00", "2026-08-07T16:00:00", "2026-08-07T17:20:00", "2026-08-07T18:40:00", "2026-08-07T20:00:00", "2026-08-07T21:20:00", "2026-08-07T22:40:00", "2026-08-08T00:00:00", "2026-08-08T01:20:00", "2026-08-08T02:40:00", "2026-08-08T04:00:00", "2026-08-08T05:20:00", "2026-08-08T06:40:00", "2026-08-08T08:00:00", "2026-08-08T09:20:00", "2026-08-08T10:40:00", "2026-08-08T12:00:00", "2026-08-08T13:20:00", "2026-08-08T14:40:00", "2026-08-08T16:00:00", "2026-08-08T17:20:00", "2026-08-08T18:40:00", "2026-08-08T20:00:00", "2026-08-08T21:20:00", "2026-08-08T22:40:00", "2026-08-09T00:00:00", "2026-08-09T01:20:00", "2026-08-09T02:40:00", "2026-08-09T04:00:00", "2026-08-09T05:20:00", "2026-08-09T06:40:00", "2026-08-09T08:00:00", "2026-08-09T09:20:00", "2026-08-09T10:40:00", "2026-08-09T12:00:00", "2026-08-09T13:20:00", "2026-08-09T14:40:00", "2026-08-09T16:00:00", "2026-08-09T17:20:00", "2026-08-09T18:40:00", "2026-08-09T20:00:00", "2026-08-09T21:20:00", "2026-08-09T22:40:00", "2026-08-10T00:00:00", "2026-08-10T01:20:00", "2026-08-10T02:40:00", "2026-08-10T04:00:00", "2026-08-10T05:20:00", "2026-08-10T06:40:00", "2026-08-10T08:00:00", "2026-08-10T09:20:00", "2026-08-10T10:40:00", "2026-08-10T12:00:00", "2026-08-10T13:20:00", "2026-08-10T14:40:00", "2026-08-10T16:00:00", "2026-08-10T17:20:00", "2026-08-10T18:40:00", "2026-08-10T20:00:00", "2026-08-10T21:20:00", "2026-08-10T22:40:00", "2026-08-11T00:00:00", "2026-08-11T01:20:00", "2026-08-11T02:40:00", "2026-08-11T04:00:00", "2026-08-11T05:20:00", "2026-08-11T06:40:00", "2026-08-11T08:00:00", "2026-08-11T09:20:00", "2026-08-11T10:40:00", "2026-08-11T12:00:00", "2026-08-11T13:20:00", "2026-08-11T14:40:00", "2026-08-11T16:00:00", "2026-08-11T17:20:00", "2026-08-11T18:40:00", "2026-08-11T20:00:00", "2026-08-11T21:20:00", "2026-08-11T22:40:00", "2026-08-12T00:00:00", "2026-08-12T01:20:00", "2026-08-12T02:40:00", "2026-08-12T04:00:00", "2026-08-12T05:20:00", "2026-08-12T06:40:00", "2026-08-12T08:00:00", "2026-08-12T09:20:00", "2026-08-12T10:40:00", "2026-08-12T12:00:00", "2026-08-12T13:20:00", "2026-08-12T14:40:00", "2026-08-12T16:00:00", "2026-08-12T17:20:00", "2026-08-12T18:40:00", "2026-08-12T20:00:00", "2026-08-12T21:20:00", "2026-08-12T22:40:00", "2026-08-13T00:00:00", "2026-08-13T01:20:00", "2026-08-13T02:40:00", "2026-08-13T04:00:00", "2026-08-13T05:20:00", "2026-08-13T06:40:00", "2026-08-13T08:00:00", "2026-08-13T09:20:00", "2026-08-13T10:40:00", "2026-08-13T12:00:00", "2026-08-13T13:20:00", "2026-08-13T14:40:00", "2026-08-13T16:00:00", "2026-08-13T17:20:00", "2026-08-13T18:40:00", "2026-08-13T20:00:00", "2026-08-13T21:20:00", "2026-08-13T22:40:00", "2026-08-14T00:00:00", "2026-08-14T01:20:00", "2026-08-14T02:40:00", "2026-08-14T04:00:00", "2026-08-14T05:20:00", "2026-08-14T06:40:00", "2026-08-14T08:00:00", "2026-08-14T09:20:00", "2026-08-14T10:40:00", "2026-08-14T12:00:00", "2026-08-14T13:20:00", "2026-08-14T14:40:00", "2026-08-14T16:00:00", "2026-08-14T17:20:00", "2026-08-14T18:40:00", "2026-08-14T20:00:00", "2026-08-14T21:20:00", "2026-08-14T22:40:00", "2026-08-15T00:00:00", "2026-08-15T01:20:00", "2026-08-15T02:40:00", "2026-08-15T04:00:00", "2026-08-15T05:20:00", "2026-08-15T06:40:00", "2026-08-15T08:00:00", "2026-08-15T09:20:00", "2026-08-15T10:40:00", "2026-08-15T12:00:00", "2026-08-15T13:20:00", "2026-08-15T14:40:00", "2026-08-15T16:00:00", "2026-08-15T17:20:00", "2026-08-15T18:40:00", "2026-08-15T20:00:00", "2026-08-15T21:20:00", "2026-08-15T22:40:00", "2026-08-16T00:00:00", "2026-08-16T01:20:00", "2026-08-16T02:40:00", "2026-08-16T04:00:00", "2026-08-16T05:20:00", "2026-08-16T06:40:00", "2026-08-16T08:00:00", "2026-08-16T09:20:00", "2026-08-16T10:40:00", "2026-08-16T12:00:00", "2026-08-16T13:20:00", "2026-08-16T14:40:00", "2026-08-16T16:00:00", "2026-08-16T17:20:00", "2026-08-16T18:40:00", "2026-08-16T20:00:00", "2026-08-16T21:20:00", "2026-08-16T22:40:00", "2026-08-17T00:00:00", "2026-08-17T01:20:00", "2026-08-17T02:40:00", "2026-08-17T04:00:00", "2026-08-17T05:20:00", "2026-08-17T06:40:00", "2026-08-17T08:00:00", "2026-08-17T09:20:00", "2026-08-17T10:40:00", "2026-08-17T12:00:00", "2026-08-17T13:20:00", "2026-08-17T14:40:00", "2026-08-17T16:00:00", "2026-08-17T17:20:00", "2026-08-17T18:40:00", "2026-08-17T20:00:00", "2026-08-17T21:20:00", "2026-08-17T22:40:00", "2026-08-18T00:00:00", "2026-08-18T01:20:00", "2026-08-18T02:40:00", "2026-08-18T04:00:00", "2026-08-18T05:20:00", "2026-08-18T06:40:00", "2026-08-18T08:00:00", "2026-08-18T09:20:00", "2026-08-18T10:40:00", "2026-08-18T12:00:00", "2026-08-18T13:20:00", "2026-08-18T14:40:00", "2026-08-18T16:00:00", "2026-08-18T17:20:00", "2026-08-18T18:40:00", "2026-08-18T20:00:00", "2026-08-18T21:20:00", "2026-08-18T22:40:00", "2026-08-19T00:00:00", "2026-08-19T01:20:00", "2026-08-19T02:40:00", "2026-08-19T04:00:00", "2026-08-19T05:20:00", "2026-08-19T06:40:00", "2026-08-19T08:00:00", "2026-08-19T09:20:00", "2026-08-19T10:40:00", "2026-08-19T12:00:00", "2026-08-19T13:20:00", "2026-08-19T14:40:00", "2026-08-19T16:00:00", "2026-08-19T17:20:00", "2026-08-19T18:40:00", "2026-08-19T20:00:00", "2026-08-19T21:20:00", "2026-08-19T22:40:00", "2026-08-20T00:00:00", "2026-08-20T01:20:00", "2026-08-20T02:40:00", "2026-08-20T04:00:00", "2026-08-20T05:20:00", "2026-08-20T06:40:00", "2026-08-20T08:00:00", "2026-08-20T09:20:00", "2026-08-20T10:40:00", "2026-08-20T12:00:00", "2026-08-20T13:20:00", "2026-08-20T14:40:00", "2026-08-20T16:00:00", "2026-08-20T17:20:00", "2026-08-20T18:40:00", "2026-08-20T20:00:00", "2026-08-20T21:20:00", "2026-08-20T22:40:00", "2026-08-21T00:00:00", "2026-08-21T01:20:00", "2026-08-21T02:40:00", "2026-08-21T04:00:00", "2026-08-21T05:20:00", "2026-08-21T06:40:00", "2026-08-21T08:00:00", "2026-08-21T09:20:00", "2026-08-21T10:40:00", "2026-08-21T12:00:00", "2026-08-21T13:20:00", "2026-08-21T14:40:00", "2026-08-21T16:00:00", "2026-08-21T17:20:00", "2026-08-21T18:40:00", "2026-08-21T20:00:00", "2026-08-21T21:20:00", "2026-08-21T22:40:00", "2026-08-22T00:00:00", "2026-08-22T01:20:00", "2026-08-22T02:40:00", "2026-08-22T04:00:00", "2026-08-22T05:20:00", "2026-08-22T06:40:00", "2026-08-22T08:00:00", "2026-08-22T09:20:00", "2026-08-22T10:40:00", "2026-08-22T12:00:00", "2026-08-22T13:20:00", "2026-08-22T14:40:00", "2026-08-22T16:00:00", "2026-08-22T17:20:00", "2026-08-22T18:40:00", "2026-08-22T20:00:00", "2026-08-22T21:20:00", "2026-08-22T22:40:00", "2026-08-23T00:00:00", "2026-08-23T01:20:00", "2026-08-23T02:40:00", "2026-08-23T04:00:00", "2026-08-23T05:20:00", "2026-08-23T06:40:00", "2026-08-23T08:00:00", "2026-08-23T09:20:00", "2026-08-23T10:40:00", "2026-08-23T12:00:00", "2026-08-23T13:20:00", "2026-08-23T14:40:00", "2026-08-23T16:00:00", "2026-08-23T17:20:00", "2026-08-23T18:40:00", "2026-08-23T20:00:00", "2026-08-23T21:20:00", "2026-08-23T22:40:00", "2026-08-24T00:00:00", "2026-08-24T01:20:00", "2026-08-24T02:40:00", "2026-08-24T04:00:00", "2026-08-24T05:20:00", "2026-08-24T06:40:00", "2026-08-24T08:00:00", "2026-08-24T09:20:00", "2026-08-24T10:40:00", "2026-08-24T12:00:00", "2026-08-24T13:20:00", "2026-08-24T14:40:00", "2026-08-24T16:00:00", "2026-08-24T17:20:00", "2026-08-24T18:40:00", "2026-08-24T20:00:00", "2026-08-24T21:20:00", "2026-08-24T22:40:00", "2026-08-25T00:00:00", "2026-08-25T01:20:00", "2026-08-25T02:40:00", "2026-08-25T04:00:00", "2026-08-25T05:20:00", "2026-08-25T06:40:00", "2026-08-25T08:00:00", "2026-08-25T09:20:00", "2026-08-25T10:40:00", "2026-08-25T12:00:00", "2026-08-25T13:20:00", "2026-08-25T14:40:00", "2026-08-25T16:00:00", "2026-08-25T17:20:00", "2026-08-25T18:40:00", "2026-08-25T20:00:00", "2026-08-25T21:20:00", "2026-08-25T22:40:00", "2026-08-26T00:00:00", "2026-08-26T01:20:00", "2026-08-26T02:40:00", "2026-08-26T04:00:00", "2026-08-26T05:20:00", "2026-08-26T06:40:00", "2026-08-26T08:00:00", "2026-08-26T09:20:00", "2026-08-26T10:40:00", "2026-08-26T12:00:00", "2026-08-26T13:20:00", "2026-08-26T14:40:00", "2026-08-26T16:00:00", "2026-08-26T17:20:00", "2026-08-26T18:40:00", "2026-08-26T20:00:00", "2026-08-26T21:20:00", "2026-08-26T22:40:00", "2026-08-27T00:00:00", "2026-08-27T01:20:00", "2026-08-27T02:40:00", "2026-08-27T04:00:00", "2026-08-27T05:20:00", "2026-08-27T06:40:00", "2026-08-27T08:00:00", "2026-08-27T09:20:00", "2026-08-27T10:40:00", "2026-08-27T12:00:00", "2026-08-27T13:20:00", "2026-08-27T14:40:00", "2026-08-27T16:00:00", "2026-08-27T17:20:00", "2026-08-27T18:40:00", "2026-08-27T20:00:00", "2026-08-27T21:20:00", "2026-08-27T22:40:00", "2026-08-28T00:00:00", "2026-08-28T01:20:00", "2026-08-28T02:40:00", "2026-08-28T04:00:00", "2026-08-28T05:20:00", "2026-08-28T06:40:00", "2026-08-28T08:00:00", "2026-08-28T09:20:00", "2026-08-28T10:40:00", "2026-08-28T12:00:00", "2026-08-28T13:20:00", "2026-08-28T14:40:00", "2026-08-28T16:00:00", "2026-08-28T17:20:00", "2026-08-28T18:40:00", "2026-08-28T20:00:00", "2026-08-28T21:20:00", "2026-08-28T22:40:00", "2026-08-29T00:00:00", "2026-08-29T01:20:00", "2026-08-29T02:40:00", "2026-08-29T04:00:00", "2026-08-29T05:20:00", "2026-08-29T06:40:00", "2026-08-29T08:00:00", "2026-08-29T09:20:00", "2026-08-29T10:40:00", "2026-08-29T12:00:00", "2026-08-29T13:20:00", "2026-08-29T14:40:00", "2026-08-29T16:00:00", "2026-08-29T17:20:00", "2026-08-29T18:40:00", "2026-08-29T20:00:00", "2026-08-29T21:20:00", "2026-08-29T22:40:00", "2026-08-30T00:00:00", "2026-08-30T01:20:00", "2026-08-30T02:40:00", "2026-08-30T04:00:00", "2026-08-30T05:20:00", "2026-08-30T06:40:00", "2026-08-30T08:00:00", "2026-08-30T09:20:00", "2026-08-30T10:40:00", "2026-08-30T12:00:00", "2026-08-30T13:20:00", "2026-08-30T14:40:00", "2026-08-30T16:00:00", "2026-08-30T17:20:00", "2026-08-30T18:40:00", "2026-08-30T20:00:00", "2026-08-30T21:20:00", "2026-08-30T22:40:00", "2026-08-31T00:00:00", "2026-08-31T01:20:00", "2026-08-31T02:40:00", "2026-08-31T04:00:00", "2026-08-31T05:20:00", "2026-08-31T06:40:00", "2026-08-31T08:00:00", "2026-08-31T09:20:00", "2026-08-31T10:40:00", "2026-08-31T12:00:00", "2026-08-31T13:20:00", "2026-08-31T14:40:00", "2026-08-31T16:00:00", "2026-08-31T17:20:00", "2026-08-31T18:40:00", "2026-08-31T20:00:00", "2026-08-31T21:20:00", "2026-08-31T22:40:00", "2026-09-01T00:00:00", "2026-09-01T01:20:00", "2026-09-01T02:40:00", "2026-09-01T04:00:00", "2026-09-01T05:20:00", "2026-09-01T06:40:00", "2026-09-01T08:00:00", "2026-09-01T09:20:00", "2026-09-01T10:40:00", "2026-09-01T12:00:00", "2026-09-01T13:20:00", "2026-09-01T14:40:00", "2026-09-01T16:00:00", "2026-09-01T17:20:00", "2026-09-01T18:40:00", "2026-09-01T20:00:00", "2026-09-01T21:20:00", "2026-09-01T22:40:00", "2026-09-02T00:00:00", "2026-09-02T01:20:00", "2026-09-02T02:40:00", "2026-09-02T04:00:00", "2026-09-02T05:20:00", "2026-09-02T06:40:00", "2026-09-02T08:00:00", "2026-09-02T09:20:00", "2026-09-02T10:40:00", "2026-09-02T12:00:00", "2026-09-02T13:20:00", "2026-09-02T14:40:00", "2026-09-02T16:00:00", "2026-09-02T17:20:00", "2026-09-02T18:40:00", "2026-09-02T20:00:00", "2026-09-02T21:20:00", "2026-09-02T22:40:00", "2026-09-03T00:00:00", "2026-09-03T01:20:00", "2026-09-03T02:40:00", "2026-09-03T04:00:00", "2026-09-03T05:20:00", "2026-09-03T06:40:00", "2026-09-03T08:00:00", "2026-09-03T09:20:00", "2026-09-03T10:40:00", "2026-09-03T12:00:00", "2026-09-03T13:20:00", "2026-09-03T14:40:00", "2026-09-03T16:00:00", "2026-09-03T17:20:00", "2026-09-03T18:40:00", "2026-09-03T20:00:00", "2026-09-03T21:20:00", "2026-09-03T22:40:00", "2026-09-04T00:00:00", "2026-09-04T01:20:00", "2026-09-04T02:40:00", "2026-09-04T04:00:00", "2026-09-04T05:20:00", "2026-09-04T06:40:00", "2026-09-04T08:00:00", "2026-09-04T09:20:00", "2026-09-04T10:40:00", "2026-09-04T12:00:00", "2026-09-04T13:20:00", "2026-09-04T14:40:00", "2026-09-04T16:00:00", "2026-09-04T17:20:00", "2026-09-04T18:40:00", "2026-09-04T20:00:00", "2026-09-04T21:20:00", "2026-09-04T22:40:00", "2026-09-05T00:00:00", "2026-09-05T01:20:00", "2026-09-05T02:40:00", "2026-09-05T04:00:00", "2026-09-05T05:20:00", "2026-09-05T06:40:00", "2026-09-05T08:00:00", "2026-09-05T09:20:00", "2026-09-05T10:40:00", "2026-09-05T12:00:00", "2026-09-05T13:20:00", "2026-09-05T14:40:00", "2026-09-05T16:00:00", "2026-09-05T17:20:00", "2026-09-05T18:40:00", "2026-09-05T20:00:00", "2026-09-05T21:20:00", "2026-09-05T22:40:00", "2026-09-06T00:00:00", "2026-09-06T01:20:00", "2026-09-06T02:40:00", "2026-09-06T04:00:00", "2026-09-06T05:20:00", "2026-09-06T06:40:00", "2026-09-06T08:00:00", "2026-09-06T09:20:00", "2026-09-06T10:40:00", "2026-09-06T12:00:00", "2026-09-06T13:20:00", "2026-09-06T14:40:00", "2026-09-06T16:00:00", "2026-09-06T17:20:00", "2026-09-06T18:40:00", "2026-09-06T20:00:00", "2026-09-06T21:20:00", "2026-09-06T22:40:00", "2026-09-07T00:00:00", "2026-09-07T01:20:00", "2026-09-07T02:40:00", "2026-09-07T04:00:00", "2026-09-07T05:20:00", "2026-09-07T06:40:00", "2026-09-07T08:00:00", "2026-09-07T09:20:00", "2026-09-07T10:40:00", "2026-09-07T12:00:00", "2026-09-07T13:20:00", "2026-09-07T14:40:00", "2026-09-07T16:00:00", "2026-09-07T17:20:00", "2026-09-07T18:40:00", "2026-09-07T20:00:00", "2026-09-07T21:20:00", "2026-09-07T22:40:00", "2026-09-08T00:00:00", "2026-09-08T01:20:00", "2026-09-08T02:40:00", "2026-09-08T04:00:00", "2026-09-08T05:20:00", "2026-09-08T06:40:00", "2026-09-08T08:00:00", "2026-09-08T09:20:00", "2026-09-08T10:40:00", "2026-09-08T12:00:00", "2026-09-08T13:20:00", "2026-09-08T14:40:00", "2026-09-08T16:00:00", "2026-09-08T17:20:00", "2026-09-08T18:40:00", "2026-09-08T20:00:00", "2026-09-08T21:20:00", "2026-09-08T22:40:00", "2026-09-09T00:00:00", "2026-09-09T01:20:00", "2026-09-09T02:40:00", "2026-09-09T04:00:00", "2026-09-09T05:20:00", "2026-09-09T06:40:00", "2026-09-09T08:00:00", "2026-09-09T09:20:00", "2026-09-09T10:40:00", "2026-09-09T12:00:00", "2026-09-09T13:20:00", "2026-09-09T14:40:00", "2026-09-09T16:00:00", "2026-09-09T17:20:00", "2026-09-09T18:40:00", "2026-09-09T20:00:00", "2026-09-09T21:20:00", "2026-09-09T22:40:00", "2026-09-10T00:00:00", "2026-09-10T01:20:00", "2026-09-10T02:40:00", "2026-09-10T04:00:00", "2026-09-10T05:20:00", "2026-09-10T06:40:00", "2026-09-10T08:00:00", "2026-09-10T09:20:00", "2026-09-10T10:40:00", "2026-09-10T12:00:00", "2026-09-10T13:20:00", "2026-09-10T14:40:00", "2026-09-10T16:00:00", "2026-09-10T17:20:00", "2026-09-10T18:40:00", "2026-09-10T20:00:00", "2026-09-10T21:20:00", "2026-09-10T22:40:00", "2026-09-11T00:00:00", "2026-09-11T01:20:00", "2026-09-11T02:40:00", "2026-09-11T04:00:00", "2026-09-11T05:20:00", "2026-09-11T06:40:00", "2026-09-11T08:00:00", "2026-09-11T09:20:00", "2026-09-11T10:40:00", "2026-09-11T12:00:00", "2026-09-11T13:20:00", "2026-09-11T14:40:00", "2026-09-11T16:00:00", "2026-09-11T17:20:00", "2026-09-11T18:40:00", "2026-09-11T20:00:00", "2026-09-11T21:20:00", "2026-09-11T22:40:00", "2026-09-12T00:00:00", "2026-09-12T01:20:00", "2026-09-12T02:40:00", "2026-09-12T04:00:00", "2026-09-12T05:20:00", "2026-09-12T06:40:00", "2026-09-12T08:00:00", "2026-09-12T09:20:00", "2026-09-12T10:40:00", "2026-09-12T12:00:00", "2026-09-12T13:20:00", "2026-09-12T14:40:00", "2026-09-12T16:00:00", "2026-09-12T17:20:00", "2026-09-12T18:40:00", "2026-09-12T20:00:00", "2026-09-12T21:20:00", "2026-09-12T22:40:00", "2026-09-13T00:00:00", "2026-09-13T01:20:00", "2026-09-13T02:40:00", "2026-09-13T04:00:00", "2026-09-13T05:20:00", "2026-09-13T06:40:00", "2026-09-13T08:00:00", "2026-09-13T09:20:00", "2026-09-13T10:40:00", "2026-09-13T12:00:00", "2026-09-13T13:20:00", "2026-09-13T14:40:00", "2026-09-13T16:00:00", "2026-09-13T17:20:00", "2026-09-13T18:40:00", "2026-09-13T20:00:00", "2026-09-13T21:20:00", "2026-09-13T22:40:00", "2026-09-14T00:00:00", "2026-09-14T01:20:00", "2026-09-14T02:40:00", "2026-09-14T04:00:00", "2026-09-14T05:20:00", "2026-09-14T06:40:00", "2026-09-14T08:00:00", "2026-09-14T09:20:00", "2026-09-14T10:40:00", "2026-09-14T12:00:00", "2026-09-14T13:20:00", "2026-09-14T14:40:00", "2026-09-14T16:00:00", "2026-09-14T17:20:00", "2026-09-14T18:40:00", "2026-09-14T20:00:00", "2026-09-14T21:20:00", "2026-09-14T22:40:00", "2026-09-15T00:00:00", "2026-09-15T01:20:00", "2026-09-15T02:40:00", "2026-09-15T04:00:00", "2026-09-15T05:20:00", "2026-09-15T06:40:00", "2026-09-15T08:00:00", "2026-09-15T09:20:00", "2026-09-15T10:40:00", "2026-09-15T12:00:00", "2026-09-15T13:20:00", "2026-09-15T14:40:00", "2026-09-15T16:00:00", "2026-09-15T17:20:00", "2026-09-15T18:40:00", "2026-09-15T20:00:00", "2026-09-15T21:20:00", "2026-09-15T22:40:00", "2026-09-16T00:00:00", "2026-09-16T01:20:00", "2026-09-16T02:40:00", "2026-09-16T04:00:00", "2026-09-16T05:20:00", "2026-09-16T06:40:00", "2026-09-16T08:00:00", "2026-09-16T09:20:00", "2026-09-16T10:40:00", "2026-09-16T12:00:00", "2026-09-16T13:20:00", "2026-09-16T14:40:00", "2026-09-16T16:00:00", "2026-09-16T17:20:00", "2026-09-16T18:40:00", "2026-09-16T20:00:00", "2026-09-16T21:20:00", "2026-09-16T22:40:00", "2026-09-17T00:00:00", "2026-09-17T01:20:00", "2026-09-17T02:40:00", "2026-09-17T04:00:00", "2026-09-17T05:20:00", "2026-09-17T06:40:00", "2026-09-17T08:00:00", "2026-09-17T09:20:00", "2026-09-17T10:40:00", "2026-09-17T12:00:00", "2026-09-17T13:20:00", "2026-09-17T14:40:00", "2026-09-17T16:00:00", "2026-09-17T17:20:00", "2026-09-17T18:40:00", "2026-09-17T20:00:00", "2026-09-17T21:20:00", "2026-09-17T22:40:00", "2026-09-18T00:00:00", "2026-09-18T01:20:00", "2026-09-18T02:40:00", "2026-09-18T04:00:00", "2026-09-18T05:20:00", "2026-09-18T06:40:00", "2026-09-18T08:00:00", "2026-09-18T09:20:00", "2026-09-18T10:40:00", "2026-09-18T12:00:00", "2026-09-18T13:20:00", "2026-09-18T14:40:00", "2026-09-18T16:00:00", "2026-09-18T17:20:00", "2026-09-18T18:40:00", "2026-09-18T20:00:00", "2026-09-18T21:20:00", "2026-09-18T22:40:00", "2026-09-19T00:00:00", "2026-09-19T01:20:00", "2026-09-19T02:40:00", "2026-09-19T04:00:00", "2026-09-19T05:20:00", "2026-09-19T06:40:00", "2026-09-19T08:00:00", "2026-09-19T09:20:00", "2026-09-19T10:40:00", "2026-09-19T12:00:00", "2026-09-19T13:20:00", "2026-09-19T14:40:00", "2026-09-19T16:00:00", "2026-09-19T17:20:00", "2026-09-19T18:40:00", "2026-09-19T20:00:00", "2026-09-19T21:20:00", "2026-09-19T22:40:00", "2026-09-20T00:00:00", "2026-09-20T01:20:00", "2026-09-20T02:40:00", "2026-09-20T04:00:00", "2026-09-20T05:20:00", "2026-09-20T06:40:00", "2026-09-20T08:00:00", "2026-09-20T09:20:00", "2026-09-20T10:40:00", "2026-09-20T12:00:00", "2026-09-20T13:20:00", "2026-09-20T14:40:00", "2026-09-20T16:00:00", "2026-09-20T17:20:00", "2026-09-20T18:40:00", "2026-09-20T20:00:00", "2026-09-20T21:20:00", "2026-09-20T22:40:00", "2026-09-21T00:00:00", "2026-09-21T01:20:00", "2026-09-21T02:40:00", "2026-09-21T04:00:00", "2026-09-21T05:20:00", "2026-09-21T06:40:00", "2026-09-21T08:00:00", "2026-09-21T09:20:00", "2026-09-21T10:40:00", "2026-09-21T12:00:00", "2026-09-21T13:20:00", "2026-09-21T14:40:00", "2026-09-21T16:00:00", "2026-09-21T17:20:00", "2026-09-21T18:40:00", "2026-09-21T20:00:00", "2026-09-21T21:20:00", "2026-09-21T22:40:00", "2026-09-22T00:00:00", "2026-09-22T01:20:00", "2026-09-22T02:40:00", "2026-09-22T04:00:00", "2026-09-22T05:20:00", "2026-09-22T06:40:00", "2026-09-22T08:00:00", "2026-09-22T09:20:00", "2026-09-22T10:40:00", "2026-09-22T12:00:00", "2026-09-22T14:35:00", "2026-09-22T15:55:00", "2026-09-22T17:15:00", "2026-09-22T18:35:00", "2026-09-22T19:55:00", "2026-09-22T21:15:00", "2026-09-22T22:35:00", "2026-09-22T23:55:00", "2026-09-23T01:15:00", "2026-09-23T02:35:00", "2026-09-23T03:55:00", "2026-09-23T05:15:00", "2026-09-23T06:35:00", "2026-09-23T07:55:00", "2026-09-23T09:15:00", "2026-09-23T10:35:00", "2026-09-23T11:55:00", "2026-09-23T13:15:00", "2026-09-23T14:35:00", "2026-09-23T15:55:00", "2026-09-23T17:15:00", "2026-09-23T18:35:00", "2026-09-23T19:55:00", "2026-09-23T21:15:00", "2026-09-23T22:35:00", "2026-09-23T23:55:00", "2026-09-24T01:15:00", "2026-09-24T02:35:00", "2026-09-24T03:55:00", "2026-09-24T05:15:00", "2026-09-24T06:35:00", "2026-09-24T07:55:00", "2026-09-24T09:15:00", "2026-09-24T10:35:00", "2026-09-24T11:55:00", "2026-09-24T13:15:00", "2026-09-24T14:35:00", "2026-09-24T15:55:00", "2026-09-24T17:15:00", "2026-09-24T18:35:00", "2026-09-24T19:55:00", "2026-09-24T21:15:00", "2026-09-24T22:35:00", "2026-09-24T23:55:00", "2026-09-25T01:15:00", "2026-09-25T02:35:00", "2026-09-25T03:55:00", "2026-09-25T05:15:00", "2026-09-25T06:35:00", "2026-09-25T07:55:00", "2026-09-25T09:15:00", "2026-09-25T10:35:00", "2026-09-25T11:55:00", "2026-09-25T13:15:00", "2026-09-25T14:35:00", "2026-09-25T15:55:00", "2026-09-25T17:15:00", "2026-09-25T18:35:00", "2026-09-25T19:55:00", "2026-09-25T21:15:00", "2026-09-25T22:35:00", "2026-09-25T23:55:00", "2026-09-26T01:15:00", "2026-09-26T02:35:00", "2026-09-26T03:55:00", "2026-09-26T05:15:00", "2026-09-26T06:35:00", "2026-09-26T07:55:00", "2026-09-26T09:15:00", "2026-09-26T10:35:00", "2026-09-26T11:55:00", "2026-09-26T13:15:00", "2026-09-26T14:35:00", "2026-09-26T15:55:00", "2026-09-26T17:15:00", "2026-09-26T18:35:00", "2026-09-26T19:55:00", "2026-09-26T21:15:00", "2026-09-26T22:35:00", "2026-09-26T23:55:00", "2026-09-27T01:15:00", "2026-09-27T02:35:00", "2026-09-27T03:55:00", "2026-09-27T05:15:00", "2026-09-27T06:35:00", "2026-09-27T07:55:00", "2026-09-27T09:15:00", "2026-09-27T10:35:00", "2026-09-27T11:55:00", "2026-09-27T13:15:00", "2026-09-27T14:35:00", "2026-09-27T15:55:00", "2026-09-27T17:15:00", "2026-09-27T18:35:00", "2026-09-27T19:55:00", "2026-09-27T21:15:00", "2026-09-27T22:35:00", "2026-09-27T23:55:00", "2026-09-28T01:15:00", "2026-09-28T02:35:00", "2026-09-28T03:55:00", "2026-09-28T05:15:00", "2026-09-28T06:35:00", "2026-09-28T07:55:00", "2026-09-28T09:15:00", "2026-09-28T10:35:00", "2026-09-28T11:55:00", "2026-09-28T13:15:00", "2026-09-28T14:35:00", "2026-09-28T15:55:00", "2026-09-28T17:15:00", "2026-09-28T18:35:00", "2026-09-28T19:55:00", "2026-09-28T21:15:00", "2026-09-28T22:35:00", "2026-09-28T23:55:00", "2026-09-29T01:15:00", "2026-09-29T02:35:00", "2026-09-29T03:55:00", "2026-09-29T05:15:00", "2026-09-29T06:35:00", "2026-09-29T07:55:00", "2026-09-29T09:15:00", "2026-09-29T10:35:00", "2026-09-29T11:55:00", "2026-09-29T13:15:00", "2026-09-29T14:35:00", "2026-09-29T15:55:00", "2026-09-29T17:15:00", "2026-09-29T18:35:00", "2026-09-29T19:55:00", "2026-09-29T21:15:00", "2026-09-29T22:35:00", "2026-09-29T23:55:00", "2026-09-30T01:15:00", "2026-09-30T02:35:00", "2026-09-30T03:55:00", "2026-09-30T05:15:00", "2026-09-30T06:35:00", "2026-09-30T07:55:00", "2026-09-30T09:15:00", "2026-09-30T10:35:00", "2026-09-30T11:55:00", "2026-09-30T13:15:00", "2026-09-30T14:35:00", "2026-09-30T15:55:00", "2026-09-30T17:15:00", "2026-09-30T18:35:00", "2026-09-30T19:55:00", "2026-09-30T21:15:00", "2026-09-30T22:35:00", "2026-09-30T23:55:00", "2026-10-01T01:15:00", "2026-10-01T02:35:00", "2026-10-01T03:55:00", "2026-10-01T05:15:00", "2026-10-01T06:35:00", "2026-10-01T07:55:00", "2026-10-01T09:15:00", "2026-10-01T10:35:00", "2026-10-01T11:55:00", "2026-10-01T13:15:00", "2026-10-01T14:35:00", "2026-10-01T15:55:00", "2026-10-01T17:15:00", "2026-10-01T18:35:00", "2026-10-01T19:55:00", "2026-10-01T21:15:00", "2026-10-01T22:35:00", "2026-10-01T23:55:00", "2026-10-02T01:15:00", "2026-10-02T02:35:00", "2026-10-02T03:55:00", "2026-10-02T05:15:00", "2026-10-02T06:35:00", "2026-10-02T07:55:00", "2026-10-02T09:15:00", "2026-10-02T10:35:00", "2026-10-02T11:55:00", "2026-10-02T13:15:00", "2026-10-02T14:35:00", "2026-10-02T15:55:00", "2026-10-02T17:15:00", "2026-10-02T18:35:00", "2026-10-02T19:55:00", "2026-10-02T21:15:00", "2026-10-02T22:35:00", "2026-10-02T23:55:00", "2026-10-03T01:15:00", "2026-10-03T02:35:00", "2026-10-03T03:55:00", "2026-10-03T05:15:00", "2026-10-03T06:35:00", "2026-10-03T07:55:00", "2026-10-03T09:15:00", "2026-10-03T10:35:00", "2026-10-03T11:55:00", "2026-10-03T13:15:00", "2026-10-03T14:35:00", "2026-10-03T15:55:00", "2026-10-03T17:15:00", "2026-10-03T18:35:00", "2026-10-03T19:55:00", "2026-10-03T21:15:00", "2026-10-03T22:35:00", "2026-10-03T23:55:00", "2026-10-04T01:15:00", "2026-10-04T02:35:00", "2026-10-04T03:55:00", "2026-10-04T05:15:00", "2026-10-04T06:35:00", "2026-10-04T07:55:00", "2026-10-04T09:15:00", "2026-10-04T10:35:00", "2026-10-04T11:55:00", "2026-10-04T13:15:00", "2026-10-04T14:35:00", "2026-10-04T15:55:00", "2026-10-04T17:15:00", "2026-10-04T18:35:00", "2026-10-04T19:55:00", "2026-10-04T21:15:00", "2026-10-04T22:35:00", "2026-10-04T23:55:00", "2026-10-05T01:15:00", "2026-10-05T02:35:00", "2026-10-05T03:55:00", "2026-10-05T05:15:00", "2026-10-05T06:35:00", "2026-10-05T07:55:00", "2026-10-05T09:15:00", "2026-10-05T10:35:00", "2026-10-05T11:55:00", "2026-10-05T13:15:00", "2026-10-05T14:35:00", "2026-10-05T15:55:00", "2026-10-05T17:15:00", "2026-10-05T18:35:00", "2026-10-05T19:55:00", "2026-10-05T21:15:00", "2026-10-05T22:35:00", "2026-10-05T23:55:00", "2026-10-06T01:15:00", "2026-10-06T02:35:00", "2026-10-06T03:55:00", "2026-10-06T05:15:00", "2026-10-06T06:35:00", "2026-10-06T07:55:00", "2026-10-06T09:15:00", "2026-10-06T10:35:00", "2026-10-06T11:55:00", "2026-10-06T13:15:00", "2026-10-06T14:35:00", "2026-10-06T15:55:00", "2026-10-06T17:15:00", "2026-10-06T18:35:00", "2026-10-06T19:55:00", "2026-10-06T21:15:00", "2026-10-06T22:35:00", "2026-10-06T23:55:00", "2026-10-07T01:15:00", "2026-10-07T02:35:00", "2026-10-07T03:55:00", "2026-10-07T05:15:00", "2026-10-07T06:35:00", "2026-10-07T07:55:00", "2026-10-07T09:15:00", "2026-10-07T10:35:00", "2026-10-07T11:55:00", "2026-10-07T13:15:00", "2026-10-07T14:35:00", "2026-10-07T15:55:00", "2026-10-07T17:15:00", "2026-10-07T18:35:00", "2026-10-07T19:55:00", "2026-10-07T21:15:00", "2026-10-07T22:35:00", "2026-10-07T23:55:00", "2026-10-08T01:15:00", "2026-10-08T02:35:00", "2026-10-08T03:55:00", "2026-10-08T05:15:00", "2026-10-08T06:35:00", "2026-10-08T07:55:00", "2026-10-08T09:15:00", "2026-10-08T10:35:00", "2026-10-08T11:55:00", "2026-10-08T13:15:00", "2026-10-08T14:35:00", "2026-10-08T15:55:00", "2026-10-08T17:15:00", "2026-10-08T18:35:00", "2026-10-08T19:55:00", "2026-10-08T21:15:00", "2026-10-08T22:35:00", "2026-10-08T23:55:00", "2026-10-09T01:15:00", "2026-10-09T02:35:00", "2026-10-09T03:55:00", "2026-10-09T05:15:00", "2026-10-09T06:35:00", "2026-10-09T07:55:00", "2026-10-09T09:15:00", "2026-10-09T10:35:00", "2026-10-09T11:55:00", "2026-10-09T13:15:00", "2026-10-09T14:35:00", "2026-10-09T15:55:00", "2026-10-09T17:15:00", "2026-10-09T18:35:00", "2026-10-09T19:55:00", "2026-10-09T21:15:00", "2026-10-09T22:35:00", "2026-10-09T23:55:00", "2026-10-10T01:15:00", "2026-10-10T02:35:00", "2026-10-10T03:55:00", "2026-10-10T05:15:00", "2026-10-10T06:35:00", "2026-10-10T07:55:00", "2026-10-10T09:15:00", "2026-10-10T10:35:00", "2026-10-10T11:55:00", "2026-10-10T13:15:00", "2026-10-10T14:35:00", "2026-10-10T15:55:00", "2026-10-10T17:15:00", "2026-10-10T18:35:00", "2026-10-10T19:55:00", "2026-10-10T21:15:00", "2026-10-10T22:35:00", "2026-10-10T23:55:00", "2026-10-11T01:15:00", "2026-10-11T02:35:00", "2026-10-11T03:55:00", "2026-10-11T05:15:00", "2026-10-11T06:35:00", "2026-10-11T07:55:00", "2026-10-11T09:15:00", "2026-10-11T10:35:00", "2026-10-11T11:55:00", "2026-10-11T13:15:00", "2026-10-11T14:35:00", "2026-10-11T15:55:00", "2026-10-11T17:15:00", "2026-10-11T18:35:00", "2026-10-11T19:55:00", "2026-10-11T21:15:00", "2026-10-11T22:35:00", "2026-10-11T23:55:00", "2026-10-12T01:15:00", "2026-10-12T02:35:00", "2026-10-12T03:55:00", "2026-10-12T05:15:00", "2026-10-12T06:35:00", "2026-10-12T07:55:00", "2026-10-12T09:15:00", "2026-10-12T10:35:00", "2026-10-12T11:55:00", "2026-10-12T13:15:00", "2026-10-12T14:35:00", "2026-10-12T15:55:00", "2026-10-12T17:15:00", "2026-10-12T18:35:00", "2026-10-12T19:55:00", "2026-10-12T21:15:00", "2026-10-12T22:35:00", "2026-10-12T23:55:00", "2026-10-13T01:15:00", "2026-10-13T02:35:00", "2026-10-13T03:55:00", "2026-10-13T05:15:00", "2026-10-13T06:35:00", "2026-10-13T07:55:00", "2026-10-13T09:15:00", "2026-10-13T10:35:00", "2026-10-13T11:55:00", "2026-10-13T13:15:00", "2026-10-13T14:35:00", "2026-10-13T15:55:00", "2026-10-13T17:15:00", "2026-10-13T18:35:00", "2026-10-13T19:55:00", "2026-10-13T21:15:00", "2026-10-13T22:35:00", "2026-10-13T23:55:00", "2026-10-14T01:15:00", "2026-10-14T02:35:00", "2026-10-14T03:55:00", "2026-10-14T05:15:00", "2026-10-14T06:35:00", "2026-10-14T07:55:00", "2026-10-14T09:15:00", "2026-10-14T10:35:00", "2026-10-14T11:55:00", "2026-10-14T13:15:00", "2026-10-14T14:35:00", "2026-10-14T15:55:00", "2026-10-14T17:15:00", "2026-10-14T18:35:00", "2026-10-14T19:55:00", "2026-10-14T21:15:00", "2026-10-14T22:35:00", "2026-10-14T23:55:00", "2026-10-15T01:15:00", "2026-10-15T02:35:00", "2026-10-15T03:55:00", "2026-10-15T05:15:00", "2026-10-15T06:35:00", "2026-10-15T07:55:00", "2026-10-15T09:15:00", "2026-10-15T10:35:00", "2026-10-15T11:55:00", "2026-10-15T13:15:00", "2026-10-15T14:35:00", "2026-10-15T15:55:00", "2026-10-15T17:15:00", "2026-10-15T18:35:00", "2026-10-15T19:55:00", "2026-10-15T21:15:00", "2026-10-15T22:35:00", "2026-10-15T23:55:00", "2026-10-16T01:15:00", "2026-10-16T02:35:00", "2026-10-16T03:55:00", "2026-10-16T05:15:00", "2026-10-16T06:35:00", "2026-10-16T07:55:00", "2026-10-16T09:15:00", "2026-10-16T10:35:00", "2026-10-16T11:55:00", "2026-10-16T13:15:00", "2026-10-16T14:35:00", "2026-10-16T15:55:00", "2026-10-16T17:15:00", "2026-10-16T18:35:00", "2026-10-16T19:55:00", "2026-10-16T21:15:00", "2026-10-16T22:35:00", "2026-10-16T23:55:00", "2026-10-17T01:15:00", "2026-10-17T02:35:00", "2026-10-17T03:55:00", "2026-10-17T05:15:00", "2026-10-17T06:35:00", "2026-10-17T07:55:00", "2026-10-17T09:15:00", "2026-10-17T10:35:00", "2026-10-17T11:55:00", "2026-10-17T13:15:00", "2026-10-17T14:35:00", "2026-10-17T15:55:00", "2026-10-17T17:15:00", "2026-10-17T18:35:00", "2026-10-17T19:55:00", "2026-10-17T21:15:00", "2026-10-17T22:35:00", "2026-10-17T23:55:00", "2026-10-18T01:15:00", "2026-10-18T02:35:00", "2026-10-18T03:55:00", "2026-10-18T05:15:00", "2026-10-18T06:35:00", "2026-10-18T07:55:00", "2026-10-18T09:15:00", "2026-10-18T10:35:00", "2026-10-18T11:55:00", "2026-10-18T13:15:00", "2026-10-18T14:35:00", "2026-10-18T15:55:00", "2026-10-18T17:15:00", "2026-10-18T18:35:00", "2026-10-18T19:55:00", "2026-10-18T21:15:00", "2026-10-18T22:35:00", "2026-10-18T23:55:00", "2026-10-19T01:15:00", "2026-10-19T02:35:00", "2026-10-19T03:55:00", "2026-10-19T05:15:00", "2026-10-19T06:35:00", "2026-10-19T07:55:00", "2026-10-19T09:15:00", "2026-10-19T10:35:00", "2026-10-19T11:55:00", "2026-10-19T13:15:00", "2026-10-19T14:35:00", "2026-10-19T15:55:00", "2026-10-19T17:15:00", "2026-10-19T18:35:00", "2026-10-19T19:55:00", "2026-10-19T21:15:00", "2026-10-19T22:35:00", "2026-10-20T00:05:00", "2026-10-20T01:25:00", "2026-10-20T02:45:00", "2026-10-20T04:05:00", "2026-10-20T05:25:00", "2026-10-20T06:45:00", "2026-10-20T08:05:00", "2026-10-20T09:25:00", "2026-10-20T10:45:00", "2026-10-20T12:05:00", "2026-10-20T13:25:00", "2026-10-20T14:45:00", "2026-10-20T16:05:00", "2026-10-20T17:25:00", "2026-10-20T18:45:00", "2026-10-20T20:05:00", "2026-10-20T21:25:00", "2026-10-20T22:45:00", "2026-10-21T00:05:00", "2026-10-21T01:25:00", "2026-10-21T02:45:00", "2026-10-21T04:05:00", "2026-10-21T05:25:00", "2026-10-21T06:45:00", "2026-10-21T08:05:00", "2026-10-21T09:25:00", "2026-10-21T10:45:00", "2026-10-21T12:05:00", "2026-10-21T13:25:00", "2026-10-21T14:45:00", "2026-10-21T16:05:00", "2026-10-21T17:25:00", "2026-10-21T18:45:00", "2026-10-21T20:05:00", "2026-10-21T21:25:00", "2026-10-21T22:45:00", "2026-10-22T00:00:00"];
+const equityValues = [5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 5000000.0, 4999014.49, 4998441.58, 4998441.58, 4998441.58, 4998441.58, 4997383.29, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4995299.15, 4994906.85, 4994405.44, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4994000.76, 4993752.99, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4997037.31, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4995575.07, 4994862.87, 4992582.54, 4992464.64, 4992464.64, 4992464.64, 4992464.64, 4992464.64, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4993095.06, 4992382.86, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4992531.07, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4986358.76, 4984885.62, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4983217.46, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4984243.09, 4983060.29, 4978131.69, 4978131.69, 4978131.69, 4978131.69, 4978131.69, 4978131.69, 4978131.69, 4976908.03, 4974989.61, 4974989.61, 4974989.61, 4974989.61, 4974989.61, 4974989.61, 4974989.61, 4975924.07, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975734.49, 4975296.3, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4973245.99, 4970103.94, 4970103.94, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4966962.35, 4968481.99, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4968357.74, 4967645.43, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966526.96, 4966218.04, 4966218.04, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4966088.96, 4965100.68, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4965112.05, 4964399.74, 4965603.43, 4965603.43, 4965603.43, 4965603.43, 4965858.93, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4964245.1, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4957965.98, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958721.95, 4958009.66, 4957218.67, 4957218.67, 4957218.67, 4957218.67, 4957218.67, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4956810.15, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4957484.71, 4951200.17, 4951200.17, 4951200.17, 4951200.17, 4950989.07, 4947133.35, 4947133.35, 4947133.35, 4946661.45, 4946400.19, 4946400.19, 4946550.73, 4946203.6, 4946203.6, 4944873.81, 4941481.43, 4941481.43, 4941481.43, 4941480.69, 4938101.94, 4937114.88, 4937114.88, 4937114.88, 4937114.88, 4937114.88, 4937114.88, 4938593.09, 4941880.01, 4941880.01, 4941880.01, 4941880.01, 4941880.01, 4946564.02, 4947818.53, 4947818.53, 4947818.53, 4947655.28, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4946243.52, 4940307.02, 4937130.7, 4937130.7, 4937130.7, 4937130.7, 4937130.7, 4933988.65, 4933988.65, 4935304.58, 4935304.58, 4935304.58, 4935304.58, 4935304.58, 4935304.58, 4935304.58, 4935304.58, 4934754.42, 4934767.72, 4934767.72, 4931436.46, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4928491.87, 4927779.56, 4925349.75, 4925349.75, 4925349.75, 4923238.38, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922423.42, 4922551.16, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4917438.54, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4908051.7, 4907160.42, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4904680.85, 4906431.45, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4905399.48, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4909568.58, 4910049.56, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908929.55, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4908417.71, 4907352.53, 4908993.66, 4908857.49, 4908857.49, 4908857.49, 4908857.49, 4905521.18, 4905521.18, 4905521.18, 4905886.13, 4905886.13, 4905886.13, 4905886.13, 4905886.13, 4902744.08, 4902744.08, 4902744.08, 4902744.08, 4902744.08, 4902744.08, 4902744.08, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4904638.15, 4905595.49, 4905595.49, 4905595.49, 4905595.49, 4902453.43, 4901640.06, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4899311.48, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4896171.64, 4895459.38, 4896906.06, 4896906.06, 4896906.06, 4896906.06, 4896573.46, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4897877.84, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4899198.73, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4896096.26, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4892954.15, 4889812.12, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887693.2, 4887389.49, 4887389.49, 4887389.49, 4887389.49, 4887389.49, 4887389.49, 4887389.49, 4887389.49, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4884247.52, 4883776.57, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4883784.65, 4880644.96, 4880644.96, 4880644.96, 4880644.96, 4880644.96, 4880644.96, 4880644.96, 4880644.96, 4880020.16, 4879895.13, 4881697.89, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4875585.65, 4868336.01, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4867757.67, 4864615.63, 4864615.63, 4864615.63, 4864615.63, 4859913.23, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4858337.43, 4859116.48, 4859116.48, 4859116.48, 4859116.48, 4859116.48, 4859116.48, 4859116.48, 4859116.48, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5, 4861634.5];
+const ddLabels = ["2026-07-01T00:00:00", "2026-07-01T01:20:00", "2026-07-01T02:40:00", "2026-07-01T04:00:00", "2026-07-01T05:20:00", "2026-07-01T06:40:00", "2026-07-01T08:00:00", "2026-07-01T09:20:00", "2026-07-01T10:40:00", "2026-07-01T12:00:00", "2026-07-01T13:20:00", "2026-07-01T14:40:00", "2026-07-01T16:00:00", "2026-07-01T17:20:00", "2026-07-01T18:40:00", "2026-07-01T20:00:00", "2026-07-01T21:20:00", "2026-07-01T22:40:00", "2026-07-02T00:00:00", "2026-07-02T01:20:00", "2026-07-02T02:40:00", "2026-07-02T04:00:00", "2026-07-02T05:20:00", "2026-07-02T06:40:00", "2026-07-02T08:00:00", "2026-07-02T09:20:00", "2026-07-02T10:40:00", "2026-07-02T12:00:00", "2026-07-02T13:20:00", "2026-07-02T14:40:00", "2026-07-02T16:00:00", "2026-07-02T17:20:00", "2026-07-02T18:40:00", "2026-07-02T20:00:00", "2026-07-02T21:20:00", "2026-07-02T22:40:00", "2026-07-03T00:00:00", "2026-07-03T01:20:00", "2026-07-03T02:40:00", "2026-07-03T04:00:00", "2026-07-03T05:20:00", "2026-07-03T06:40:00", "2026-07-03T08:00:00", "2026-07-03T09:20:00", "2026-07-03T10:40:00", "2026-07-03T12:00:00", "2026-07-03T13:20:00", "2026-07-03T14:40:00", "2026-07-03T16:00:00", "2026-07-03T17:20:00", "2026-07-03T18:40:00", "2026-07-03T20:00:00", "2026-07-03T21:20:00", "2026-07-03T22:40:00", "2026-07-04T00:00:00", "2026-07-04T01:20:00", "2026-07-04T02:40:00", "2026-07-04T04:00:00", "2026-07-04T05:20:00", "2026-07-04T06:40:00", "2026-07-04T08:00:00", "2026-07-04T09:20:00", "2026-07-04T10:40:00", "2026-07-04T12:00:00", "2026-07-04T13:20:00", "2026-07-04T14:40:00", "2026-07-04T16:00:00", "2026-07-04T17:20:00", "2026-07-04T18:40:00", "2026-07-04T20:00:00", "2026-07-04T21:20:00", "2026-07-04T22:40:00", "2026-07-05T00:00:00", "2026-07-05T01:20:00", "2026-07-05T02:40:00", "2026-07-05T04:00:00", "2026-07-05T05:20:00", "2026-07-05T06:40:00", "2026-07-05T08:00:00", "2026-07-05T09:20:00", "2026-07-05T10:40:00", "2026-07-05T12:00:00", "2026-07-05T13:20:00", "2026-07-05T14:40:00", "2026-07-05T16:00:00", "2026-07-05T17:20:00", "2026-07-05T18:40:00", "2026-07-05T20:00:00", "2026-07-05T21:20:00", "2026-07-05T22:40:00", "2026-07-06T00:00:00", "2026-07-06T01:20:00", "2026-07-06T02:40:00", "2026-07-06T04:00:00", "2026-07-06T05:20:00", "2026-07-06T06:40:00", "2026-07-06T08:00:00", "2026-07-06T09:20:00", "2026-07-06T10:40:00", "2026-07-06T12:00:00", "2026-07-06T13:20:00", "2026-07-06T14:40:00", "2026-07-06T16:00:00", "2026-07-06T17:20:00", "2026-07-06T18:40:00", "2026-07-06T20:00:00", "2026-07-06T21:20:00", "2026-07-06T22:40:00", "2026-07-07T00:00:00", "2026-07-07T01:20:00", "2026-07-07T02:40:00", "2026-07-07T04:00:00", "2026-07-07T05:20:00", "2026-07-07T06:40:00", "2026-07-07T08:00:00", "2026-07-07T09:20:00", "2026-07-07T10:40:00", "2026-07-07T12:00:00", "2026-07-07T13:20:00", "2026-07-07T14:40:00", "2026-07-07T16:00:00", "2026-07-07T17:20:00", "2026-07-07T18:40:00", "2026-07-07T20:00:00", "2026-07-07T21:20:00", "2026-07-07T22:40:00", "2026-07-08T00:00:00", "2026-07-08T01:20:00", "2026-07-08T02:40:00", "2026-07-08T04:00:00", "2026-07-08T05:20:00", "2026-07-08T06:40:00", "2026-07-08T08:00:00", "2026-07-08T09:20:00", "2026-07-08T10:40:00", "2026-07-08T12:00:00", "2026-07-08T13:20:00", "2026-07-08T14:40:00", "2026-07-08T16:00:00", "2026-07-08T17:20:00", "2026-07-08T18:40:00", "2026-07-08T20:00:00", "2026-07-08T21:20:00", "2026-07-08T22:40:00", "2026-07-09T00:00:00", "2026-07-09T01:20:00", "2026-07-09T02:40:00", "2026-07-09T04:00:00", "2026-07-09T05:20:00", "2026-07-09T06:40:00", "2026-07-09T08:00:00", "2026-07-09T09:20:00", "2026-07-09T10:40:00", "2026-07-09T12:00:00", "2026-07-09T13:20:00", "2026-07-09T14:40:00", "2026-07-09T16:00:00", "2026-07-09T17:20:00", "2026-07-09T18:40:00", "2026-07-09T20:00:00", "2026-07-09T21:20:00", "2026-07-09T22:40:00", "2026-07-10T00:00:00", "2026-07-10T01:20:00", "2026-07-10T02:40:00", "2026-07-10T04:00:00", "2026-07-10T05:20:00", "2026-07-10T06:40:00", "2026-07-10T08:00:00", "2026-07-10T09:20:00", "2026-07-10T10:40:00", "2026-07-10T12:00:00", "2026-07-10T13:20:00", "2026-07-10T14:40:00", "2026-07-10T16:00:00", "2026-07-10T17:20:00", "2026-07-10T18:40:00", "2026-07-10T20:00:00", "2026-07-10T21:20:00", "2026-07-10T22:40:00", "2026-07-11T00:00:00", "2026-07-11T01:20:00", "2026-07-11T02:40:00", "2026-07-11T04:00:00", "2026-07-11T05:20:00", "2026-07-11T06:40:00", "2026-07-11T08:00:00", "2026-07-11T09:20:00", "2026-07-11T10:40:00", "2026-07-11T12:00:00", "2026-07-11T13:20:00", "2026-07-11T14:40:00", "2026-07-11T16:00:00", "2026-07-11T17:20:00", "2026-07-11T18:40:00", "2026-07-11T20:00:00", "2026-07-11T21:20:00", "2026-07-11T22:40:00", "2026-07-12T00:00:00", "2026-07-12T01:20:00", "2026-07-12T02:40:00", "2026-07-12T04:00:00", "2026-07-12T05:20:00", "2026-07-12T06:40:00", "2026-07-12T08:00:00", "2026-07-12T09:20:00", "2026-07-12T10:40:00", "2026-07-12T12:00:00", "2026-07-12T13:20:00", "2026-07-12T14:40:00", "2026-07-12T16:00:00", "2026-07-12T17:20:00", "2026-07-12T18:40:00", "2026-07-12T20:00:00", "2026-07-12T21:20:00", "2026-07-12T22:40:00", "2026-07-13T00:00:00", "2026-07-13T01:20:00", "2026-07-13T02:40:00", "2026-07-13T04:00:00", "2026-07-13T05:20:00", "2026-07-13T06:40:00", "2026-07-13T08:00:00", "2026-07-13T09:20:00", "2026-07-13T10:40:00", "2026-07-13T12:00:00", "2026-07-13T13:20:00", "2026-07-13T14:40:00", "2026-07-13T16:00:00", "2026-07-13T17:20:00", "2026-07-13T18:40:00", "2026-07-13T20:00:00", "2026-07-13T21:20:00", "2026-07-13T22:40:00", "2026-07-14T00:00:00", "2026-07-14T01:20:00", "2026-07-14T02:40:00", "2026-07-14T04:00:00", "2026-07-14T05:20:00", "2026-07-14T06:40:00", "2026-07-14T08:00:00", "2026-07-14T09:20:00", "2026-07-14T10:40:00", "2026-07-14T12:00:00", "2026-07-14T13:20:00", "2026-07-14T14:40:00", "2026-07-14T16:00:00", "2026-07-14T17:20:00", "2026-07-14T18:40:00", "2026-07-14T20:00:00", "2026-07-14T21:20:00", "2026-07-14T22:40:00", "2026-07-15T00:00:00", "2026-07-15T01:20:00", "2026-07-15T02:40:00", "2026-07-15T04:00:00", "2026-07-15T05:20:00", "2026-07-15T06:40:00", "2026-07-15T08:00:00", "2026-07-15T09:20:00", "2026-07-15T10:40:00", "2026-07-15T12:00:00", "2026-07-15T13:20:00", "2026-07-15T14:40:00", "2026-07-15T16:00:00", "2026-07-15T17:20:00", "2026-07-15T18:40:00", "2026-07-15T20:00:00", "2026-07-15T21:20:00", "2026-07-15T22:40:00", "2026-07-16T00:00:00", "2026-07-16T01:20:00", "2026-07-16T02:40:00", "2026-07-16T04:00:00", "2026-07-16T05:20:00", "2026-07-16T06:40:00", "2026-07-16T08:00:00", "2026-07-16T09:20:00", "2026-07-16T10:40:00", "2026-07-16T12:00:00", "2026-07-16T13:20:00", "2026-07-16T14:40:00", "2026-07-16T16:00:00", "2026-07-16T17:20:00", "2026-07-16T18:40:00", "2026-07-16T20:00:00", "2026-07-16T21:20:00", "2026-07-16T22:40:00", "2026-07-17T00:00:00", "2026-07-17T01:20:00", "2026-07-17T02:40:00", "2026-07-17T04:00:00", "2026-07-17T05:20:00", "2026-07-17T06:40:00", "2026-07-17T08:00:00", "2026-07-17T09:20:00", "2026-07-17T10:40:00", "2026-07-17T12:00:00", "2026-07-17T13:20:00", "2026-07-17T14:40:00", "2026-07-17T16:00:00", "2026-07-17T17:20:00", "2026-07-17T18:40:00", "2026-07-17T20:00:00", "2026-07-17T21:20:00", "2026-07-17T22:40:00", "2026-07-18T00:00:00", "2026-07-18T01:20:00", "2026-07-18T02:40:00", "2026-07-18T04:00:00", "2026-07-18T05:20:00", "2026-07-18T06:40:00", "2026-07-18T08:00:00", "2026-07-18T09:20:00", "2026-07-18T10:40:00", "2026-07-18T12:00:00", "2026-07-18T13:20:00", "2026-07-18T14:40:00", "2026-07-18T16:00:00", "2026-07-18T17:20:00", "2026-07-18T18:40:00", "2026-07-18T20:00:00", "2026-07-18T21:20:00", "2026-07-18T22:40:00", "2026-07-19T00:00:00", "2026-07-19T01:20:00", "2026-07-19T02:40:00", "2026-07-19T04:00:00", "2026-07-19T05:20:00", "2026-07-19T06:40:00", "2026-07-19T08:00:00", "2026-07-19T09:20:00", "2026-07-19T10:40:00", "2026-07-19T12:00:00", "2026-07-19T13:20:00", "2026-07-19T14:40:00", "2026-07-19T16:00:00", "2026-07-19T17:20:00", "2026-07-19T18:40:00", "2026-07-19T20:00:00", "2026-07-19T21:20:00", "2026-07-19T22:40:00", "2026-07-20T00:00:00", "2026-07-20T01:20:00", "2026-07-20T02:40:00", "2026-07-20T04:00:00", "2026-07-20T05:20:00", "2026-07-20T06:40:00", "2026-07-20T08:00:00", "2026-07-20T09:20:00", "2026-07-20T10:40:00", "2026-07-20T12:00:00", "2026-07-20T13:20:00", "2026-07-20T14:40:00", "2026-07-20T16:00:00", "2026-07-20T17:20:00", "2026-07-20T18:40:00", "2026-07-20T20:00:00", "2026-07-20T21:20:00", "2026-07-20T22:40:00", "2026-07-21T00:00:00", "2026-07-21T01:20:00", "2026-07-21T02:40:00", "2026-07-21T04:00:00", "2026-07-21T05:20:00", "2026-07-21T06:40:00", "2026-07-21T08:00:00", "2026-07-21T09:20:00", "2026-07-21T10:40:00", "2026-07-21T12:00:00", "2026-07-21T13:20:00", "2026-07-21T14:40:00", "2026-07-21T16:00:00", "2026-07-21T17:20:00", "2026-07-21T18:40:00", "2026-07-21T20:00:00", "2026-07-21T21:20:00", "2026-07-21T22:40:00", "2026-07-22T00:00:00", "2026-07-22T01:20:00", "2026-07-22T02:40:00", "2026-07-22T04:00:00", "2026-07-22T05:20:00", "2026-07-22T06:40:00", "2026-07-22T08:00:00", "2026-07-22T09:20:00", "2026-07-22T10:40:00", "2026-07-22T12:00:00", "2026-07-22T13:20:00", "2026-07-22T14:40:00", "2026-07-22T16:00:00", "2026-07-22T17:20:00", "2026-07-22T18:40:00", "2026-07-22T20:00:00", "2026-07-22T21:20:00", "2026-07-22T22:40:00", "2026-07-23T00:00:00", "2026-07-23T01:20:00", "2026-07-23T02:40:00", "2026-07-23T04:00:00", "2026-07-23T05:20:00", "2026-07-23T06:40:00", "2026-07-23T08:00:00", "2026-07-23T09:20:00", "2026-07-23T10:40:00", "2026-07-23T12:00:00", "2026-07-23T13:20:00", "2026-07-23T14:40:00", "2026-07-23T16:00:00", "2026-07-23T17:20:00", "2026-07-23T18:40:00", "2026-07-23T20:00:00", "2026-07-23T21:20:00", "2026-07-23T22:40:00", "2026-07-24T00:00:00", "2026-07-24T01:20:00", "2026-07-24T02:40:00", "2026-07-24T04:00:00", "2026-07-24T05:20:00", "2026-07-24T06:40:00", "2026-07-24T08:00:00", "2026-07-24T09:20:00", "2026-07-24T10:40:00", "2026-07-24T12:00:00", "2026-07-24T13:20:00", "2026-07-24T14:40:00", "2026-07-24T16:00:00", "2026-07-24T17:20:00", "2026-07-24T18:40:00", "2026-07-24T20:00:00", "2026-07-24T21:20:00", "2026-07-24T22:40:00", "2026-07-25T00:00:00", "2026-07-25T01:20:00", "2026-07-25T02:40:00", "2026-07-25T04:00:00", "2026-07-25T05:20:00", "2026-07-25T06:40:00", "2026-07-25T08:00:00", "2026-07-25T09:20:00", "2026-07-25T10:40:00", "2026-07-25T12:00:00", "2026-07-25T13:20:00", "2026-07-25T14:40:00", "2026-07-25T16:00:00", "2026-07-25T17:20:00", "2026-07-25T18:40:00", "2026-07-25T20:00:00", "2026-07-25T21:20:00", "2026-07-25T22:40:00", "2026-07-26T00:00:00", "2026-07-26T01:20:00", "2026-07-26T02:40:00", "2026-07-26T04:00:00", "2026-07-26T05:20:00", "2026-07-26T06:40:00", "2026-07-26T08:00:00", "2026-07-26T09:20:00", "2026-07-26T10:40:00", "2026-07-26T12:00:00", "2026-07-26T13:20:00", "2026-07-26T14:40:00", "2026-07-26T16:00:00", "2026-07-26T17:20:00", "2026-07-26T18:40:00", "2026-07-26T20:00:00", "2026-07-26T21:20:00", "2026-07-26T22:40:00", "2026-07-27T00:00:00", "2026-07-27T01:20:00", "2026-07-27T02:40:00", "2026-07-27T04:00:00", "2026-07-27T05:20:00", "2026-07-27T06:40:00", "2026-07-27T08:00:00", "2026-07-27T09:20:00", "2026-07-27T10:40:00", "2026-07-27T12:00:00", "2026-07-27T13:20:00", "2026-07-27T14:40:00", "2026-07-27T16:00:00", "2026-07-27T17:20:00", "2026-07-27T18:40:00", "2026-07-27T20:00:00", "2026-07-27T21:20:00", "2026-07-27T22:40:00", "2026-07-28T00:00:00", "2026-07-28T01:20:00", "2026-07-28T02:40:00", "2026-07-28T04:00:00", "2026-07-28T05:20:00", "2026-07-28T06:40:00", "2026-07-28T08:00:00", "2026-07-28T09:20:00", "2026-07-28T10:40:00", "2026-07-28T12:00:00", "2026-07-28T13:20:00", "2026-07-28T14:40:00", "2026-07-28T16:00:00", "2026-07-28T17:20:00", "2026-07-28T18:40:00", "2026-07-28T20:00:00", "2026-07-28T21:20:00", "2026-07-28T22:40:00", "2026-07-29T00:00:00", "2026-07-29T01:20:00", "2026-07-29T02:40:00", "2026-07-29T04:00:00", "2026-07-29T05:20:00", "2026-07-29T06:40:00", "2026-07-29T08:00:00", "2026-07-29T09:20:00", "2026-07-29T10:40:00", "2026-07-29T12:00:00", "2026-07-29T13:20:00", "2026-07-29T14:40:00", "2026-07-29T16:00:00", "2026-07-29T17:20:00", "2026-07-29T18:40:00", "2026-07-29T20:00:00", "2026-07-29T21:20:00", "2026-07-29T22:40:00", "2026-07-30T00:00:00", "2026-07-30T01:20:00", "2026-07-30T02:40:00", "2026-07-30T04:00:00", "2026-07-30T05:20:00", "2026-07-30T06:40:00", "2026-07-30T08:00:00", "2026-07-30T09:20:00", "2026-07-30T10:40:00", "2026-07-30T12:00:00", "2026-07-30T13:20:00", "2026-07-30T14:40:00", "2026-07-30T16:00:00", "2026-07-30T17:20:00", "2026-07-30T18:40:00", "2026-07-30T20:00:00", "2026-07-30T21:20:00", "2026-07-30T22:40:00", "2026-07-31T00:00:00", "2026-07-31T01:20:00", "2026-07-31T02:40:00", "2026-07-31T04:00:00", "2026-07-31T05:20:00", "2026-07-31T06:40:00", "2026-07-31T08:00:00", "2026-07-31T09:20:00", "2026-07-31T10:40:00", "2026-07-31T12:00:00", "2026-07-31T13:20:00", "2026-07-31T14:40:00", "2026-07-31T16:00:00", "2026-07-31T17:20:00", "2026-07-31T18:40:00", "2026-07-31T20:00:00", "2026-07-31T21:20:00", "2026-07-31T22:40:00", "2026-08-01T00:00:00", "2026-08-01T01:20:00", "2026-08-01T02:40:00", "2026-08-01T04:00:00", "2026-08-01T05:20:00", "2026-08-01T06:40:00", "2026-08-01T08:00:00", "2026-08-01T09:20:00", "2026-08-01T10:40:00", "2026-08-01T12:00:00", "2026-08-01T13:20:00", "2026-08-01T14:40:00", "2026-08-01T16:00:00", "2026-08-01T17:20:00", "2026-08-01T18:40:00", "2026-08-01T20:00:00", "2026-08-01T21:20:00", "2026-08-01T22:40:00", "2026-08-02T00:00:00", "2026-08-02T01:20:00", "2026-08-02T02:40:00", "2026-08-02T04:00:00", "2026-08-02T05:20:00", "2026-08-02T06:40:00", "2026-08-02T08:00:00", "2026-08-02T09:20:00", "2026-08-02T10:40:00", "2026-08-02T12:00:00", "2026-08-02T13:20:00", "2026-08-02T14:40:00", "2026-08-02T16:00:00", "2026-08-02T17:20:00", "2026-08-02T18:40:00", "2026-08-02T20:00:00", "2026-08-02T21:20:00", "2026-08-02T22:40:00", "2026-08-03T00:00:00", "2026-08-03T01:20:00", "2026-08-03T02:40:00", "2026-08-03T04:00:00", "2026-08-03T05:20:00", "2026-08-03T06:40:00", "2026-08-03T08:00:00", "2026-08-03T09:20:00", "2026-08-03T10:40:00", "2026-08-03T12:00:00", "2026-08-03T13:20:00", "2026-08-03T14:40:00", "2026-08-03T16:00:00", "2026-08-03T17:20:00", "2026-08-03T18:40:00", "2026-08-03T20:00:00", "2026-08-03T21:20:00", "2026-08-03T22:40:00", "2026-08-04T00:00:00", "2026-08-04T01:20:00", "2026-08-04T02:40:00", "2026-08-04T04:00:00", "2026-08-04T05:20:00", "2026-08-04T06:40:00", "2026-08-04T08:00:00", "2026-08-04T09:20:00", "2026-08-04T10:40:00", "2026-08-04T12:00:00", "2026-08-04T13:20:00", "2026-08-04T14:40:00", "2026-08-04T16:00:00", "2026-08-04T17:20:00", "2026-08-04T18:40:00", "2026-08-04T20:00:00", "2026-08-04T21:20:00", "2026-08-04T22:40:00", "2026-08-05T00:00:00", "2026-08-05T01:20:00", "2026-08-05T02:40:00", "2026-08-05T04:00:00", "2026-08-05T05:20:00", "2026-08-05T06:40:00", "2026-08-05T08:00:00", "2026-08-05T09:20:00", "2026-08-05T10:40:00", "2026-08-05T12:00:00", "2026-08-05T13:20:00", "2026-08-05T14:40:00", "2026-08-05T16:00:00", "2026-08-05T17:20:00", "2026-08-05T18:40:00", "2026-08-05T20:00:00", "2026-08-05T21:20:00", "2026-08-05T22:40:00", "2026-08-06T00:00:00", "2026-08-06T01:20:00", "2026-08-06T02:40:00", "2026-08-06T04:00:00", "2026-08-06T05:20:00", "2026-08-06T06:40:00", "2026-08-06T08:00:00", "2026-08-06T09:20:00", "2026-08-06T10:40:00", "2026-08-06T12:00:00", "2026-08-06T13:20:00", "2026-08-06T14:40:00", "2026-08-06T16:00:00", "2026-08-06T17:20:00", "2026-08-06T18:40:00", "2026-08-06T20:00:00", "2026-08-06T21:20:00", "2026-08-06T22:40:00", "2026-08-07T00:00:00", "2026-08-07T01:20:00", "2026-08-07T02:40:00", "2026-08-07T04:00:00", "2026-08-07T05:20:00", "2026-08-07T06:40:00", "2026-08-07T08:00:00", "2026-08-07T09:20:00", "2026-08-07T10:40:00", "2026-08-07T12:00:00", "2026-08-07T13:20:00", "2026-08-07T14:40:00", "2026-08-07T16:00:00", "2026-08-07T17:20:00", "2026-08-07T18:40:00", "2026-08-07T20:00:00", "2026-08-07T21:20:00", "2026-08-07T22:40:00", "2026-08-08T00:00:00", "2026-08-08T01:20:00", "2026-08-08T02:40:00", "2026-08-08T04:00:00", "2026-08-08T05:20:00", "2026-08-08T06:40:00", "2026-08-08T08:00:00", "2026-08-08T09:20:00", "2026-08-08T10:40:00", "2026-08-08T12:00:00", "2026-08-08T13:20:00", "2026-08-08T14:40:00", "2026-08-08T16:00:00", "2026-08-08T17:20:00", "2026-08-08T18:40:00", "2026-08-08T20:00:00", "2026-08-08T21:20:00", "2026-08-08T22:40:00", "2026-08-09T00:00:00", "2026-08-09T01:20:00", "2026-08-09T02:40:00", "2026-08-09T04:00:00", "2026-08-09T05:20:00", "2026-08-09T06:40:00", "2026-08-09T08:00:00", "2026-08-09T09:20:00", "2026-08-09T10:40:00", "2026-08-09T12:00:00", "2026-08-09T13:20:00", "2026-08-09T14:40:00", "2026-08-09T16:00:00", "2026-08-09T17:20:00", "2026-08-09T18:40:00", "2026-08-09T20:00:00", "2026-08-09T21:20:00", "2026-08-09T22:40:00", "2026-08-10T00:00:00", "2026-08-10T01:20:00", "2026-08-10T02:40:00", "2026-08-10T04:00:00", "2026-08-10T05:20:00", "2026-08-10T06:40:00", "2026-08-10T08:00:00", "2026-08-10T09:20:00", "2026-08-10T10:40:00", "2026-08-10T12:00:00", "2026-08-10T13:20:00", "2026-08-10T14:40:00", "2026-08-10T16:00:00", "2026-08-10T17:20:00", "2026-08-10T18:40:00", "2026-08-10T20:00:00", "2026-08-10T21:20:00", "2026-08-10T22:40:00", "2026-08-11T00:00:00", "2026-08-11T01:20:00", "2026-08-11T02:40:00", "2026-08-11T04:00:00", "2026-08-11T05:20:00", "2026-08-11T06:40:00", "2026-08-11T08:00:00", "2026-08-11T09:20:00", "2026-08-11T10:40:00", "2026-08-11T12:00:00", "2026-08-11T13:20:00", "2026-08-11T14:40:00", "2026-08-11T16:00:00", "2026-08-11T17:20:00", "2026-08-11T18:40:00", "2026-08-11T20:00:00", "2026-08-11T21:20:00", "2026-08-11T22:40:00", "2026-08-12T00:00:00", "2026-08-12T01:20:00", "2026-08-12T02:40:00", "2026-08-12T04:00:00", "2026-08-12T05:20:00", "2026-08-12T06:40:00", "2026-08-12T08:00:00", "2026-08-12T09:20:00", "2026-08-12T10:40:00", "2026-08-12T12:00:00", "2026-08-12T13:20:00", "2026-08-12T14:40:00", "2026-08-12T16:00:00", "2026-08-12T17:20:00", "2026-08-12T18:40:00", "2026-08-12T20:00:00", "2026-08-12T21:20:00", "2026-08-12T22:40:00", "2026-08-13T00:00:00", "2026-08-13T01:20:00", "2026-08-13T02:40:00", "2026-08-13T04:00:00", "2026-08-13T05:20:00", "2026-08-13T06:40:00", "2026-08-13T08:00:00", "2026-08-13T09:20:00", "2026-08-13T10:40:00", "2026-08-13T12:00:00", "2026-08-13T13:20:00", "2026-08-13T14:40:00", "2026-08-13T16:00:00", "2026-08-13T17:20:00", "2026-08-13T18:40:00", "2026-08-13T20:00:00", "2026-08-13T21:20:00", "2026-08-13T22:40:00", "2026-08-14T00:00:00", "2026-08-14T01:20:00", "2026-08-14T02:40:00", "2026-08-14T04:00:00", "2026-08-14T05:20:00", "2026-08-14T06:40:00", "2026-08-14T08:00:00", "2026-08-14T09:20:00", "2026-08-14T10:40:00", "2026-08-14T12:00:00", "2026-08-14T13:20:00", "2026-08-14T14:40:00", "2026-08-14T16:00:00", "2026-08-14T17:20:00", "2026-08-14T18:40:00", "2026-08-14T20:00:00", "2026-08-14T21:20:00", "2026-08-14T22:40:00", "2026-08-15T00:00:00", "2026-08-15T01:20:00", "2026-08-15T02:40:00", "2026-08-15T04:00:00", "2026-08-15T05:20:00", "2026-08-15T06:40:00", "2026-08-15T08:00:00", "2026-08-15T09:20:00", "2026-08-15T10:40:00", "2026-08-15T12:00:00", "2026-08-15T13:20:00", "2026-08-15T14:40:00", "2026-08-15T16:00:00", "2026-08-15T17:20:00", "2026-08-15T18:40:00", "2026-08-15T20:00:00", "2026-08-15T21:20:00", "2026-08-15T22:40:00", "2026-08-16T00:00:00", "2026-08-16T01:20:00", "2026-08-16T02:40:00", "2026-08-16T04:00:00", "2026-08-16T05:20:00", "2026-08-16T06:40:00", "2026-08-16T08:00:00", "2026-08-16T09:20:00", "2026-08-16T10:40:00", "2026-08-16T12:00:00", "2026-08-16T13:20:00", "2026-08-16T14:40:00", "2026-08-16T16:00:00", "2026-08-16T17:20:00", "2026-08-16T18:40:00", "2026-08-16T20:00:00", "2026-08-16T21:20:00", "2026-08-16T22:40:00", "2026-08-17T00:00:00", "2026-08-17T01:20:00", "2026-08-17T02:40:00", "2026-08-17T04:00:00", "2026-08-17T05:20:00", "2026-08-17T06:40:00", "2026-08-17T08:00:00", "2026-08-17T09:20:00", "2026-08-17T10:40:00", "2026-08-17T12:00:00", "2026-08-17T13:20:00", "2026-08-17T14:40:00", "2026-08-17T16:00:00", "2026-08-17T17:20:00", "2026-08-17T18:40:00", "2026-08-17T20:00:00", "2026-08-17T21:20:00", "2026-08-17T22:40:00", "2026-08-18T00:00:00", "2026-08-18T01:20:00", "2026-08-18T02:40:00", "2026-08-18T04:00:00", "2026-08-18T05:20:00", "2026-08-18T06:40:00", "2026-08-18T08:00:00", "2026-08-18T09:20:00", "2026-08-18T10:40:00", "2026-08-18T12:00:00", "2026-08-18T13:20:00", "2026-08-18T14:40:00", "2026-08-18T16:00:00", "2026-08-18T17:20:00", "2026-08-18T18:40:00", "2026-08-18T20:00:00", "2026-08-18T21:20:00", "2026-08-18T22:40:00", "2026-08-19T00:00:00", "2026-08-19T01:20:00", "2026-08-19T02:40:00", "2026-08-19T04:00:00", "2026-08-19T05:20:00", "2026-08-19T06:40:00", "2026-08-19T08:00:00", "2026-08-19T09:20:00", "2026-08-19T10:40:00", "2026-08-19T12:00:00", "2026-08-19T13:20:00", "2026-08-19T14:40:00", "2026-08-19T16:00:00", "2026-08-19T17:20:00", "2026-08-19T18:40:00", "2026-08-19T20:00:00", "2026-08-19T21:20:00", "2026-08-19T22:40:00", "2026-08-20T00:00:00", "2026-08-20T01:20:00", "2026-08-20T02:40:00", "2026-08-20T04:00:00", "2026-08-20T05:20:00", "2026-08-20T06:40:00", "2026-08-20T08:00:00", "2026-08-20T09:20:00", "2026-08-20T10:40:00", "2026-08-20T12:00:00", "2026-08-20T13:20:00", "2026-08-20T14:40:00", "2026-08-20T16:00:00", "2026-08-20T17:20:00", "2026-08-20T18:40:00", "2026-08-20T20:00:00", "2026-08-20T21:20:00", "2026-08-20T22:40:00", "2026-08-21T00:00:00", "2026-08-21T01:20:00", "2026-08-21T02:40:00", "2026-08-21T04:00:00", "2026-08-21T05:20:00", "2026-08-21T06:40:00", "2026-08-21T08:00:00", "2026-08-21T09:20:00", "2026-08-21T10:40:00", "2026-08-21T12:00:00", "2026-08-21T13:20:00", "2026-08-21T14:40:00", "2026-08-21T16:00:00", "2026-08-21T17:20:00", "2026-08-21T18:40:00", "2026-08-21T20:00:00", "2026-08-21T21:20:00", "2026-08-21T22:40:00", "2026-08-22T00:00:00", "2026-08-22T01:20:00", "2026-08-22T02:40:00", "2026-08-22T04:00:00", "2026-08-22T05:20:00", "2026-08-22T06:40:00", "2026-08-22T08:00:00", "2026-08-22T09:20:00", "2026-08-22T10:40:00", "2026-08-22T12:00:00", "2026-08-22T13:20:00", "2026-08-22T14:40:00", "2026-08-22T16:00:00", "2026-08-22T17:20:00", "2026-08-22T18:40:00", "2026-08-22T20:00:00", "2026-08-22T21:20:00", "2026-08-22T22:40:00", "2026-08-23T00:00:00", "2026-08-23T01:20:00", "2026-08-23T02:40:00", "2026-08-23T04:00:00", "2026-08-23T05:20:00", "2026-08-23T06:40:00", "2026-08-23T08:00:00", "2026-08-23T09:20:00", "2026-08-23T10:40:00", "2026-08-23T12:00:00", "2026-08-23T13:20:00", "2026-08-23T14:40:00", "2026-08-23T16:00:00", "2026-08-23T17:20:00", "2026-08-23T18:40:00", "2026-08-23T20:00:00", "2026-08-23T21:20:00", "2026-08-23T22:40:00", "2026-08-24T00:00:00", "2026-08-24T01:20:00", "2026-08-24T02:40:00", "2026-08-24T04:00:00", "2026-08-24T05:20:00", "2026-08-24T06:40:00", "2026-08-24T08:00:00", "2026-08-24T09:20:00", "2026-08-24T10:40:00", "2026-08-24T12:00:00", "2026-08-24T13:20:00", "2026-08-24T14:40:00", "2026-08-24T16:00:00", "2026-08-24T17:20:00", "2026-08-24T18:40:00", "2026-08-24T20:00:00", "2026-08-24T21:20:00", "2026-08-24T22:40:00", "2026-08-25T00:00:00", "2026-08-25T01:20:00", "2026-08-25T02:40:00", "2026-08-25T04:00:00", "2026-08-25T05:20:00", "2026-08-25T06:40:00", "2026-08-25T08:00:00", "2026-08-25T09:20:00", "2026-08-25T10:40:00", "2026-08-25T12:00:00", "2026-08-25T13:20:00", "2026-08-25T14:40:00", "2026-08-25T16:00:00", "2026-08-25T17:20:00", "2026-08-25T18:40:00", "2026-08-25T20:00:00", "2026-08-25T21:20:00", "2026-08-25T22:40:00", "2026-08-26T00:00:00", "2026-08-26T01:20:00", "2026-08-26T02:40:00", "2026-08-26T04:00:00", "2026-08-26T05:20:00", "2026-08-26T06:40:00", "2026-08-26T08:00:00", "2026-08-26T09:20:00", "2026-08-26T10:40:00", "2026-08-26T12:00:00", "2026-08-26T13:20:00", "2026-08-26T14:40:00", "2026-08-26T16:00:00", "2026-08-26T17:20:00", "2026-08-26T18:40:00", "2026-08-26T20:00:00", "2026-08-26T21:20:00", "2026-08-26T22:40:00", "2026-08-27T00:00:00", "2026-08-27T01:20:00", "2026-08-27T02:40:00", "2026-08-27T04:00:00", "2026-08-27T05:20:00", "2026-08-27T06:40:00", "2026-08-27T08:00:00", "2026-08-27T09:20:00", "2026-08-27T10:40:00", "2026-08-27T12:00:00", "2026-08-27T13:20:00", "2026-08-27T14:40:00", "2026-08-27T16:00:00", "2026-08-27T17:20:00", "2026-08-27T18:40:00", "2026-08-27T20:00:00", "2026-08-27T21:20:00", "2026-08-27T22:40:00", "2026-08-28T00:00:00", "2026-08-28T01:20:00", "2026-08-28T02:40:00", "2026-08-28T04:00:00", "2026-08-28T05:20:00", "2026-08-28T06:40:00", "2026-08-28T08:00:00", "2026-08-28T09:20:00", "2026-08-28T10:40:00", "2026-08-28T12:00:00", "2026-08-28T13:20:00", "2026-08-28T14:40:00", "2026-08-28T16:00:00", "2026-08-28T17:20:00", "2026-08-28T18:40:00", "2026-08-28T20:00:00", "2026-08-28T21:20:00", "2026-08-28T22:40:00", "2026-08-29T00:00:00", "2026-08-29T01:20:00", "2026-08-29T02:40:00", "2026-08-29T04:00:00", "2026-08-29T05:20:00", "2026-08-29T06:40:00", "2026-08-29T08:00:00", "2026-08-29T09:20:00", "2026-08-29T10:40:00", "2026-08-29T12:00:00", "2026-08-29T13:20:00", "2026-08-29T14:40:00", "2026-08-29T16:00:00", "2026-08-29T17:20:00", "2026-08-29T18:40:00", "2026-08-29T20:00:00", "2026-08-29T21:20:00", "2026-08-29T22:40:00", "2026-08-30T00:00:00", "2026-08-30T01:20:00", "2026-08-30T02:40:00", "2026-08-30T04:00:00", "2026-08-30T05:20:00", "2026-08-30T06:40:00", "2026-08-30T08:00:00", "2026-08-30T09:20:00", "2026-08-30T10:40:00", "2026-08-30T12:00:00", "2026-08-30T13:20:00", "2026-08-30T14:40:00", "2026-08-30T16:00:00", "2026-08-30T17:20:00", "2026-08-30T18:40:00", "2026-08-30T20:00:00", "2026-08-30T21:20:00", "2026-08-30T22:40:00", "2026-08-31T00:00:00", "2026-08-31T01:20:00", "2026-08-31T02:40:00", "2026-08-31T04:00:00", "2026-08-31T05:20:00", "2026-08-31T06:40:00", "2026-08-31T08:00:00", "2026-08-31T09:20:00", "2026-08-31T10:40:00", "2026-08-31T12:00:00", "2026-08-31T13:20:00", "2026-08-31T14:40:00", "2026-08-31T16:00:00", "2026-08-31T17:20:00", "2026-08-31T18:40:00", "2026-08-31T20:00:00", "2026-08-31T21:20:00", "2026-08-31T22:40:00", "2026-09-01T00:00:00", "2026-09-01T01:20:00", "2026-09-01T02:40:00", "2026-09-01T04:00:00", "2026-09-01T05:20:00", "2026-09-01T06:40:00", "2026-09-01T08:00:00", "2026-09-01T09:20:00", "2026-09-01T10:40:00", "2026-09-01T12:00:00", "2026-09-01T13:20:00", "2026-09-01T14:40:00", "2026-09-01T16:00:00", "2026-09-01T17:20:00", "2026-09-01T18:40:00", "2026-09-01T20:00:00", "2026-09-01T21:20:00", "2026-09-01T22:40:00", "2026-09-02T00:00:00", "2026-09-02T01:20:00", "2026-09-02T02:40:00", "2026-09-02T04:00:00", "2026-09-02T05:20:00", "2026-09-02T06:40:00", "2026-09-02T08:00:00", "2026-09-02T09:20:00", "2026-09-02T10:40:00", "2026-09-02T12:00:00", "2026-09-02T13:20:00", "2026-09-02T14:40:00", "2026-09-02T16:00:00", "2026-09-02T17:20:00", "2026-09-02T18:40:00", "2026-09-02T20:00:00", "2026-09-02T21:20:00", "2026-09-02T22:40:00", "2026-09-03T00:00:00", "2026-09-03T01:20:00", "2026-09-03T02:40:00", "2026-09-03T04:00:00", "2026-09-03T05:20:00", "2026-09-03T06:40:00", "2026-09-03T08:00:00", "2026-09-03T09:20:00", "2026-09-03T10:40:00", "2026-09-03T12:00:00", "2026-09-03T13:20:00", "2026-09-03T14:40:00", "2026-09-03T16:00:00", "2026-09-03T17:20:00", "2026-09-03T18:40:00", "2026-09-03T20:00:00", "2026-09-03T21:20:00", "2026-09-03T22:40:00", "2026-09-04T00:00:00", "2026-09-04T01:20:00", "2026-09-04T02:40:00", "2026-09-04T04:00:00", "2026-09-04T05:20:00", "2026-09-04T06:40:00", "2026-09-04T08:00:00", "2026-09-04T09:20:00", "2026-09-04T10:40:00", "2026-09-04T12:00:00", "2026-09-04T13:20:00", "2026-09-04T14:40:00", "2026-09-04T16:00:00", "2026-09-04T17:20:00", "2026-09-04T18:40:00", "2026-09-04T20:00:00", "2026-09-04T21:20:00", "2026-09-04T22:40:00", "2026-09-05T00:00:00", "2026-09-05T01:20:00", "2026-09-05T02:40:00", "2026-09-05T04:00:00", "2026-09-05T05:20:00", "2026-09-05T06:40:00", "2026-09-05T08:00:00", "2026-09-05T09:20:00", "2026-09-05T10:40:00", "2026-09-05T12:00:00", "2026-09-05T13:20:00", "2026-09-05T14:40:00", "2026-09-05T16:00:00", "2026-09-05T17:20:00", "2026-09-05T18:40:00", "2026-09-05T20:00:00", "2026-09-05T21:20:00", "2026-09-05T22:40:00", "2026-09-06T00:00:00", "2026-09-06T01:20:00", "2026-09-06T02:40:00", "2026-09-06T04:00:00", "2026-09-06T05:20:00", "2026-09-06T06:40:00", "2026-09-06T08:00:00", "2026-09-06T09:20:00", "2026-09-06T10:40:00", "2026-09-06T12:00:00", "2026-09-06T13:20:00", "2026-09-06T14:40:00", "2026-09-06T16:00:00", "2026-09-06T17:20:00", "2026-09-06T18:40:00", "2026-09-06T20:00:00", "2026-09-06T21:20:00", "2026-09-06T22:40:00", "2026-09-07T00:00:00", "2026-09-07T01:20:00", "2026-09-07T02:40:00", "2026-09-07T04:00:00", "2026-09-07T05:20:00", "2026-09-07T06:40:00", "2026-09-07T08:00:00", "2026-09-07T09:20:00", "2026-09-07T10:40:00", "2026-09-07T12:00:00", "2026-09-07T13:20:00", "2026-09-07T14:40:00", "2026-09-07T16:00:00", "2026-09-07T17:20:00", "2026-09-07T18:40:00", "2026-09-07T20:00:00", "2026-09-07T21:20:00", "2026-09-07T22:40:00", "2026-09-08T00:00:00", "2026-09-08T01:20:00", "2026-09-08T02:40:00", "2026-09-08T04:00:00", "2026-09-08T05:20:00", "2026-09-08T06:40:00", "2026-09-08T08:00:00", "2026-09-08T09:20:00", "2026-09-08T10:40:00", "2026-09-08T12:00:00", "2026-09-08T13:20:00", "2026-09-08T14:40:00", "2026-09-08T16:00:00", "2026-09-08T17:20:00", "2026-09-08T18:40:00", "2026-09-08T20:00:00", "2026-09-08T21:20:00", "2026-09-08T22:40:00", "2026-09-09T00:00:00", "2026-09-09T01:20:00", "2026-09-09T02:40:00", "2026-09-09T04:00:00", "2026-09-09T05:20:00", "2026-09-09T06:40:00", "2026-09-09T08:00:00", "2026-09-09T09:20:00", "2026-09-09T10:40:00", "2026-09-09T12:00:00", "2026-09-09T13:20:00", "2026-09-09T14:40:00", "2026-09-09T16:00:00", "2026-09-09T17:20:00", "2026-09-09T18:40:00", "2026-09-09T20:00:00", "2026-09-09T21:20:00", "2026-09-09T22:40:00", "2026-09-10T00:00:00", "2026-09-10T01:20:00", "2026-09-10T02:40:00", "2026-09-10T04:00:00", "2026-09-10T05:20:00", "2026-09-10T06:40:00", "2026-09-10T08:00:00", "2026-09-10T09:20:00", "2026-09-10T10:40:00", "2026-09-10T12:00:00", "2026-09-10T13:20:00", "2026-09-10T14:40:00", "2026-09-10T16:00:00", "2026-09-10T17:20:00", "2026-09-10T18:40:00", "2026-09-10T20:00:00", "2026-09-10T21:20:00", "2026-09-10T22:40:00", "2026-09-11T00:00:00", "2026-09-11T01:20:00", "2026-09-11T02:40:00", "2026-09-11T04:00:00", "2026-09-11T05:20:00", "2026-09-11T06:40:00", "2026-09-11T08:00:00", "2026-09-11T09:20:00", "2026-09-11T10:40:00", "2026-09-11T12:00:00", "2026-09-11T13:20:00", "2026-09-11T14:40:00", "2026-09-11T16:00:00", "2026-09-11T17:20:00", "2026-09-11T18:40:00", "2026-09-11T20:00:00", "2026-09-11T21:20:00", "2026-09-11T22:40:00", "2026-09-12T00:00:00", "2026-09-12T01:20:00", "2026-09-12T02:40:00", "2026-09-12T04:00:00", "2026-09-12T05:20:00", "2026-09-12T06:40:00", "2026-09-12T08:00:00", "2026-09-12T09:20:00", "2026-09-12T10:40:00", "2026-09-12T12:00:00", "2026-09-12T13:20:00", "2026-09-12T14:40:00", "2026-09-12T16:00:00", "2026-09-12T17:20:00", "2026-09-12T18:40:00", "2026-09-12T20:00:00", "2026-09-12T21:20:00", "2026-09-12T22:40:00", "2026-09-13T00:00:00", "2026-09-13T01:20:00", "2026-09-13T02:40:00", "2026-09-13T04:00:00", "2026-09-13T05:20:00", "2026-09-13T06:40:00", "2026-09-13T08:00:00", "2026-09-13T09:20:00", "2026-09-13T10:40:00", "2026-09-13T12:00:00", "2026-09-13T13:20:00", "2026-09-13T14:40:00", "2026-09-13T16:00:00", "2026-09-13T17:20:00", "2026-09-13T18:40:00", "2026-09-13T20:00:00", "2026-09-13T21:20:00", "2026-09-13T22:40:00", "2026-09-14T00:00:00", "2026-09-14T01:20:00", "2026-09-14T02:40:00", "2026-09-14T04:00:00", "2026-09-14T05:20:00", "2026-09-14T06:40:00", "2026-09-14T08:00:00", "2026-09-14T09:20:00", "2026-09-14T10:40:00", "2026-09-14T12:00:00", "2026-09-14T13:20:00", "2026-09-14T14:40:00", "2026-09-14T16:00:00", "2026-09-14T17:20:00", "2026-09-14T18:40:00", "2026-09-14T20:00:00", "2026-09-14T21:20:00", "2026-09-14T22:40:00", "2026-09-15T00:00:00", "2026-09-15T01:20:00", "2026-09-15T02:40:00", "2026-09-15T04:00:00", "2026-09-15T05:20:00", "2026-09-15T06:40:00", "2026-09-15T08:00:00", "2026-09-15T09:20:00", "2026-09-15T10:40:00", "2026-09-15T12:00:00", "2026-09-15T13:20:00", "2026-09-15T14:40:00", "2026-09-15T16:00:00", "2026-09-15T17:20:00", "2026-09-15T18:40:00", "2026-09-15T20:00:00", "2026-09-15T21:20:00", "2026-09-15T22:40:00", "2026-09-16T00:00:00", "2026-09-16T01:20:00", "2026-09-16T02:40:00", "2026-09-16T04:00:00", "2026-09-16T05:20:00", "2026-09-16T06:40:00", "2026-09-16T08:00:00", "2026-09-16T09:20:00", "2026-09-16T10:40:00", "2026-09-16T12:00:00", "2026-09-16T13:20:00", "2026-09-16T14:40:00", "2026-09-16T16:00:00", "2026-09-16T17:20:00", "2026-09-16T18:40:00", "2026-09-16T20:00:00", "2026-09-16T21:20:00", "2026-09-16T22:40:00", "2026-09-17T00:00:00", "2026-09-17T01:20:00", "2026-09-17T02:40:00", "2026-09-17T04:00:00", "2026-09-17T05:20:00", "2026-09-17T06:40:00", "2026-09-17T08:00:00", "2026-09-17T09:20:00", "2026-09-17T10:40:00", "2026-09-17T12:00:00", "2026-09-17T13:20:00", "2026-09-17T14:40:00", "2026-09-17T16:00:00", "2026-09-17T17:20:00", "2026-09-17T18:40:00", "2026-09-17T20:00:00", "2026-09-17T21:20:00", "2026-09-17T22:40:00", "2026-09-18T00:00:00", "2026-09-18T01:20:00", "2026-09-18T02:40:00", "2026-09-18T04:00:00", "2026-09-18T05:20:00", "2026-09-18T06:40:00", "2026-09-18T08:00:00", "2026-09-18T09:20:00", "2026-09-18T10:40:00", "2026-09-18T12:00:00", "2026-09-18T13:20:00", "2026-09-18T14:40:00", "2026-09-18T16:00:00", "2026-09-18T17:20:00", "2026-09-18T18:40:00", "2026-09-18T20:00:00", "2026-09-18T21:20:00", "2026-09-18T22:40:00", "2026-09-19T00:00:00", "2026-09-19T01:20:00", "2026-09-19T02:40:00", "2026-09-19T04:00:00", "2026-09-19T05:20:00", "2026-09-19T06:40:00", "2026-09-19T08:00:00", "2026-09-19T09:20:00", "2026-09-19T10:40:00", "2026-09-19T12:00:00", "2026-09-19T13:20:00", "2026-09-19T14:40:00", "2026-09-19T16:00:00", "2026-09-19T17:20:00", "2026-09-19T18:40:00", "2026-09-19T20:00:00", "2026-09-19T21:20:00", "2026-09-19T22:40:00", "2026-09-20T00:00:00", "2026-09-20T01:20:00", "2026-09-20T02:40:00", "2026-09-20T04:00:00", "2026-09-20T05:20:00", "2026-09-20T06:40:00", "2026-09-20T08:00:00", "2026-09-20T09:20:00", "2026-09-20T10:40:00", "2026-09-20T12:00:00", "2026-09-20T13:20:00", "2026-09-20T14:40:00", "2026-09-20T16:00:00", "2026-09-20T17:20:00", "2026-09-20T18:40:00", "2026-09-20T20:00:00", "2026-09-20T21:20:00", "2026-09-20T22:40:00", "2026-09-21T00:00:00", "2026-09-21T01:20:00", "2026-09-21T02:40:00", "2026-09-21T04:00:00", "2026-09-21T05:20:00", "2026-09-21T06:40:00", "2026-09-21T08:00:00", "2026-09-21T09:20:00", "2026-09-21T10:40:00", "2026-09-21T12:00:00", "2026-09-21T13:20:00", "2026-09-21T14:40:00", "2026-09-21T16:00:00", "2026-09-21T17:20:00", "2026-09-21T18:40:00", "2026-09-21T20:00:00", "2026-09-21T21:20:00", "2026-09-21T22:40:00", "2026-09-22T00:00:00", "2026-09-22T01:20:00", "2026-09-22T02:40:00", "2026-09-22T04:00:00", "2026-09-22T05:20:00", "2026-09-22T06:40:00", "2026-09-22T08:00:00", "2026-09-22T09:20:00", "2026-09-22T10:40:00", "2026-09-22T12:00:00", "2026-09-22T14:35:00", "2026-09-22T15:55:00", "2026-09-22T17:15:00", "2026-09-22T18:35:00", "2026-09-22T19:55:00", "2026-09-22T21:15:00", "2026-09-22T22:35:00", "2026-09-22T23:55:00", "2026-09-23T01:15:00", "2026-09-23T02:35:00", "2026-09-23T03:55:00", "2026-09-23T05:15:00", "2026-09-23T06:35:00", "2026-09-23T07:55:00", "2026-09-23T09:15:00", "2026-09-23T10:35:00", "2026-09-23T11:55:00", "2026-09-23T13:15:00", "2026-09-23T14:35:00", "2026-09-23T15:55:00", "2026-09-23T17:15:00", "2026-09-23T18:35:00", "2026-09-23T19:55:00", "2026-09-23T21:15:00", "2026-09-23T22:35:00", "2026-09-23T23:55:00", "2026-09-24T01:15:00", "2026-09-24T02:35:00", "2026-09-24T03:55:00", "2026-09-24T05:15:00", "2026-09-24T06:35:00", "2026-09-24T07:55:00", "2026-09-24T09:15:00", "2026-09-24T10:35:00", "2026-09-24T11:55:00", "2026-09-24T13:15:00", "2026-09-24T14:35:00", "2026-09-24T15:55:00", "2026-09-24T17:15:00", "2026-09-24T18:35:00", "2026-09-24T19:55:00", "2026-09-24T21:15:00", "2026-09-24T22:35:00", "2026-09-24T23:55:00", "2026-09-25T01:15:00", "2026-09-25T02:35:00", "2026-09-25T03:55:00", "2026-09-25T05:15:00", "2026-09-25T06:35:00", "2026-09-25T07:55:00", "2026-09-25T09:15:00", "2026-09-25T10:35:00", "2026-09-25T11:55:00", "2026-09-25T13:15:00", "2026-09-25T14:35:00", "2026-09-25T15:55:00", "2026-09-25T17:15:00", "2026-09-25T18:35:00", "2026-09-25T19:55:00", "2026-09-25T21:15:00", "2026-09-25T22:35:00", "2026-09-25T23:55:00", "2026-09-26T01:15:00", "2026-09-26T02:35:00", "2026-09-26T03:55:00", "2026-09-26T05:15:00", "2026-09-26T06:35:00", "2026-09-26T07:55:00", "2026-09-26T09:15:00", "2026-09-26T10:35:00", "2026-09-26T11:55:00", "2026-09-26T13:15:00", "2026-09-26T14:35:00", "2026-09-26T15:55:00", "2026-09-26T17:15:00", "2026-09-26T18:35:00", "2026-09-26T19:55:00", "2026-09-26T21:15:00", "2026-09-26T22:35:00", "2026-09-26T23:55:00", "2026-09-27T01:15:00", "2026-09-27T02:35:00", "2026-09-27T03:55:00", "2026-09-27T05:15:00", "2026-09-27T06:35:00", "2026-09-27T07:55:00", "2026-09-27T09:15:00", "2026-09-27T10:35:00", "2026-09-27T11:55:00", "2026-09-27T13:15:00", "2026-09-27T14:35:00", "2026-09-27T15:55:00", "2026-09-27T17:15:00", "2026-09-27T18:35:00", "2026-09-27T19:55:00", "2026-09-27T21:15:00", "2026-09-27T22:35:00", "2026-09-27T23:55:00", "2026-09-28T01:15:00", "2026-09-28T02:35:00", "2026-09-28T03:55:00", "2026-09-28T05:15:00", "2026-09-28T06:35:00", "2026-09-28T07:55:00", "2026-09-28T09:15:00", "2026-09-28T10:35:00", "2026-09-28T11:55:00", "2026-09-28T13:15:00", "2026-09-28T14:35:00", "2026-09-28T15:55:00", "2026-09-28T17:15:00", "2026-09-28T18:35:00", "2026-09-28T19:55:00", "2026-09-28T21:15:00", "2026-09-28T22:35:00", "2026-09-28T23:55:00", "2026-09-29T01:15:00", "2026-09-29T02:35:00", "2026-09-29T03:55:00", "2026-09-29T05:15:00", "2026-09-29T06:35:00", "2026-09-29T07:55:00", "2026-09-29T09:15:00", "2026-09-29T10:35:00", "2026-09-29T11:55:00", "2026-09-29T13:15:00", "2026-09-29T14:35:00", "2026-09-29T15:55:00", "2026-09-29T17:15:00", "2026-09-29T18:35:00", "2026-09-29T19:55:00", "2026-09-29T21:15:00", "2026-09-29T22:35:00", "2026-09-29T23:55:00", "2026-09-30T01:15:00", "2026-09-30T02:35:00", "2026-09-30T03:55:00", "2026-09-30T05:15:00", "2026-09-30T06:35:00", "2026-09-30T07:55:00", "2026-09-30T09:15:00", "2026-09-30T10:35:00", "2026-09-30T11:55:00", "2026-09-30T13:15:00", "2026-09-30T14:35:00", "2026-09-30T15:55:00", "2026-09-30T17:15:00", "2026-09-30T18:35:00", "2026-09-30T19:55:00", "2026-09-30T21:15:00", "2026-09-30T22:35:00", "2026-09-30T23:55:00", "2026-10-01T01:15:00", "2026-10-01T02:35:00", "2026-10-01T03:55:00", "2026-10-01T05:15:00", "2026-10-01T06:35:00", "2026-10-01T07:55:00", "2026-10-01T09:15:00", "2026-10-01T10:35:00", "2026-10-01T11:55:00", "2026-10-01T13:15:00", "2026-10-01T14:35:00", "2026-10-01T15:55:00", "2026-10-01T17:15:00", "2026-10-01T18:35:00", "2026-10-01T19:55:00", "2026-10-01T21:15:00", "2026-10-01T22:35:00", "2026-10-01T23:55:00", "2026-10-02T01:15:00", "2026-10-02T02:35:00", "2026-10-02T03:55:00", "2026-10-02T05:15:00", "2026-10-02T06:35:00", "2026-10-02T07:55:00", "2026-10-02T09:15:00", "2026-10-02T10:35:00", "2026-10-02T11:55:00", "2026-10-02T13:15:00", "2026-10-02T14:35:00", "2026-10-02T15:55:00", "2026-10-02T17:15:00", "2026-10-02T18:35:00", "2026-10-02T19:55:00", "2026-10-02T21:15:00", "2026-10-02T22:35:00", "2026-10-02T23:55:00", "2026-10-03T01:15:00", "2026-10-03T02:35:00", "2026-10-03T03:55:00", "2026-10-03T05:15:00", "2026-10-03T06:35:00", "2026-10-03T07:55:00", "2026-10-03T09:15:00", "2026-10-03T10:35:00", "2026-10-03T11:55:00", "2026-10-03T13:15:00", "2026-10-03T14:35:00", "2026-10-03T15:55:00", "2026-10-03T17:15:00", "2026-10-03T18:35:00", "2026-10-03T19:55:00", "2026-10-03T21:15:00", "2026-10-03T22:35:00", "2026-10-03T23:55:00", "2026-10-04T01:15:00", "2026-10-04T02:35:00", "2026-10-04T03:55:00", "2026-10-04T05:15:00", "2026-10-04T06:35:00", "2026-10-04T07:55:00", "2026-10-04T09:15:00", "2026-10-04T10:35:00", "2026-10-04T11:55:00", "2026-10-04T13:15:00", "2026-10-04T14:35:00", "2026-10-04T15:55:00", "2026-10-04T17:15:00", "2026-10-04T18:35:00", "2026-10-04T19:55:00", "2026-10-04T21:15:00", "2026-10-04T22:35:00", "2026-10-04T23:55:00", "2026-10-05T01:15:00", "2026-10-05T02:35:00", "2026-10-05T03:55:00", "2026-10-05T05:15:00", "2026-10-05T06:35:00", "2026-10-05T07:55:00", "2026-10-05T09:15:00", "2026-10-05T10:35:00", "2026-10-05T11:55:00", "2026-10-05T13:15:00", "2026-10-05T14:35:00", "2026-10-05T15:55:00", "2026-10-05T17:15:00", "2026-10-05T18:35:00", "2026-10-05T19:55:00", "2026-10-05T21:15:00", "2026-10-05T22:35:00", "2026-10-05T23:55:00", "2026-10-06T01:15:00", "2026-10-06T02:35:00", "2026-10-06T03:55:00", "2026-10-06T05:15:00", "2026-10-06T06:35:00", "2026-10-06T07:55:00", "2026-10-06T09:15:00", "2026-10-06T10:35:00", "2026-10-06T11:55:00", "2026-10-06T13:15:00", "2026-10-06T14:35:00", "2026-10-06T15:55:00", "2026-10-06T17:15:00", "2026-10-06T18:35:00", "2026-10-06T19:55:00", "2026-10-06T21:15:00", "2026-10-06T22:35:00", "2026-10-06T23:55:00", "2026-10-07T01:15:00", "2026-10-07T02:35:00", "2026-10-07T03:55:00", "2026-10-07T05:15:00", "2026-10-07T06:35:00", "2026-10-07T07:55:00", "2026-10-07T09:15:00", "2026-10-07T10:35:00", "2026-10-07T11:55:00", "2026-10-07T13:15:00", "2026-10-07T14:35:00", "2026-10-07T15:55:00", "2026-10-07T17:15:00", "2026-10-07T18:35:00", "2026-10-07T19:55:00", "2026-10-07T21:15:00", "2026-10-07T22:35:00", "2026-10-07T23:55:00", "2026-10-08T01:15:00", "2026-10-08T02:35:00", "2026-10-08T03:55:00", "2026-10-08T05:15:00", "2026-10-08T06:35:00", "2026-10-08T07:55:00", "2026-10-08T09:15:00", "2026-10-08T10:35:00", "2026-10-08T11:55:00", "2026-10-08T13:15:00", "2026-10-08T14:35:00", "2026-10-08T15:55:00", "2026-10-08T17:15:00", "2026-10-08T18:35:00", "2026-10-08T19:55:00", "2026-10-08T21:15:00", "2026-10-08T22:35:00", "2026-10-08T23:55:00", "2026-10-09T01:15:00", "2026-10-09T02:35:00", "2026-10-09T03:55:00", "2026-10-09T05:15:00", "2026-10-09T06:35:00", "2026-10-09T07:55:00", "2026-10-09T09:15:00", "2026-10-09T10:35:00", "2026-10-09T11:55:00", "2026-10-09T13:15:00", "2026-10-09T14:35:00", "2026-10-09T15:55:00", "2026-10-09T17:15:00", "2026-10-09T18:35:00", "2026-10-09T19:55:00", "2026-10-09T21:15:00", "2026-10-09T22:35:00", "2026-10-09T23:55:00", "2026-10-10T01:15:00", "2026-10-10T02:35:00", "2026-10-10T03:55:00", "2026-10-10T05:15:00", "2026-10-10T06:35:00", "2026-10-10T07:55:00", "2026-10-10T09:15:00", "2026-10-10T10:35:00", "2026-10-10T11:55:00", "2026-10-10T13:15:00", "2026-10-10T14:35:00", "2026-10-10T15:55:00", "2026-10-10T17:15:00", "2026-10-10T18:35:00", "2026-10-10T19:55:00", "2026-10-10T21:15:00", "2026-10-10T22:35:00", "2026-10-10T23:55:00", "2026-10-11T01:15:00", "2026-10-11T02:35:00", "2026-10-11T03:55:00", "2026-10-11T05:15:00", "2026-10-11T06:35:00", "2026-10-11T07:55:00", "2026-10-11T09:15:00", "2026-10-11T10:35:00", "2026-10-11T11:55:00", "2026-10-11T13:15:00", "2026-10-11T14:35:00", "2026-10-11T15:55:00", "2026-10-11T17:15:00", "2026-10-11T18:35:00", "2026-10-11T19:55:00", "2026-10-11T21:15:00", "2026-10-11T22:35:00", "2026-10-11T23:55:00", "2026-10-12T01:15:00", "2026-10-12T02:35:00", "2026-10-12T03:55:00", "2026-10-12T05:15:00", "2026-10-12T06:35:00", "2026-10-12T07:55:00", "2026-10-12T09:15:00", "2026-10-12T10:35:00", "2026-10-12T11:55:00", "2026-10-12T13:15:00", "2026-10-12T14:35:00", "2026-10-12T15:55:00", "2026-10-12T17:15:00", "2026-10-12T18:35:00", "2026-10-12T19:55:00", "2026-10-12T21:15:00", "2026-10-12T22:35:00", "2026-10-12T23:55:00", "2026-10-13T01:15:00", "2026-10-13T02:35:00", "2026-10-13T03:55:00", "2026-10-13T05:15:00", "2026-10-13T06:35:00", "2026-10-13T07:55:00", "2026-10-13T09:15:00", "2026-10-13T10:35:00", "2026-10-13T11:55:00", "2026-10-13T13:15:00", "2026-10-13T14:35:00", "2026-10-13T15:55:00", "2026-10-13T17:15:00", "2026-10-13T18:35:00", "2026-10-13T19:55:00", "2026-10-13T21:15:00", "2026-10-13T22:35:00", "2026-10-13T23:55:00", "2026-10-14T01:15:00", "2026-10-14T02:35:00", "2026-10-14T03:55:00", "2026-10-14T05:15:00", "2026-10-14T06:35:00", "2026-10-14T07:55:00", "2026-10-14T09:15:00", "2026-10-14T10:35:00", "2026-10-14T11:55:00", "2026-10-14T13:15:00", "2026-10-14T14:35:00", "2026-10-14T15:55:00", "2026-10-14T17:15:00", "2026-10-14T18:35:00", "2026-10-14T19:55:00", "2026-10-14T21:15:00", "2026-10-14T22:35:00", "2026-10-14T23:55:00", "2026-10-15T01:15:00", "2026-10-15T02:35:00", "2026-10-15T03:55:00", "2026-10-15T05:15:00", "2026-10-15T06:35:00", "2026-10-15T07:55:00", "2026-10-15T09:15:00", "2026-10-15T10:35:00", "2026-10-15T11:55:00", "2026-10-15T13:15:00", "2026-10-15T14:35:00", "2026-10-15T15:55:00", "2026-10-15T17:15:00", "2026-10-15T18:35:00", "2026-10-15T19:55:00", "2026-10-15T21:15:00", "2026-10-15T22:35:00", "2026-10-15T23:55:00", "2026-10-16T01:15:00", "2026-10-16T02:35:00", "2026-10-16T03:55:00", "2026-10-16T05:15:00", "2026-10-16T06:35:00", "2026-10-16T07:55:00", "2026-10-16T09:15:00", "2026-10-16T10:35:00", "2026-10-16T11:55:00", "2026-10-16T13:15:00", "2026-10-16T14:35:00", "2026-10-16T15:55:00", "2026-10-16T17:15:00", "2026-10-16T18:35:00", "2026-10-16T19:55:00", "2026-10-16T21:15:00", "2026-10-16T22:35:00", "2026-10-16T23:55:00", "2026-10-17T01:15:00", "2026-10-17T02:35:00", "2026-10-17T03:55:00", "2026-10-17T05:15:00", "2026-10-17T06:35:00", "2026-10-17T07:55:00", "2026-10-17T09:15:00", "2026-10-17T10:35:00", "2026-10-17T11:55:00", "2026-10-17T13:15:00", "2026-10-17T14:35:00", "2026-10-17T15:55:00", "2026-10-17T17:15:00", "2026-10-17T18:35:00", "2026-10-17T19:55:00", "2026-10-17T21:15:00", "2026-10-17T22:35:00", "2026-10-17T23:55:00", "2026-10-18T01:15:00", "2026-10-18T02:35:00", "2026-10-18T03:55:00", "2026-10-18T05:15:00", "2026-10-18T06:35:00", "2026-10-18T07:55:00", "2026-10-18T09:15:00", "2026-10-18T10:35:00", "2026-10-18T11:55:00", "2026-10-18T13:15:00", "2026-10-18T14:35:00", "2026-10-18T15:55:00", "2026-10-18T17:15:00", "2026-10-18T18:35:00", "2026-10-18T19:55:00", "2026-10-18T21:15:00", "2026-10-18T22:35:00", "2026-10-18T23:55:00", "2026-10-19T01:15:00", "2026-10-19T02:35:00", "2026-10-19T03:55:00", "2026-10-19T05:15:00", "2026-10-19T06:35:00", "2026-10-19T07:55:00", "2026-10-19T09:15:00", "2026-10-19T10:35:00", "2026-10-19T11:55:00", "2026-10-19T13:15:00", "2026-10-19T14:35:00", "2026-10-19T15:55:00", "2026-10-19T17:15:00", "2026-10-19T18:35:00", "2026-10-19T19:55:00", "2026-10-19T21:15:00", "2026-10-19T22:35:00", "2026-10-20T00:05:00", "2026-10-20T01:25:00", "2026-10-20T02:45:00", "2026-10-20T04:05:00", "2026-10-20T05:25:00", "2026-10-20T06:45:00", "2026-10-20T08:05:00", "2026-10-20T09:25:00", "2026-10-20T10:45:00", "2026-10-20T12:05:00", "2026-10-20T13:25:00", "2026-10-20T14:45:00", "2026-10-20T16:05:00", "2026-10-20T17:25:00", "2026-10-20T18:45:00", "2026-10-20T20:05:00", "2026-10-20T21:25:00", "2026-10-20T22:45:00", "2026-10-21T00:05:00", "2026-10-21T01:25:00", "2026-10-21T02:45:00", "2026-10-21T04:05:00", "2026-10-21T05:25:00", "2026-10-21T06:45:00", "2026-10-21T08:05:00", "2026-10-21T09:25:00", "2026-10-21T10:45:00", "2026-10-21T12:05:00", "2026-10-21T13:25:00", "2026-10-21T14:45:00", "2026-10-21T16:05:00", "2026-10-21T17:25:00", "2026-10-21T18:45:00", "2026-10-21T20:05:00", "2026-10-21T21:25:00", "2026-10-21T22:45:00", "2026-10-22T00:00:00"];
+const ddValues = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0197, 0.0389, 0.0389, 0.0389, 0.0389, 0.06, 0.1017, 0.1017, 0.1017, 0.1017, 0.1017, 0.1017, 0.1017, 0.1017, 0.1017, 0.1096, 0.1196, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1277, 0.1326, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.067, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.0962, 0.1104, 0.156, 0.1584, 0.1584, 0.1584, 0.1584, 0.1584, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.1458, 0.16, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.1571, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.2805, 0.31, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3433, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3228, 0.3465, 0.445, 0.445, 0.445, 0.445, 0.445, 0.445, 0.445, 0.4695, 0.5079, 0.5079, 0.5079, 0.5079, 0.5079, 0.5079, 0.5079, 0.4892, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.493, 0.5017, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.5427, 0.6056, 0.6056, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.6684, 0.638, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6405, 0.6547, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6771, 0.6833, 0.6833, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.6859, 0.7056, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7054, 0.7197, 0.6956, 0.6956, 0.6956, 0.6956, 0.6905, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.7227, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8483, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8332, 0.8474, 0.8633, 0.8633, 0.8633, 0.8633, 0.8633, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8714, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.8579, 0.9836, 0.9836, 0.9836, 0.9836, 0.9878, 1.065, 1.065, 1.065, 1.0744, 1.0796, 1.0796, 1.0766, 1.0835, 1.0835, 1.1101, 1.178, 1.178, 1.178, 1.178, 1.2456, 1.2653, 1.2653, 1.2653, 1.2653, 1.2653, 1.2653, 1.2357, 1.17, 1.17, 1.17, 1.17, 1.17, 1.0763, 1.0513, 1.0513, 1.0513, 1.0545, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.0827, 1.2015, 1.265, 1.265, 1.265, 1.265, 1.265, 1.3278, 1.3278, 1.3015, 1.3015, 1.3015, 1.3015, 1.3015, 1.3015, 1.3015, 1.3015, 1.3125, 1.3122, 1.3122, 1.3789, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.4378, 1.452, 1.5006, 1.5006, 1.5006, 1.5428, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5591, 1.5566, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.6588, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8465, 1.8644, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.9139, 1.8789, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8996, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8162, 1.8066, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.829, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8392, 1.8605, 1.8277, 1.8304, 1.8304, 1.8304, 1.8304, 1.8971, 1.8971, 1.8971, 1.8898, 1.8898, 1.8898, 1.8898, 1.8898, 1.9527, 1.9527, 1.9527, 1.9527, 1.9527, 1.9527, 1.9527, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.9148, 1.8956, 1.8956, 1.8956, 1.8956, 1.9585, 1.9747, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0213, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0841, 2.0984, 2.0694, 2.0694, 2.0694, 2.0694, 2.0761, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0236, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.0856, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.1485, 2.2113, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2537, 2.2597, 2.2597, 2.2597, 2.2597, 2.2597, 2.2597, 2.2597, 2.2597, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.3226, 2.332, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3318, 2.3946, 2.3946, 2.3946, 2.3946, 2.3946, 2.3946, 2.3946, 2.3946, 2.4071, 2.4096, 2.3736, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.4958, 2.6408, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.6523, 2.7152, 2.7152, 2.7152, 2.7152, 2.8092, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8407, 2.8252, 2.8252, 2.8252, 2.8252, 2.8252, 2.8252, 2.8252, 2.8252, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748, 2.7748];
+new Chart(document.getElementById('equityChart'), {
+  type: 'line',
+  data: { labels: equityLabels, datasets: [{ label: 'Equity (TMN)', data: equityValues, borderColor: '#5aa9ff', backgroundColor: 'rgba(90,169,255,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 10 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+});
+new Chart(document.getElementById('ddChart'), {
+  type: 'line',
+  data: { labels: ddLabels, datasets: [{ label: 'Drawdown (%)', data: ddValues, borderColor: '#ff6b6b', backgroundColor: 'rgba(255,107,107,.12)', fill: true, pointRadius: 0, borderWidth: 2 }] },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#8ea3b8' } } }, scales: { x: { ticks: { color: '#8ea3b8', maxTicksLimit: 10 }, grid: { color: '#1b2635' } }, y: { ticks: { color: '#8ea3b8' }, grid: { color: '#1b2635' } } } }
+});
+</script>
+</body>
+</html>

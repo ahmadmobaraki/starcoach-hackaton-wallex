@@ -84,8 +84,20 @@ XRP +43,478; PEPE +35,901; USDT +12,829.
 The earlier 4-symbol variant with 3 positions returned +16.44% with 2.41% max drawdown
 and 21 trades. The 8-symbol set has more activity and diversification at a slightly
 higher drawdown. A 12-symbol run (adding BNB, TRX, LTC, ZEC) returns **+16.46%** with
-4.69% max drawdown and 39 trades; the live `.env` uses 12 symbols, while the headline
-table remains the 8-symbol like-for-like baseline.
+4.69% max drawdown and 39 trades; the live `.env` now uses the 11 symbols permitted in
+the credit account (ZEC/TMN is blocked), while the headline table remains the 8-symbol
+like-for-like baseline.
+
+## Intraday timeframe tests (25% sleeve)
+
+| Bar | Net | Max DD | Trades | Fees |
+|---|---:|---:|---:|---:|
+| 1m | −1.39% | 1.43% | 113 | 127,253 TMN |
+| 2m | −1.55% | 1.68% | 103 | 115,942 TMN |
+| 5m | −2.77% | 2.86% | 115 | 129,258 TMN |
+
+All are negative after fees; the 1m/2m/5m shadow samples below produced no candidates
+in their short windows, so no forced trades were made.
 
 ## Failed intraday baseline
 

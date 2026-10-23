@@ -95,3 +95,51 @@ def test_drawdown(settings) -> None:
     portfolio.cash_tmn = Decimal("900000")
     snapshot = portfolio.snapshot()
     assert snapshot.drawdown_pct == pytest.approx(0.1)
+
+
+def test_base_asset_fee_reduces_received_quantity(settings) -> None:
+    portfolio = Portfolio(settings, Decimal("5000000"))
+    now = datetime.now(UTC)
+    buy = Fill(
+        fill_id="bf1",
+        order_id="bo1",
+        symbol="PEPETMN",
+        side=Side.BUY,
+        price=Decimal("100"),
+        quantity=Decimal("1"),
+        fee=Decimal("1"),              # TMN value of the base fee
+        fee_asset="TMN",
+        base_fee_quantity=Decimal("0.01"),
+        ts=now,
+        decision_id="bd1",
+    )
+    portfolio.apply_fill(
+        buy,
+        entry_meta={
+            "decision_id": "bd1",
+            "signal": "TREND",
+            "stop_bps": 100,
+            "take_profit_bps": 200,
+            "horizon_sec": 600,
+        },
+    )
+    position = portfolio.positions["PEPETMN"]
+    assert position.quantity == Decimal("0.99")
+    assert position.avg_entry == pytest.approx(Decimal("101.010101"), abs=Decimal("0.000001"))
+    assert portfolio.cash_tmn == Decimal("4999900")
+    sell = Fill(
+        fill_id="bf2",
+        order_id="bo2",
+        symbol="PEPETMN",
+        side=Side.SELL,
+        price=Decimal("100"),
+        quantity=Decimal("0.99"),
+        fee=Decimal("0.3"),
+        fee_asset="TMN",
+        ts=now + timedelta(seconds=1),
+        decision_id="bd2",
+    )
+    trade = portfolio.apply_fill(sell, exit_reason="test")
+    assert trade is not None
+    assert Decimal(trade["pnl_tmn"]) == pytest.approx(Decimal("-1.3"), abs=Decimal("0.000001"))
+    assert portfolio.cash_tmn == pytest.approx(Decimal("4999998.7"), abs=Decimal("0.000001"))

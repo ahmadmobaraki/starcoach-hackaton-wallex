@@ -126,14 +126,17 @@ class FeatureEngine:
         now: datetime | None = None,
         default_spread_bps: float | None = None,
         default_depth_tmn: float = 0.0,
+        timeframe_minutes: int = 1,
     ) -> dict[str, Any] | None:
-        arrays = candles.arrays(symbol, limit=400)
+        current = now or datetime.now(UTC)
+        arrays = candles.arrays(
+            symbol, limit=400, minutes=timeframe_minutes, now=current
+        )
         if arrays is None:
             return None
         open_, high, low, close, volume = arrays
         if len(close) < 30:
             return None
-        current = now or datetime.now(UTC)
         last = float(close[-1])
         if last <= 0:
             return None
@@ -232,21 +235,29 @@ class FeatureEngine:
         cross: dict[str, float | None] = {}
         btc_ret_5m = btc_ret_15m = btc_ret_1h = usdt_ret_5m = eth_ret_5m = None
         beta_btc = corr_btc = None
-        btc_arrays = candles.arrays("BTCTMN", limit=240)
+        btc_arrays = candles.arrays(
+            "BTCTMN", limit=240, minutes=timeframe_minutes, now=current
+        )
         if btc_arrays is not None:
             btc_close = btc_arrays[3]
             btc_ret_5m = _ret(btc_close, 5)
             btc_ret_15m = _ret(btc_close, 15)
             btc_ret_1h = _ret(btc_close, 60)
             beta_btc, corr_btc = _beta_corr(close, btc_close)
-        eth_arrays = candles.arrays("ETHTMN", limit=60)
+        eth_arrays = candles.arrays(
+            "ETHTMN", limit=60, minutes=timeframe_minutes, now=current
+        )
         if eth_arrays is not None:
             eth_ret_5m = _ret(eth_arrays[3], 5)
-        usdt_arrays = candles.arrays("USDTTMN", limit=60)
+        usdt_arrays = candles.arrays(
+            "USDTTMN", limit=60, minutes=timeframe_minutes, now=current
+        )
         if usdt_arrays is not None:
             usdt_ret_5m = _ret(usdt_arrays[3], 5)
         for name in cross_symbols or ["BTCTMN", "ETHTMN", "USDTTMN"]:
-            arrays_cross = candles.arrays(name, limit=60)
+            arrays_cross = candles.arrays(
+                name, limit=60, minutes=timeframe_minutes, now=current
+            )
             cross[f"{name}_ret_5m"] = _ret(arrays_cross[3], 5) if arrays_cross is not None else None
 
         time_to_end_sec = None
@@ -255,6 +266,7 @@ class FeatureEngine:
 
         features: dict[str, Any] = {
             "symbol": symbol,
+            "bar_minutes": timeframe_minutes,
             "price": _finite(last, 8),
             "ret_1m": _finite(ret_1m),
             "ret_3m": _finite(ret_3m),

@@ -26,7 +26,7 @@ def settings(tmp_path: Path) -> Settings:
         initial_capital_tmn=5_000_000,
         maker_fee=0.0025,
         taker_fee=0.0030,
-        min_notional_tmn=50_000,
+        min_notional_tmn=100_000,
         max_order_notional_tmn=750_000,
     )
     values.ensure_dirs()

@@ -11,6 +11,7 @@ from typing import Any
 from wallex_trader.config import Settings
 
 _SECRET_MARKERS = ("api_key", "apikey", "secret", "token", "password", "authorization")
+_RUN_CONTEXT: dict[str, str | None] = {"run_id": None, "mode": None}
 
 
 class JsonFormatter(logging.Formatter):
@@ -21,6 +22,9 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "message": record.getMessage(),
         }
+        if _RUN_CONTEXT.get("run_id"):
+            payload["run_id"] = _RUN_CONTEXT["run_id"]
+            payload["mode"] = _RUN_CONTEXT.get("mode")
         extra = getattr(record, "context", None)
         if isinstance(extra, dict):
             payload.update({str(k): _redact(v) for k, v in extra.items()})
@@ -38,6 +42,27 @@ def _redact(value: Any) -> Any:
     if isinstance(value, list):
         return [_redact(item) for item in value]
     return value
+
+
+def attach_run_log(settings: Settings, run_id: str, mode: str) -> Path:
+    """Add a per-run JSONL file and stamp run_id/mode on every log line."""
+    _RUN_CONTEXT["run_id"] = run_id
+    _RUN_CONTEXT["mode"] = mode
+    run_dir = Path(settings.logs_dir) / "runs"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    path = run_dir / f"{run_id}.jsonl"
+    handler = RotatingFileHandler(
+        path,
+        maxBytes=20 * 1024 * 1024,
+        backupCount=3,
+        encoding="utf-8",
+    )
+    handler.setFormatter(JsonFormatter())
+    logging.getLogger().addHandler(handler)
+    logging.getLogger("trader").info(
+        "per-run log attached", extra={"context": {"log_path": str(path)}}
+    )
+    return path
 
 
 def setup_logging(settings: Settings, component: str = "trader") -> logging.Logger:

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 from wallex_trader.config import Settings
 from wallex_trader.models import FeeRate, MarketMeta, OrderBook
+from wallex_trader.tradability import blocked_markets, normalize_market
 
 logger = logging.getLogger("trader.universe")
 
@@ -27,7 +28,11 @@ class UniverseSelector:
     ) -> UniverseResult:
         excluded: dict[str, str] = {}
         eligible: list[MarketMeta] = []
+        blocked = blocked_markets(self.settings.blocked_markets_file)
         for symbol in self.settings.universe_or_default():
+            if normalize_market(symbol) in blocked:
+                excluded[symbol] = "not tradable in this account"
+                continue
             meta = metadata.get(symbol)
             if meta is None:
                 excluded[symbol] = "not listed on Wallex"

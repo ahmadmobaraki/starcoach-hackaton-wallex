@@ -135,3 +135,35 @@ def test_candle_store_ignores_out_of_order_without_raising() -> None:
     )
     assert len(store.candles("BTCTMN")) == 5
     assert store.candles("BTCTMN")[-1].close == 100
+
+
+def test_candle_store_resamples_intraday_minutes() -> None:
+    from datetime import UTC, datetime, timedelta
+
+    from wallex_trader.marketdata.candles import CandleStore
+    from wallex_trader.models import Candle
+
+    store = CandleStore(maxlen=100)
+    start = datetime(2026, 1, 1, tzinfo=UTC)
+    for index in range(10):
+        store.upsert(
+            Candle(
+                symbol="BTCTMN",
+                ts=start + timedelta(minutes=index),
+                open=100 + index,
+                high=105 + index,
+                low=99 + index,
+                close=104 + index,
+                volume=1,
+            )
+        )
+    bars = store.resampled(
+        "BTCTMN", minutes=5, limit=2, now=start + timedelta(minutes=10)
+    )
+    assert len(bars) == 2
+    assert bars[0].open == 100
+    assert bars[0].close == 108
+    assert bars[0].high == 109
+    assert bars[0].low == 99
+    assert bars[1].open == 105
+    assert bars[1].close == 113

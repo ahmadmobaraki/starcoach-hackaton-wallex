@@ -53,6 +53,7 @@ class OMS:
         self.fee_rates = fee_rates or {}
         self.orders: dict[str, Order] = {}
         self.applied_fills: set[str] = set()
+        self.entries_enabled = True
         self.reserved: dict[str, Decimal] = {}
         self._seq = 0
         self.run_token = re.sub(r"[^A-Za-z0-9]", "", repo.run_id)[-8:] or "run"
@@ -80,6 +81,13 @@ class OMS:
         agent_payload: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         now = datetime.now(UTC)
+        if not self.entries_enabled:
+            return {
+                "client_order_id": "",
+                "status": "REJECTED",
+                "error": "kill switch active; entry not sent",
+                "fills": [],
+            }
         client_id = self._client_id(candidate.symbol)
         order = Order(
             client_order_id=client_id,
@@ -355,11 +363,17 @@ class OMS:
     def _convert_fee(self, fill: Fill, order: Order) -> None:
         if fill.fee_asset == "TMN":
             return
-        # Most Wallex TMN-market fees are charged in TMN. If the API reports a
-        # base-asset fee, convert at the fill price so PnL stays in TMN.
+        # Wallex may charge the fee in the base asset (observed for PEPE/BNB
+        # buys). Keep the base fee so the portfolio can credit the net quantity,
+        # and also record its TMN value for reporting.
         base_asset = order.symbol[:-3] if order.symbol.endswith("TMN") else ""
         if fill.fee_asset == base_asset:
+            fill.base_fee_quantity = fill.fee
             fill.fee = fill.fee * fill.price
+        elif fill.fee_asset == "USDT":
+            # TMN-quoted markets may report a stablecoin fee; treat it as TMN
+            # one-to-one for accounting and leave an audit flag in the fill.
+            fill.base_fee_quantity = ZERO
         fill.fee_asset = "TMN"
 
     def _release_reservation(self, order: Order) -> None:

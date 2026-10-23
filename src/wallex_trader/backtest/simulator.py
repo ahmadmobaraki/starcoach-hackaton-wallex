@@ -102,6 +102,19 @@ class BacktestSimulator:
                 logger.warning("backtest missing data for: %s", missing)
             if "BTCTMN" not in frames:
                 raise ValueError("backtest requires BTCTMN data")
+            if (
+                self.settings.strategy_mode == "intraday"
+                and self.settings.intraday_timeframe_minutes > 1
+            ):
+                frames = {
+                    symbol: _resample_frame(
+                        frame, self.settings.intraday_timeframe_minutes
+                    )
+                    for symbol, frame in frames.items()
+                }
+                frames = {
+                    symbol: frame for symbol, frame in frames.items() if len(frame) >= 300
+                }
             features, regime = build_feature_frames(frames, self.settings)
             swing_features = (
                 build_swing_features(frames, self.settings)
@@ -154,7 +167,12 @@ class BacktestSimulator:
             )
             for symbol in symbols
         }
-        decision_interval_ns = self.settings.backtest_decision_interval_sec * 1_000_000_000
+        decision_minutes = (
+            self.settings.intraday_timeframe_minutes
+            if self.settings.strategy_mode == "intraday"
+            else self.settings.backtest_decision_interval_sec // 60
+        )
+        decision_interval_ns = max(1, decision_minutes) * 60 * 1_000_000_000
         start_ns = int(union[0])
         last_decision_ns = start_ns - decision_interval_ns
         pending: list[dict[str, Any]] = []
@@ -395,7 +413,11 @@ class BacktestSimulator:
             decisions=len(decisions),
             buy_decisions=buy_decisions,
             fills=entry_fill_count,
-            interval_minutes=1,
+            interval_minutes=(
+                max(1, decision_minutes)
+                if self.settings.strategy_mode == "intraday"
+                else 1
+            ),
         )
         metrics["symbols"] = symbols
         metrics["period"] = period
@@ -882,6 +904,20 @@ class BacktestSimulator:
         nonce = f"{os.getpid()}:{uuid.uuid4().hex}"
         digest = hashlib.sha256(f"{start}:{end}:{stamp}:{nonce}".encode()).hexdigest()[:8]
         return f"bt_{stamp}_{digest}"
+
+
+def _resample_frame(frame: pd.DataFrame, minutes: int) -> pd.DataFrame:
+    return frame.resample(
+        f"{minutes}min", label="right", closed="right"
+    ).agg(
+        {
+            "open": "first",
+            "high": "max",
+            "low": "min",
+            "close": "last",
+            "volume": "sum",
+        }
+    ).dropna()
 
 
 def _synthetic_book(candidate: Any, close: float, settings: Settings) -> OrderBook:

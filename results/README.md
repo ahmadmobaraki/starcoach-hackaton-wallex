@@ -10,9 +10,14 @@ remain under `artifacts/` (large, gitignored).
 | `backtest_12sym/` | 12-symbol opportunity expansion | +16.46% | 4.69% | 39 |
 | `backtest_1h_timeframe/` | `SWING_TIMEFRAME_HOURS=1`, 2d/10d EMA | +15.34% | 3.77% | 35 |
 | `backtest_2h_timeframe/` | `SWING_TIMEFRAME_HOURS=2`, 4d/20d EMA | +9.60% | 5.19% | 42 |
+| `backtest_1m_intraday/` | `STRATEGY_MODE=intraday`, 1m bars | −1.39% | 1.43% | 113 |
+| `backtest_2m_intraday/` | 2m bars | −1.55% | 1.68% | 103 |
+| `backtest_5m_intraday/` | 5m bars | −2.77% | 2.86% | 115 |
 | `stress_2x_fees/` | 2× fee stress | +9.36% | 5.53% | 37 |
 | `stress_2x_slippage/` | 16 bps slippage stress | +15.23% | 5.34% | 37 |
 | `shadow/` | final 110s shadow run (live data, no real orders) | — | — | 1 paper fill |
+| `intraday_shadow/` | 1m/2m/5m live-data shadow samples | — | — | 0 (no candidates) |
+| `live_incident_20261023.md` | real live run: two buys, base-fee/exit bug, sold; dust remains | — | — | 2 buys, 0 sells |
 | `preflight.json` / `preflight_readonly_5m.json` / `preflight_main_key_mismatch.json` / `preflight_shadow.json` | current passing live preflight, read-only 5M proof, historical main-key rejection, shadow preflight | — | — | — |
 | `selftest.json` | deterministic shadow OMS/risk test | — | — | 1 paper round trip |
 | `ai_review.json` / `ai_cache.jsonl` | DeepSeek review of 41 historical candidates (39 BUY, 2 HOLD) | — | — | — |

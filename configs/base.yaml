@@ -26,6 +26,7 @@ max_tick_age_ms: 10000
 
 # Strategy
 strategy_mode: swing
+intraday_timeframe_minutes: 1
 intraday_risk_multiplier: 0.25
 candidate_threshold: 0.65
 alpha_threshold_bps: 100
@@ -66,7 +67,7 @@ max_take_profit_bps: 3000
 min_confidence: 0.55
 max_slippage_bps: 25
 max_depth_fraction: 0.10
-min_notional_tmn: 50000
+min_notional_tmn: 100000
 max_order_notional_tmn: 750000
 
 # Execution

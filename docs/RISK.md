@@ -57,7 +57,7 @@ more than 15% of starting equity.
 | Soft de-risk drawdown | 3% (new size halved) |
 | Hard de-risk drawdown | 4.5% (no new entries) |
 | Max order notional | 750,000 TMN |
-| Min order notional | 50,000 TMN |
+| Min order notional | 100,000 TMN |
 | Max spread to trade | 50 bps |
 | Max slippage | 25 bps |
 | Max stop / TP | 1200 / 3000 bps |
