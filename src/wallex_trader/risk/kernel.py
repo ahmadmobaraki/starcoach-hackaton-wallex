@@ -92,11 +92,14 @@ class RiskKernel:
             limit=s.max_order_notional_tmn * 5,
             reason="top-5 depth below 5x max order",
         )
+        score_floor = (
+            s.swing_min_score if candidate.signal == "TREND" else s.candidate_threshold
+        )
         check(
             "score",
-            candidate.score >= s.candidate_threshold,
+            candidate.score >= score_floor,
             value=candidate.score,
-            limit=s.candidate_threshold,
+            limit=score_floor,
             reason="signal score below threshold",
         )
         check(

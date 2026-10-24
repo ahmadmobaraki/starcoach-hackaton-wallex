@@ -165,6 +165,52 @@ def test_kill_switch_blocks_entries(settings) -> None:
     assert any(check.name == "kill_switch" and not check.passed for check in pre.checks)
 
 
+def test_swing_score_gate_uses_swing_min_score(settings) -> None:
+    meta, book, candidate, portfolio, regime = setup_objects(settings)
+    candidate.signal = "TREND"
+    candidate.score = 0.62
+    kernel = RiskKernel(settings, KillSwitch(settings))
+    pre = kernel.pre_check(
+        candidate,
+        portfolio,
+        book,
+        regime,
+        meta,
+        [],
+        now=datetime.now(UTC),
+        ws_healthy=True,
+        api_error_rate=0,
+        clock_skew_sec=0,
+    )
+    score_check = next(item for item in pre.checks if item.name == "score")
+    assert score_check.passed
+    assert score_check.limit == settings.swing_min_score
+    assert pre.approved
+
+
+def test_intraday_score_gate_keeps_candidate_threshold(settings) -> None:
+    meta, book, candidate, portfolio, regime = setup_objects(settings)
+    candidate.signal = "MR"
+    candidate.score = 0.62
+    kernel = RiskKernel(settings, KillSwitch(settings))
+    pre = kernel.pre_check(
+        candidate,
+        portfolio,
+        book,
+        regime,
+        meta,
+        [],
+        now=datetime.now(UTC),
+        ws_healthy=True,
+        api_error_rate=0,
+        clock_skew_sec=0,
+    )
+    score_check = next(item for item in pre.checks if item.name == "score")
+    assert not score_check.passed
+    assert score_check.limit == settings.candidate_threshold
+    assert not pre.approved
+
+
 def test_trend_size_floor_rejects_small_ai_size(settings) -> None:
     meta, book, candidate, portfolio, _ = setup_objects(settings)
     candidate.signal = "TREND"

@@ -54,6 +54,11 @@ from wallex_trader.strategy.universe import UniverseSelector
 
 logger = logging.getLogger("trader.engine")
 
+# HTTP Date has 1s granularity and can be stale on cached/proxied responses, so a
+# single out-of-range sample must not trigger the sticky kill switch. The live
+# threshold itself is unchanged; it just has to be observed consecutively.
+CLOCK_SKEW_CONFIRMATIONS = 3
+
 
 class DisabledAgent:
     def __init__(self, settings: Settings) -> None:
@@ -133,6 +138,7 @@ class TradingEngine:
         self._position_seen: set[str] = set()
         self._position_tombstones: set[str] = set()
         self._reconcile_failures = 0
+        self._clock_skew_streak = 0
         self._endgame_flattened = False
         self._decision_seq = 0
         self._review_lock = asyncio.Lock()
@@ -1542,6 +1548,13 @@ class TradingEngine:
                 logger.debug("heartbeat error: %s", exc)
 
     # ------------------------------------------------------------------
+    def _clock_skew_confirmed(self, skew: float | None) -> bool:
+        if skew is None or abs(float(skew)) <= self.settings.clock_skew_kill_sec:
+            self._clock_skew_streak = 0
+            return False
+        self._clock_skew_streak += 1
+        return self._clock_skew_streak >= CLOCK_SKEW_CONFIRMATIONS
+
     async def _check_kill_conditions(self, now: datetime, snapshot: Any) -> None:
         if self.kill.state.active:
             return
@@ -1558,13 +1571,18 @@ class TradingEngine:
             )
             return
         stats = self.rest.stats()
-        if (
-            stats.get("clock_skew_sec") is not None
-            and abs(float(stats["clock_skew_sec"])) > self.settings.clock_skew_kill_sec
-        ):
+        skew = stats.get("clock_skew_sec")
+        skew_value = 0.0 if skew is None else float(skew)
+        if self._clock_skew_confirmed(skew):
             await self._activate_kill(
-                f"clock skew above {self.settings.clock_skew_kill_sec:.1f}s",
+                f"clock skew above {self.settings.clock_skew_kill_sec:.1f}s "
+                f"for {self._clock_skew_streak} consecutive checks",
                 trigger="clock_skew",
+                evidence={
+                    "clock_skew_sec": round(skew_value, 3),
+                    "threshold_sec": self.settings.clock_skew_kill_sec,
+                    "consecutive_checks": self._clock_skew_streak,
+                },
             )
             return
         if stats.get("calls", 0) > 50 and stats.get("error_rate", 0) > 0.10:

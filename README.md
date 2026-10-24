@@ -290,14 +290,16 @@ The kill-switch API additionally requires `DASHBOARD_KILL_TOKEN` in the
 ### Docker
 
 ```bash
-make up        # PostgreSQL + trader + dashboard on 127.0.0.1:8080
+make up        # PostgreSQL + trader + dashboard
 make logs
 make down
 make proxy     # optional Caddy profile (ports 80/443)
 ```
 
-The dashboard is the only exposed service (localhost by default). The trader has
-no ports. Caddy is optional; basic auth is enforced by the application itself.
+The dashboard listens on `${DASHBOARD_BIND:-0.0.0.0}:${DASHBOARD_PORT:-8080}`;
+set `DASHBOARD_BIND=127.0.0.1` to restrict it to localhost. The trader has no ports.
+Caddy is optional; basic auth is enforced by the application itself, so never expose
+the dashboard without it. Use TLS (Caddy) for anything beyond a private network.
 
 ### Challenge window
 
@@ -334,6 +336,69 @@ MODE=live LIVE_CONFIRM=I_UNDERSTAND_REAL_MONEY FLATTEN_ON_STOP=true make live
 `FLATTEN_ON_STOP=true` closes positions when you press Ctrl-C and writes
 `artifacts/live/<run_id>/` (metrics, decisions, positions, orders, fills, equity,
 journal). Shadow remains the default until the operator starts live.
+
+### Deployed VPS (live)
+
+The system also runs on a VPS at **`78.141.219.4`**. Access is key-based; the server
+password is not stored in this repository.
+
+```bash
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4
+```
+
+Layout and processes on the VPS:
+
+| Item | Value |
+|---|---|
+| Project | `/opt/argus` |
+| Remote `.env` | `/opt/argus/.env` (root-only, mode 600; authoritative) |
+| Database | Docker service `db` (Postgres, named volume `argus_pgdata`) |
+| Dashboard | Docker service `dashboard`, public `0.0.0.0:8080`, HTTP basic auth |
+| Live trader | systemd `argus-live.service`, container `argus-live-trader` |
+| Live command | `docker compose run ... live --confirm-live` with `FLATTEN_ON_STOP=true` |
+| Restart policy | systemd `Restart=on-failure`, max 5 starts / 5 min; enabled at boot |
+
+Dashboard: <http://78.141.219.4:8080/test-results> — credentials are
+`DASHBOARD_BASIC_AUTH_USER` / `DASHBOARD_BASIC_AUTH_PASSWORD` in the remote `.env`.
+It is plain HTTP with basic auth; use an SSH tunnel or Caddy/TLS if you need privacy:
+
+```bash
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 -L 8080:127.0.0.1:8080 root@78.141.219.4
+# then open http://127.0.0.1:8080/test-results
+```
+
+Operations:
+
+```bash
+# from your workstation
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl status argus-live'
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'journalctl -u argus-live -f'
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'cd /opt/argus && docker compose ps'
+
+# stop (FLATTEN_ON_STOP=true sells open positions) / start / restart
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl stop argus-live'
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl start argus-live'
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl restart argus-live'
+
+# engine health
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
+  'docker exec argus-live-trader python -m wallex_trader health --max-age 120'
+```
+
+Deploy a code change (never copy `.env` with `--delete`):
+
+```bash
+rsync -az --delete -e "ssh -i ~/.ssh/ahmad_mobaraki_ed25519" \
+  --exclude '.git/' --exclude '.venv/' --exclude 'data/' --exclude 'artifacts/' \
+  --exclude 'logs/' --exclude '__pycache__/' --exclude '.pytest_cache/' \
+  --exclude '.mypy_cache/' --exclude '.ruff_cache/' --exclude '.env' \
+  ./ root@78.141.219.4:/opt/argus/
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
+  'cd /opt/argus && docker compose build trader && systemctl restart argus-live'
+```
+
+Only one live engine may run at a time (`live.lock` + the fixed container name). Do
+not start a second live process or a tmux copy while `argus-live` is active.
 
 ## Commands
 
@@ -398,6 +463,9 @@ data/            raw/curated candles, manifests, run cache, local SQLite DB
   characters. The application and Docker Compose load it with a proper dotenv parser.
 - The dashboard has no order-entry controls. The only mutation endpoint is the
   kill switch, protected by a separate token.
+- The VPS dashboard is exposed over plain HTTP with basic auth. Use the SSH tunnel
+  above or terminate TLS in Caddy for anything sensitive. The VPS root password is
+  never stored in this repository; use the SSH key.
 - The AI cannot change hard risk limits, enable leverage/shorting, or withdraw funds.
   Lessons are advisory; code and limits are deterministic.
 

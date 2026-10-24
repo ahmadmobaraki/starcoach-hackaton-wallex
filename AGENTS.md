@@ -102,6 +102,9 @@ Valid commands: `run`, `shadow`, `live`, `preflight`, `download`, `backtest`,
 ## 3. Current state (do not hallucinate older states)
 
 - Mode in `.env`: `shadow`. Live is started with shell environment overrides.
+- **Deployment:** live runs on VPS `78.141.219.4` under `argus-live.service`
+  (Docker Compose + systemd, enabled at boot, restart-on-failure). Dashboard:
+  `http://78.141.219.4:8080/test-results`. See §15.9 for access and operations.
 - Strategy: `STRATEGY_MODE=swing` (slow trend; `SWING_TIMEFRAME_HOURS=4` default), universe **11 symbols**:
   BTCTMN, ETHTMN, SOLTMN, USDTTMN, XRPTMN, DOGETMN, PEPETMN, XAUTTMN,
   BNBTMN, TRXTMN, LTCTMN. ZECTMN was removed because ZEC/TMN is not tradable in the
@@ -514,7 +517,10 @@ multiplier (default 0.25). Checks include min notional, gross exposure, portfoli
 correlated exposure, cash buffer, spread/depth/age, slippage, price sanity, self-trade,
 open order/position caps, daily loss, drawdown, volatility, WS/API health, clock skew,
 and endgame. Orders below **100,000 TMN** are vetoed; the kernel never upsizes a
-counter to clear the floor.
+counter to clear the floor. The score gate follows the candidate's generation floor:
+`TREND` uses `SWING_MIN_SCORE` (0.60), `MR`/`MOM` use `CANDIDATE_THRESHOLD` (0.65).
+Keep these aligned; otherwise candidates are generated and then always vetoed
+(`signal score below threshold`).
 
 ### 9.2 Defaults (shadow/backtest)
 
@@ -547,7 +553,8 @@ caps so the live YAML applies; the 100,000 TMN floor is validator-enforced in ev
 ### 9.3 Kill switch
 
 Activates on file/manual kill, peak drawdown 6%, daily loss 2.5%, WS down 30s, API
-error rate >10% after 50 calls, clock skew >5s, live reconciliation mismatch
+error rate >10% after 50 calls, clock skew >5s for 3 consecutive checks (single
+sample can be stale), live reconciliation mismatch
 (3 consecutive checks), or manual dashboard/file request. Actions: no new entries,
 cancel all orders, flatten if configured, critical risk/system events. Kill is sticky;
 restart is deliberate. `FLATTEN_ON_STOP=true` flattens on a normal Ctrl-C stop.
@@ -740,7 +747,9 @@ dashboard Backtests tab reads it. Reports downsample charts to ~2,000 points; ke
    watch dashboard/heartbeat/reconciliation.
 4. Ctrl-C once; wait for `engine stopped`; inspect `artifacts/live/<run_id>/`.
 5. Run `python -m wallex_trader replay --run-id <id>`; verify PASS.
-6. Do not run live in Docker/background unattended.
+6. Do not run live in Docker/background unattended. The only approved exception is the
+   operator-requested VPS deployment in §15.9 (systemd unit, canary caps, preflight,
+   `FLATTEN_ON_STOP=true`). Do not create a second live process or tmux copy.
 
 ### 15.6 Analyze a run
 
@@ -769,6 +778,65 @@ Check in order:
 - Add to `pyproject.toml` with bounds; run `make lock`.
 - Regenerate `requirements.lock`; rebuild Docker; run tests/lint/mypy.
 - Do not add a package without need; keep the image lean.
+
+### 15.9 VPS deployment and operations (live)
+
+The live system runs on VPS `78.141.219.4`. Access is **SSH-key only**; the server
+password must never be written to the repo, docs, logs, or shell history.
+
+```bash
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4
+```
+
+| Item | Value |
+|---|---|
+| Project | `/opt/argus` |
+| Remote `.env` | `/opt/argus/.env`, root-only mode 600, authoritative |
+| Database | Docker `db` (Postgres, volume `argus_pgdata`) |
+| Dashboard | Docker `dashboard`, `0.0.0.0:8080`, HTTP basic auth |
+| Live trader | systemd `argus-live.service` → container `argus-live-trader` |
+| Unit | `/etc/systemd/system/argus-live.service` |
+| Restart | `Restart=on-failure`, `RestartSec=30`, max 5 starts / 300s; enabled at boot |
+| Shutdown | `FLATTEN_ON_STOP=true`; `systemctl stop` sells open positions |
+
+Operations:
+
+```bash
+systemctl status argus-live
+journalctl -u argus-live -f
+systemctl stop argus-live      # flattens positions (FLATTEN_ON_STOP)
+systemctl start argus-live
+systemctl restart argus-live
+cd /opt/argus && docker compose ps
+docker exec argus-live-trader python -m wallex_trader health --max-age 120
+```
+
+Deploy a code change (run tests locally first; never copy `.env`):
+
+```bash
+rsync -az --delete -e "ssh -i ~/.ssh/ahmad_mobaraki_ed25519" \
+  --exclude '.git/' --exclude '.venv/' --exclude 'data/' --exclude 'artifacts/' \
+  --exclude 'logs/' --exclude '__pycache__/' --exclude '.pytest_cache/' \
+  --exclude '.mypy_cache/' --exclude '.ruff_cache/' --exclude '.env' \
+  ./ root@78.141.219.4:/opt/argus/
+ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
+  'cd /opt/argus && docker compose build trader && systemctl restart argus-live'
+```
+
+Rules:
+
+- Only one live engine per account. The systemd unit, the fixed container name
+  `argus-live-trader`, and `data/runs/live.lock` enforce this. Never start a second
+  live process, `docker compose run ... live`, or a tmux copy while it is active.
+- A code change is not deployed until it passes ruff, mypy and pytest locally; after
+  deploy, run a live preflight (`ok:true`, `api_key_matches_sub_account:true`,
+  0 open orders) before trusting the new process.
+- Do not `rsync` `.env`; edit it on the server and keep mode 600.
+- The dashboard is plain HTTP with basic auth. Prefer an SSH tunnel
+  (`-L 8080:127.0.0.1:8080`) or Caddy/TLS. Never disable basic auth.
+- systemd `Restart=on-failure` can clear an in-memory kill after a crash. This is an
+  operator-approved trade-off for the VPS; a kill that does not crash the process
+  stays sticky until a deliberate restart.
 
 ---
 
@@ -799,7 +867,9 @@ docker build -t argus-local .
 
 - `Dockerfile` runs as UID/GID 1000; host-mounted `data/`, `artifacts/`, `logs/` must be
   writable by that UID. Compose mounts them; `docker compose down` keeps volumes.
-- Dashboard binds `127.0.0.1:8080`; trader has no exposed port; Caddy profile optional.
+- Dashboard binds `${DASHBOARD_BIND:-0.0.0.0}:${DASHBOARD_PORT:-8080}` (set
+  `DASHBOARD_BIND=127.0.0.1` to restrict it); trader has no exposed port; Caddy
+  profile optional. The VPS deployment exposes it publicly and requires basic auth.
 - Trader healthcheck uses `python -m wallex_trader health --max-age 120`.
 - `docker compose --profile tools run --rm backtest` seeds PostgreSQL backtest rows.
 - Logs rotate; `logs/trader.jsonl` is the aggregate JSON log and `logs/runs/<run_id>.jsonl` is the per-run log. Every run line includes `run_id` and `mode`; the run ID is printed at startup.
@@ -820,7 +890,10 @@ docker build -t argus-local .
    middle insertion on a bounded deque.
 4. **False reconciliation kill**: a single transient mismatch right after the rejected
    order killed the engine. Now 3 consecutive checks; keep that hysteresis.
-5. **Clock skew**: 1s threshold false-fired due HTTP Date granularity. Now 5s.
+5. **Clock skew**: 1s threshold false-fired due HTTP Date granularity. Now 5s, and a
+   single sample no longer kills: it must exceed 5s on 3 consecutive health checks
+   (2026-10-24, a one-off bad REST `Date` sample froze a live run for 4h). The risk
+   event now records the measured skew. Do not remove the confirmation hysteresis.
 6. **WS proactive ping**: sending `{}` on a timer caused 3501 and reconnects. Only reply
    to server app pings.
 7. **Universe too strict**: a transiently wide book removed a symbol for an hour.

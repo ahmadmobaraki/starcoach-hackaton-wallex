@@ -65,6 +65,22 @@ more than 15% of starting equity.
 
 Live config is more conservative: max order 250,000 TMN, max position 10%, risk 0.5%.
 
+### Signal score gate
+
+The risk pre-check uses the candidate's own generation floor, so a candidate is never
+created only to be rejected by a stricter duplicate gate:
+
+- `TREND` (slow swing): `swing_min_score` (default 0.60).
+- `MR` / `MOM` (intraday sleeve): `candidate_threshold` (default 0.65).
+
+Before 2026-10-24 every candidate was compared to `candidate_threshold`, so swing
+candidates scoring 0.60–0.65 were generated and then always vetoed (`signal score
+below threshold`). Aligning the TREND gate with `swing_min_score` was measured on the
+1h/11-symbol sample (2026-07-01 → 2026-10-21, deterministic): +20.21% / 5.40% max DD /
+43 trades vs +20.05% / 5.13% / 43 with the old 0.65 gate. Under 2× fees the result is
++17.26% / 6.04% / 37 vs +18.72% / 5.48% / 44, i.e. still strongly positive but more
+drawdown-sensitive. The intraday sleeve keeps its 0.65 gate.
+
 ## Stop, target, trailing, time
 
 - Hard stop: 1000 bps (10%) or 1.2× 4h ATR, clamped to 300–1200 bps.
@@ -86,7 +102,9 @@ The kill switch activates on any of:
 - daily loss ≤ −2.5%;
 - WebSocket down ≥ 30s;
 - API error rate > 10% after at least 50 calls;
-- clock skew > 5s (HTTP Date headers have 1 s granularity);
+- clock skew > 5s for 3 consecutive health checks (HTTP Date headers have 1 s
+  granularity and can be stale on cached/proxied responses, so one sample is not
+  enough); the risk event records the measured skew value;
 - live reconciliation mismatch (orders or balances). Known dust below the market step
   or exchange minimum notional is subtracted; a remainder left by a partial exit is
   recorded as dust and dropped instead of retried;
