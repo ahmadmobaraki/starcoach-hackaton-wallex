@@ -11,11 +11,28 @@ import pytest
 from wallex_trader.runlock import LiveLockError, acquire_live_lock, release_live_lock
 
 
-def test_lock_blocks_another_live_pid(tmp_path: Path) -> None:
+def test_lock_blocks_another_live_holder(tmp_path: Path) -> None:
     path = tmp_path / "live.lock"
-    path.write_text(json.dumps({"pid": os.getppid(), "run_id": "other"}), encoding="utf-8")
-    with pytest.raises(LiveLockError, match="another live process is running"):
-        acquire_live_lock(path, "mine")
+    script = (
+        "import fcntl, os, sys, time\n"
+        "fd = os.open(sys.argv[1], os.O_CREAT | os.O_RDWR, 0o644)\n"
+        "fcntl.flock(fd, fcntl.LOCK_EX)\n"
+        "print('ready', flush=True)\n"
+        "time.sleep(30)\n"
+    )
+    process = subprocess.Popen(
+        [sys.executable, "-c", script, str(path)],
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        assert process.stdout is not None
+        assert process.stdout.readline().strip() == "ready"
+        with pytest.raises(LiveLockError, match="another live process is running"):
+            acquire_live_lock(path, "mine")
+    finally:
+        process.terminate()
+        process.wait(timeout=5)
 
 
 def test_stale_lock_is_reclaimed_and_released(tmp_path: Path) -> None:
@@ -32,9 +49,13 @@ def test_stale_lock_is_reclaimed_and_released(tmp_path: Path) -> None:
     assert not path.exists()
 
 
-def test_same_process_can_reacquire(tmp_path: Path) -> None:
+def test_second_acquire_is_blocked_until_release(tmp_path: Path) -> None:
     path = tmp_path / "live.lock"
-    acquire_live_lock(path, "one")
-    acquire_live_lock(path, "two")
-    assert json.loads(path.read_text(encoding="utf-8"))["run_id"] == "two"
-    release_live_lock(path)
+    lock = acquire_live_lock(path, "one")
+    with pytest.raises(LiveLockError, match="another live process is running"):
+        acquire_live_lock(path, "two")
+    release_live_lock(lock)
+    again = acquire_live_lock(path, "three")
+    assert json.loads(again.read_text(encoding="utf-8"))["run_id"] == "three"
+    release_live_lock(again)
+    assert not path.exists()

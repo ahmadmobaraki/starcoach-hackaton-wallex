@@ -60,6 +60,12 @@ layer on top.
 | Original 1-minute strategy (rejected) | −3.94% | 4.12% | 48 | 18.8% | 0.28 | — |
 
 All percentages are net of fees and slippage on a **5,000,000 TMN** simulated account.
+These headline rows were produced with the historical kernel gate
+`CANDIDATE_THRESHOLD=0.65`; the current TREND gate is aligned with
+`SWING_MIN_SCORE=0.60` (2026-10-24). The current live shape (1h, 11 symbols) measures
++20.21% / 5.40% DD / 43 trades base, +17.26% / 6.04% / 37 under 2× fees, and +20.53% /
+5.43% / 42 under 2× slippage. The 2× fee drawdown is at the live 6% kill, so the
+0.65-gate rows above remain the conservative headline; see `docs/RESULTS.md` §2e.
 Every one of the eight symbols was profitable in the deterministic run. The AI-gated
 run returns less but draws down less, which is the expected trade-off when the agent
 vetoes the most extended late entries.

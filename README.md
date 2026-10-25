@@ -38,6 +38,13 @@ stops, no lookahead.
 | Turnover | 6.1× |
 | PnL without best trade | +694,165 TMN |
 
+These headline rows use the historical kernel gate `CANDIDATE_THRESHOLD=0.65`. On
+2026-10-24 the TREND gate was aligned with `SWING_MIN_SCORE=0.60`; the current live
+shape (1h, 11 symbols) measures +20.21% / 5.40% DD / 43 trades base, +17.26% / 6.04% /
+37 under 2× fees, and +20.53% / 5.43% / 42 under 2× slippage. The 2× fee drawdown sits
+at the live 6% kill, so the older 0.65-gate rows above remain the conservative
+headline. See `docs/RESULTS.md` §2e.
+
 Every one of the eight symbols was profitable. A 12-symbol variant (BNB, TRX, LTC, ZEC added) returns **+16.46%** with 4.69% drawdown and 39 trades; ZEC/TMN is not tradable in the credit account, so the live `.env` now lists the 11 permitted symbols. Faster intraday variants (1h/15m trend prototypes) lose after fees; the 1h **slow swing** is a different configuration and is positive (see below). `STRATEGY_MODE=both` is an opt-in activity sleeve (25% risk), not the default. The AI-gated variant (DeepSeek reviews
 the same candidates without outcome knowledge) returns **+12.52%** with **4.34% max
 drawdown** and 34 trades: lower return, lower risk, and the AI vetoed the two most
@@ -296,10 +303,11 @@ make down
 make proxy     # optional Caddy profile (ports 80/443)
 ```
 
-The dashboard listens on `${DASHBOARD_BIND:-0.0.0.0}:${DASHBOARD_PORT:-8080}`;
-set `DASHBOARD_BIND=127.0.0.1` to restrict it to localhost. The trader has no ports.
-Caddy is optional; basic auth is enforced by the application itself, so never expose
-the dashboard without it. Use TLS (Caddy) for anything beyond a private network.
+The dashboard listens on `${DASHBOARD_BIND:-127.0.0.1}:${DASHBOARD_PORT:-8080}` by
+default; set `DASHBOARD_BIND=0.0.0.0` explicitly to expose it beyond localhost. The
+trader has no ports. Caddy is optional; basic auth is enforced by the application
+itself, and is disabled when `DASHBOARD_BASIC_AUTH_PASSWORD` is empty, so never
+expose the dashboard without a password. Use TLS (Caddy) beyond a private network.
 
 ### Challenge window
 
@@ -375,17 +383,21 @@ ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl status argus-l
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'journalctl -u argus-live -f'
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'cd /opt/argus && docker compose ps'
 
-# stop (FLATTEN_ON_STOP=true sells open positions) / start / restart
+# stop / restart also sell open positions (FLATTEN_ON_STOP=true)
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl stop argus-live'
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl start argus-live'
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 'systemctl restart argus-live'
 
-# engine health
+# engine health (live heartbeats only)
 ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
-  'docker exec argus-live-trader python -m wallex_trader health --max-age 120'
+  'docker exec argus-live-trader python -m wallex_trader health --max-age 120 --mode live'
+# a container started before 2026-10-24 lacks --mode; omit it until the next restart
 ```
 
-Deploy a code change (never copy `.env` with `--delete`):
+Deploy a code change (never copy `.env` with `--delete`). **Flatten first**: the
+restart below closes every open position because the unit sets
+`FLATTEN_ON_STOP=true`. Verify the `positions` table has no open quantity, or accept a
+forced market exit and its fees.
 
 ```bash
 rsync -az --delete -e "ssh -i ~/.ssh/ahmad_mobaraki_ed25519" \
@@ -397,8 +409,15 @@ ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
   'cd /opt/argus && docker compose build trader && systemctl restart argus-live'
 ```
 
-Only one live engine may run at a time (`live.lock` + the fixed container name). Do
-not start a second live process or a tmux copy while `argus-live` is active.
+The remote `.env` must set `DASHBOARD_BIND=0.0.0.0` for the public dashboard; the
+Compose default is `127.0.0.1`. Never run `make up` on the VPS while `argus-live` is
+active: it starts the Compose `trader` service as a second (shadow) engine against the
+same DB, API key and WebSocket.
+
+Only one live engine may run at a time: the fixed container name `argus-live-trader` is
+the primary guard, and `live.lock` is an OS advisory `flock` on the shared data volume
+that also excludes a differently named live container. Do not start a second live
+process or a tmux copy while `argus-live` is active.
 
 ## Commands
 

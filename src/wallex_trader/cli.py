@@ -99,6 +99,12 @@ def main(argv: list[str] | None = None) -> int:
 
     health_parser = sub.add_parser("health", help="check trader heartbeat")
     health_parser.add_argument("--max-age", type=float, default=90.0)
+    health_parser.add_argument(
+        "--mode",
+        choices=["shadow", "live", "backtest"],
+        default=None,
+        help="only consider heartbeats from this mode",
+    )
 
     selftest_parser = sub.add_parser("self-test", help="shadow OMS/risk self-test (no real orders)")
     selftest_parser.add_argument("--ai", action="store_true", help="also call DeepSeek")
@@ -179,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
             return _run_async(_cmd_ai_review(settings, args.decisions, args.out))
         if args.command == "health":
             settings = load_settings(config_dir=config_dir)
-            return _run_async(_cmd_health(settings, args.max_age))
+            return _run_async(_cmd_health(settings, args.max_age, args.mode))
         if args.command == "config":
             settings = load_settings(config_dir=config_dir)
             print(json.dumps(settings.safe_dump(redact=True), indent=2, default=str))
@@ -390,12 +396,12 @@ async def _cmd_ai_review(settings: Settings, decisions: str, out: str) -> int:
     return 0
 
 
-async def _cmd_health(settings: Settings, max_age: float) -> int:
+async def _cmd_health(settings: Settings, max_age: float, mode: str | None = None) -> int:
     db = create_database(settings)
     await db.init()
     repo = Repository(db, "health")
     try:
-        heartbeat = await repo.latest_heartbeat()
+        heartbeat = await repo.latest_heartbeat(mode=mode)
         healthy = False
         age = None
         if heartbeat and heartbeat.get("ts"):
@@ -412,6 +418,7 @@ async def _cmd_health(settings: Settings, max_age: float) -> int:
                 {
                     "ok": healthy,
                     "mode": settings.mode.value,
+                    "filter_mode": mode,
                     "heartbeat_age_sec": round(age, 1) if age is not None else None,
                     "max_age_sec": max_age,
                     "db": str(settings.postgres_dsn).split("@")[-1],

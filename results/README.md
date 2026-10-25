@@ -22,6 +22,14 @@ remain under `artifacts/` (large, gitignored).
 | `selftest.json` | deterministic shadow OMS/risk test | — | — | 1 paper round trip |
 | `ai_review.json` / `ai_cache.jsonl` | DeepSeek review of 41 historical candidates (39 BUY, 2 HOLD) | — | — | — |
 
+The committed backtest rows were generated with the historical kernel gate
+`CANDIDATE_THRESHOLD=0.65`. On 2026-10-24 the TREND gate was aligned with
+`SWING_MIN_SCORE=0.60`; the current live shape (1h, 11 symbols) measures +20.21% /
+5.40% DD / 43 trades base, +17.26% / 6.04% / 37 under 2× fees, and +20.53% / 5.43% /
+42 under 2× slippage. The 2× fee drawdown is at the live 6% kill, so the older
+0.65-gate snapshot remains the conservative headline. Full artifacts:
+`docs/RESULTS.md` §2e and `artifacts/backtests/bt_20261024_*`.
+
 Each backtest folder has `metrics.json`, `trades.csv`, `report.html` and the redacted
 config. Open `backtest_deterministic/report.html` in a browser for the full equity
 curve, drawdown, per-symbol PnL and trade list. The report is standalone (Chart.js is

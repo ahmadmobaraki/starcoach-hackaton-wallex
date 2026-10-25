@@ -681,11 +681,14 @@ class Repository:
             rows = (await session.scalars(stmt)).all()
         return [_note_dict(row) for row in rows]
 
-    async def latest_heartbeat(self) -> dict[str, Any] | None:
+    async def latest_heartbeat(self, mode: str | None = None) -> dict[str, Any] | None:
         async with self.db.session() as session:
-            row = await session.scalar(
-                select(HeartbeatRow).order_by(HeartbeatRow.ts.desc()).limit(1)
-            )
+            stmt = select(HeartbeatRow)
+            if mode:
+                stmt = stmt.join(
+                    RunRow, RunRow.run_id == HeartbeatRow.run_id
+                ).where(RunRow.mode == mode)
+            row = await session.scalar(stmt.order_by(HeartbeatRow.ts.desc()).limit(1))
         return _heartbeat_dict(row) if row else None
 
     async def overview(self, run_id: str | None = None) -> dict[str, Any]:

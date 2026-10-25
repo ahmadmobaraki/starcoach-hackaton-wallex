@@ -75,6 +75,33 @@ DOGE +77,924; XRP +43,478; PEPE +35,901; USDT +12,829.
 
 These use `STRATEGY_MODE=intraday` and resampled bars. They are not viable after fees.
 
+## 2e. Live gate alignment (2026-10-24)
+
+The headline rows in §2–§4 use the historical kernel gate
+`CANDIDATE_THRESHOLD=0.65` for every candidate. The swing engine generates TREND
+candidates at `SWING_MIN_SCORE=0.60`, so scores in `[0.60, 0.65)` were generated and
+always vetoed (`signal score below threshold`). On 2026-10-24 the TREND gate was
+aligned with the generator floor (0.60); the intraday sleeve keeps 0.65.
+
+The measurements below use the current live shape: 1h swing, 11 tradable symbols
+(ZECTMN excluded), 2026-07-01 → 2026-10-21, deterministic agent.
+
+| Run | Net | Max DD | Trades |
+|---|---:|---:|---:|
+| 0.60 gate, base | +20.21% | 5.40% | 43 |
+| 0.60 gate, 2× fees | +17.26% | 6.04% | 37 |
+| 0.60 gate, 2× slippage (16 bps) | +20.53% | 5.43% | 42 |
+| 0.65 gate, base (old live gate) | +20.05% | 5.13% | 43 |
+| 0.65 gate, 2× fees | +18.72% | 5.48% | 44 |
+
+Artifacts: `bt_20261024_112232_f358d20f` (0.60 base), `bt_20261024_112511_e4669946`
+(0.60 2× fees), `bt_20261024_131942_62ccbb24` (0.60 2× slippage),
+`bt_20261024_112007_5fa2037d` (0.65 base), `bt_20261024_112511_45ba7d89` (0.65 2×
+fees). The 0.60 gate is slightly better in the base and slippage cases but more
+drawdown-sensitive under 2× fees, where 6.04% sits at the live 6% drawdown kill. Do not
+describe the older 4h/8-symbol headline numbers as if they were produced by the current
+gate.
+
 ## 3. Failed intraday baseline (honest negative)
 
 Original 1m mean-reversion/momentum engine, 4 symbols, same 113 days:

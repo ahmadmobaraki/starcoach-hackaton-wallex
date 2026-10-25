@@ -793,11 +793,16 @@ ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4
 | Project | `/opt/argus` |
 | Remote `.env` | `/opt/argus/.env`, root-only mode 600, authoritative |
 | Database | Docker `db` (Postgres, volume `argus_pgdata`) |
-| Dashboard | Docker `dashboard`, `0.0.0.0:8080`, HTTP basic auth |
+| Dashboard | Docker `dashboard`, `DASHBOARD_BIND=0.0.0.0:8080`, HTTP basic auth |
 | Live trader | systemd `argus-live.service` → container `argus-live-trader` |
 | Unit | `/etc/systemd/system/argus-live.service` |
 | Restart | `Restart=on-failure`, `RestartSec=30`, max 5 starts / 300s; enabled at boot |
-| Shutdown | `FLATTEN_ON_STOP=true`; `systemctl stop` sells open positions |
+| Shutdown | `FLATTEN_ON_STOP=true`; `systemctl stop` **and `restart`** sell open positions |
+
+The remote `.env` must set `DASHBOARD_BIND=0.0.0.0` for the public dashboard; the
+Compose default is `127.0.0.1`. Never run `make up` on the VPS while `argus-live` is
+active: it starts the Compose `trader` service as a second (shadow) engine against the
+same DB, API key and WebSocket.
 
 Operations:
 
@@ -806,12 +811,19 @@ systemctl status argus-live
 journalctl -u argus-live -f
 systemctl stop argus-live      # flattens positions (FLATTEN_ON_STOP)
 systemctl start argus-live
-systemctl restart argus-live
+systemctl restart argus-live   # also flattens: stop + start
 cd /opt/argus && docker compose ps
-docker exec argus-live-trader python -m wallex_trader health --max-age 120
+docker exec argus-live-trader python -m wallex_trader health --max-age 120 --mode live
 ```
 
-Deploy a code change (run tests locally first; never copy `.env`):
+`--mode live` requires the current image; a container started before 2026-10-24 does
+not have it. Use the same command without `--mode`, or run it through
+`docker compose run --rm --no-deps trader ...`, until that container is restarted.
+
+Deploy a code change (run tests locally first; never copy `.env`). **Flatten first**:
+`systemctl restart` closes every open position because the unit sets
+`FLATTEN_ON_STOP=true`. Verify the `positions` table has no open quantity before
+deploying, or accept a forced market exit and its fees.
 
 ```bash
 rsync -az --delete -e "ssh -i ~/.ssh/ahmad_mobaraki_ed25519" \
@@ -825,8 +837,9 @@ ssh -i ~/.ssh/ahmad_mobaraki_ed25519 root@78.141.219.4 \
 
 Rules:
 
-- Only one live engine per account. The systemd unit, the fixed container name
-  `argus-live-trader`, and `data/runs/live.lock` enforce this. Never start a second
+- Only one live engine per account. The fixed container name `argus-live-trader` is the
+  primary guard; `data/runs/live.lock` is an OS advisory `flock` on the shared data
+  volume and also excludes a differently named live container. Never start a second
   live process, `docker compose run ... live`, or a tmux copy while it is active.
 - A code change is not deployed until it passes ruff, mypy and pytest locally; after
   deploy, run a live preflight (`ok:true`, `api_key_matches_sub_account:true`,
@@ -867,9 +880,10 @@ docker build -t argus-local .
 
 - `Dockerfile` runs as UID/GID 1000; host-mounted `data/`, `artifacts/`, `logs/` must be
   writable by that UID. Compose mounts them; `docker compose down` keeps volumes.
-- Dashboard binds `${DASHBOARD_BIND:-0.0.0.0}:${DASHBOARD_PORT:-8080}` (set
-  `DASHBOARD_BIND=127.0.0.1` to restrict it); trader has no exposed port; Caddy
-  profile optional. The VPS deployment exposes it publicly and requires basic auth.
+- Dashboard binds `${DASHBOARD_BIND:-127.0.0.1}:${DASHBOARD_PORT:-8080}` by default;
+  set `DASHBOARD_BIND=0.0.0.0` explicitly (the VPS does) to expose it publicly. Basic
+  auth is disabled when `DASHBOARD_BASIC_AUTH_PASSWORD` is empty, so never expose a
+  password-less dashboard. Trader has no exposed port; Caddy profile optional.
 - Trader healthcheck uses `python -m wallex_trader health --max-age 120`.
 - `docker compose --profile tools run --rm backtest` seeds PostgreSQL backtest rows.
 - Logs rotate; `logs/trader.jsonl` is the aggregate JSON log and `logs/runs/<run_id>.jsonl` is the per-run log. Every run line includes `run_id` and `mode`; the run ID is printed at startup.

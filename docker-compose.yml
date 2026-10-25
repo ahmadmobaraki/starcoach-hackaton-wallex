@@ -58,10 +58,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      trader:
-        condition: service_healthy
     ports:
-      - "${DASHBOARD_BIND:-0.0.0.0}:${DASHBOARD_PORT:-8080}:8080"
+      - "${DASHBOARD_BIND:-127.0.0.1}:${DASHBOARD_PORT:-8080}:8080"
     volumes:
       - ./artifacts:/app/artifacts:ro
       - ./data:/app/data
