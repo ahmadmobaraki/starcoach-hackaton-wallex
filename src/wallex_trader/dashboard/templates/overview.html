@@ -21,6 +21,18 @@
   Agent {{ agent.get('type', 'n/a') }}
 </div>
 
+{% set kill = hbd.get('kill') or {} %}
+{% if kill.get('active') %}
+<div class="notice danger">
+  <strong>KILL SWITCH ACTIVE:</strong>
+  {{ kill.get('reason') or 'kill switch active' }}
+  ({{ kill.get('trigger') or 'manual' }} since {{ kill.get('activated_at')|ts }}).
+  New entries are disabled and the strategy scan is paused until a deliberate
+  restart. The process may still look healthy and keep reconnecting — that alone
+  does not re-enable trading.
+</div>
+{% endif %}
+
 <h2>Portfolio</h2>
 <div class="grid">
   <div class="card"><div class="label">Equity</div><div class="value">{{ eq.get('equity_tmn')|tmn }} TMN</div><div class="sub">cash {{ eq.get('cash_tmn')|tmn }}</div></div>

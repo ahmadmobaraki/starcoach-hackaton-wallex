@@ -5,6 +5,7 @@ import contextlib
 import json
 import logging
 import random
+import time
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from typing import Any
@@ -17,6 +18,23 @@ logger = logging.getLogger("trader.ws")
 
 MessageHandler = Callable[[str, Any], Awaitable[None] | None]
 LifecycleHandler = Callable[[], Awaitable[None] | None]
+
+# Reconnect backoff must not stay saturated after the endpoint recovers. A
+# connection that stays up this long proves the socket works again, so the next
+# retry starts from the base delay. Without the reset, every later disconnect
+# waited 30s and tripped the 30s WS-down kill switch (2026-10-24 incident).
+RECONNECT_BASE_SEC = 1.0
+MAX_RECONNECT_SEC = 30.0
+STABLE_CONNECTION_SEC = 10.0
+
+
+def backoff_before_retry(
+    backoff: float, *, was_connected: bool, connected_sec: float
+) -> float:
+    """Backoff to use before the next reconnect attempt."""
+    if was_connected and connected_sec >= STABLE_CONNECTION_SEC:
+        return RECONNECT_BASE_SEC
+    return min(MAX_RECONNECT_SEC, backoff)
 
 
 class WallexWebSocket:
@@ -52,6 +70,7 @@ class WallexWebSocket:
         self._send_lock = asyncio.Lock()
         self._stop = asyncio.Event()
         self._next_id = 1
+        self._connected_at: float | None = None
 
     async def start(self) -> None:
         if self._task is not None:
@@ -87,8 +106,10 @@ class WallexWebSocket:
         }
 
     async def _run_forever(self) -> None:
-        backoff = 1.0
+        backoff = RECONNECT_BASE_SEC
         while not self._stop.is_set():
+            was_connected = False
+            connected_sec = 0.0
             try:
                 await self._connect_and_read()
             except asyncio.CancelledError:
@@ -98,7 +119,10 @@ class WallexWebSocket:
                 logger.warning("WebSocket disconnected: %s", exc)
             finally:
                 was_connected = self.connected
+                if was_connected and self._connected_at is not None:
+                    connected_sec = time.monotonic() - self._connected_at
                 self.connected = False
+                self._connected_at = None
                 await self._close_socket()
                 if was_connected and self.on_disconnect is not None:
                     with contextlib.suppress(Exception):
@@ -107,14 +131,17 @@ class WallexWebSocket:
                             await result
             if self._stop.is_set():
                 break
+            retry_in = backoff_before_retry(
+                backoff, was_connected=was_connected, connected_sec=connected_sec
+            )
             self.reconnects += 1
-            delay = min(30.0, backoff) + random.random() * 0.5
+            delay = retry_in + random.random() * 0.5
             logger.info("WebSocket reconnecting in %.1fs", delay)
             try:
                 await asyncio.wait_for(self._stop.wait(), timeout=delay)
             except TimeoutError:
                 pass
-            backoff = min(30.0, backoff * 2)
+            backoff = min(MAX_RECONNECT_SEC, retry_in * 2)
 
     async def _connect_and_read(self) -> None:
         async with websockets.connect(
@@ -134,6 +161,7 @@ class WallexWebSocket:
                 raise RuntimeError(f"Centrifugo connect failed: {data['error']}")
             self.client_id = (data.get("connect") or {}).get("client")
             self.connected = True
+            self._connected_at = time.monotonic()
             logger.info("WebSocket connected (client=%s)", self.client_id)
             for channel in self.channels:
                 await self._send(

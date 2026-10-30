@@ -59,6 +59,14 @@ logger = logging.getLogger("trader.engine")
 # threshold itself is unchanged; it just has to be observed consecutively.
 CLOCK_SKEW_CONFIRMATIONS = 3
 
+# A single slow reconnect must not permanently kill the session. The threshold
+# stays at WS_DOWN_KILL_SEC, but it has to be observed on consecutive health
+# checks, matching the clock-skew hysteresis (2026-10-24 WS incident). A blocked
+# position loop must not delay the kill indefinitely, so a single sample past the
+# grace window also confirms it.
+WS_DOWN_CONFIRMATIONS = 3
+WS_DOWN_KILL_GRACE_SEC = 5.0
+
 
 class DisabledAgent:
     def __init__(self, settings: Settings) -> None:
@@ -134,6 +142,7 @@ class TradingEngine:
         self._decision_busy = False
         self._stopped = False
         self._ws_down_since: float | None = None
+        self._ws_down_streak = 0
         self._kill_handled = False
         self._position_seen: set[str] = set()
         self._position_tombstones: set[str] = set()
@@ -1592,22 +1601,43 @@ class TradingEngine:
             self.kill.check_file()
             await self._activate_kill(self.kill.state.reason, trigger="file")
 
+    def _ws_down_confirmed(self, down_sec: float) -> bool:
+        if down_sec <= self.settings.ws_down_kill_sec:
+            self._ws_down_streak = 0
+            return False
+        self._ws_down_streak += 1
+        if down_sec >= self.settings.ws_down_kill_sec + WS_DOWN_KILL_GRACE_SEC:
+            return True
+        return self._ws_down_streak >= WS_DOWN_CONFIRMATIONS
+
     def _check_data_health(self, now: datetime) -> None:
         if self.feed is None or self.feed.ws is None:
             return
         if self.feed.ws.connected:
             self._ws_down_since = None
+            self._ws_down_streak = 0
             return
         if self._ws_down_since is None:
             self._ws_down_since = time.monotonic()
+            self._ws_down_streak = 0
             return
         down_sec = time.monotonic() - self._ws_down_since
-        if down_sec > self.settings.ws_down_kill_sec and not self.kill.state.active:
-            asyncio.create_task(
-                self._activate_kill(
-                    f"WebSocket down for {down_sec:.0f}s", trigger="ws_down"
-                )
+        if self.kill.state.active:
+            return
+        if not self._ws_down_confirmed(down_sec):
+            return
+        asyncio.create_task(
+            self._activate_kill(
+                f"WebSocket down for {down_sec:.0f}s "
+                f"({self._ws_down_streak} consecutive checks)",
+                trigger="ws_down",
+                evidence={
+                    "down_sec": round(down_sec, 3),
+                    "threshold_sec": self.settings.ws_down_kill_sec,
+                    "consecutive_checks": self._ws_down_streak,
+                },
             )
+        )
 
     async def _activate_kill(
         self,

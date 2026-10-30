@@ -100,7 +100,10 @@ The kill switch activates on any of:
 - `data/KILL_SWITCH` file (manual, dashboard, `make kill`);
 - peak drawdown ≥ 6%;
 - daily loss ≤ −2.5%;
-- WebSocket down ≥ 30s;
+- WebSocket down ≥ 30s on 3 consecutive health checks, or ≥ 35s on a single check
+  (a single reconnect must not permanently kill the session, and a blocked position
+  loop must not delay the kill); the reconnect backoff resets to 1s after any
+  connection stays up ≥ 10s;
 - API error rate > 10% after at least 50 calls;
 - clock skew > 5s for 3 consecutive health checks (HTTP Date headers have 1 s
   granularity and can be stale on cached/proxied responses, so one sample is not

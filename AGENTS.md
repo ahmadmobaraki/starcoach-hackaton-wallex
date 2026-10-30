@@ -60,7 +60,7 @@ why the default is a multi-day trend strategy, not a scalper.
 make install                 # uv sync --frozen --extra dev
 make lint                    # ruff
 make typecheck               # mypy
-make test                    # pytest (59 passed, 1 live skipped)
+make test                    # pytest (72 passed, 1 live skipped)
 make test-live               # RUN_LIVE_TESTS=1, public Wallex API test
 
 # Validation without real orders
@@ -131,12 +131,25 @@ Valid commands: `run`, `shadow`, `live`, `preflight`, `download`, `backtest`,
   **0 decisions, 0 orders, 0 fills**, no kill, 6 WS reconnects, 0 REST errors, flat
   equity at 4,996,524 TMN, and `replay` PASS. It ended before the 12:00 UTC 4h close, so
   it validated live startup/reconciliation only; the execution path is still unproven.
+- **WS-kill idle (2026-10-24 15:30 → 2026-10-25):** run `live_20261024_113452_7iq6`
+  bought USDTTMN at 11:35 and TRXTMN at 12:00. Wallex WS dropped (3012 no-pong) at
+  15:29:40, the 30s reconnect hit HTTP 503 at 15:30:10, and the 30s `ws_down` kill fired
+  at 15:30:11 because the reconnect backoff had ratcheted to 30s and never reset. Both
+  positions were force-flattened; the process stayed healthy but sticky-killed for
+  ~19h with a frozen scan, which is why no trades appeared. Cash ~4,961,355 TMN, flat.
+  Fixed by the backoff reset + `WS_DOWN_CONFIRMATIONS` and the dashboard kill banner
+  (§18.18); recovery required a deliberate restart.
+- **Recovery (2026-10-25 13:12 UTC):** the fix plus a 35s wall-clock backstop was
+  deployed and the service restarted. PEPE and USDTTMN were force-flattened on stop
+  (realized ~−2.8k TMN, fees ~2.3k); the new run `live_20261025_131209_ncrt` opened a
+  fresh BNBTMN position (~171k TMN notional). Kill inactive, WS healthy, 0 REST errors.
 - Universe is now **11 symbols** (ZECTMN removed); `MIN_NOTIONAL_TMN=100000` is a
   validator-enforced floor. Live/shadow refuse to start if the allowlist contains any
   symbol from `configs/blocked_markets.txt`.
 - Dashboard: LIVE badge has a blinking green dot while running; overview shows last
-  scan, candidate count, regime and next signal-timeframe decision.
-- Tests: **59 passed, 1 skipped**; ruff clean; mypy clean (67 files); Docker build OK.
+  scan, candidate count, regime and next signal-timeframe decision. A red banner shows
+  an active kill switch (reason, trigger, activation time) so a sticky kill is visible.
+- Tests: **72 passed, 1 skipped**; ruff clean; mypy clean (67 files); Docker build OK.
 - Results snapshot: `results/`; full artifacts: `artifacts/` (gitignored).
 - Canonical full report: `report.md`; detailed docs in `docs/`.
 
@@ -552,7 +565,8 @@ caps so the live YAML applies; the 100,000 TMN floor is validator-enforced in ev
 
 ### 9.3 Kill switch
 
-Activates on file/manual kill, peak drawdown 6%, daily loss 2.5%, WS down 30s, API
+Activates on file/manual kill, peak drawdown 6%, daily loss 2.5%, WS down 30s for
+3 consecutive health checks (or 35s on any check), API
 error rate >10% after 50 calls, clock skew >5s for 3 consecutive checks (single
 sample can be stale), live reconciliation mismatch
 (3 consecutive checks), or manual dashboard/file request. Actions: no new entries,
@@ -866,7 +880,7 @@ make shadow -- --duration 120     # bounded
 docker build -t argus-local .
 ```
 
-- Current: 59 passed, 1 skipped (live integration).
+- Current: 72 passed, 1 skipped (live integration).
 - Add unit tests for any new behavior; keep tests fast and offline by default.
 - `RUN_LIVE_TESTS=1 pytest -m live` exercises public Wallex endpoints only.
 - `self-test` and `agent-test` must never send a network order.
@@ -964,6 +978,20 @@ docker build -t argus-local .
     After a **reconciliation-killed start, wait for `engine stopped` before
     restarting** — the first restart legitimately killed because the DB state
     was stale, not because the exchange was wrong.
+18. **WS backoff ratchet + sticky ws_down kill (2026-10-24 15:30)**:
+    Wallex WS disconnected (3012 no-pong) at 15:29:40 and the reconnect attempt
+    at 15:30:10 returned HTTP 503. The client backoff had already ratcheted to
+    30s and was **never reset after successful connections**, so every later
+    disconnect also waited ~30s. With the kill threshold exactly 30s and no
+    confirmation window, the outage tripped the sticky `ws_down` kill at
+    15:30:11; positions were force-flattened and the engine then sat idle for
+    ~19h while the process stayed healthy (last scan frozen, no decisions).
+    Fixes: `backoff_before_retry` resets to 1s after a connection stays up
+    ≥10s, `WS_DOWN_CONFIRMATIONS=3` requires the threshold to be exceeded on
+    3 consecutive 1s health checks with a `WS_DOWN_KILL_GRACE_SEC=5s` wall-clock
+    backstop so a blocked position loop cannot delay the kill, and the dashboard
+    shows a red kill banner. The kill itself is still sticky and still requires a
+    deliberate restart.
 
 ---
 

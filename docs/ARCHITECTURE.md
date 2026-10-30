@@ -97,9 +97,12 @@ are only evaluated when a new completed signal-timeframe bar appears (`SWING_TIM
 - WebSocket: Centrifugo v2, public channels, depth snapshots replace local sides,
   trades update the tape, 1m candles update the candle store.
 - 1h candles are seeded for the slow strategy and resampled to completed 4h bars.
-- The feed reconnects with exponential backoff. A reconnect triggers REST depth/trade
-  resync. A WebSocket outage longer than 30s activates the kill switch; orders are
-  cancelled and positions are flattened if configured.
+- The feed reconnects with exponential backoff (1s base). The backoff resets after a
+  connection stays up ≥10s, so a routine disconnect reconnects in ~1s instead of
+  inheriting a saturated 30s delay. A reconnect triggers REST depth/trade resync. A
+  WebSocket outage longer than 30s on 3 consecutive health checks (or 35s on a
+  single check, so a blocked position loop cannot delay it) activates the kill
+  switch; orders are cancelled and positions are flattened if configured.
 - All candles are UTC. UDF 1m history is fetched in day-aligned UTC windows.
 
 ## Decision record

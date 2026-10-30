@@ -139,7 +139,7 @@ deliberately after inspection.
 | Symptom | Cause / action |
 |---|---|
 | `401 authorization header is missing` | key not loaded; check `.env`, don't source it |
-| `HTTP 503` on WebSocket | Wallex transient; engine reconnects with backoff; >30s halts |
+| `HTTP 503` on WebSocket | Wallex transient; engine reconnects with backoff (1s base, resets after a stable connection); >30s on 3 consecutive checks (or >35s once) activates the sticky kill |
 | `quantity rounds to zero` / `min notional` | size below exchange minimum; AI min size and precision checks |
 | `price more than 2% from mid` | tick/precision issue or bad limit offset; inspect market metadata |
 | `DeepSeek returned empty content` | retried with larger budget/low effort; frequent → raise max tokens |
